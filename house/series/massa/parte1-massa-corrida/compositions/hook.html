@@ -1,0 +1,57 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Barlow Condensed";
+      font-weight: 900;
+      src: url("assets/fonts/BarlowCondensed-900.woff2") format("woff2");
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+    .hk-line {
+      position: absolute;
+      left: 90px;
+      right: 90px;
+      text-align: center;
+      font-family: "Barlow Condensed", sans-serif;
+      font-weight: 900;
+      font-size: 150px;
+      line-height: 0.9;
+      letter-spacing: -0.01em;
+      text-transform: uppercase;
+    }
+    #hk-l1 {
+      top: 300px;
+      color: #0b1220;
+      text-shadow: 0 0 40px rgba(255, 255, 255, 0.85), 0 0 12px rgba(255, 255, 255, 0.9);
+    }
+    #hk-l2 {
+      top: 620px;
+      color: #ffffff;
+    }
+    #hk-l2 span {
+      display: inline-block;
+      padding: 6px 26px 0;
+      margin: 6px 0;
+      background: #2457d6;
+      border-radius: 12px;
+      box-shadow: 0 18px 40px -12px rgba(22, 60, 133, 0.6);
+    }
+  </style>
+  <div data-hf-id="hf-srfg" id="root" data-composition-id="hook" data-width="1080" data-height="1920">
+    <div data-hf-id="hf-5k2w" id="hk-l1" class="hk-line">Sua parede<br data-hf-id="hf-x5px" />parece lisa…</div>
+    <div data-hf-id="hf-jlyy" id="hk-l2" class="hk-line"><span data-hf-id="hf-3d78">…até o sol</span><br data-hf-id="hf-rsrt" /><span data-hf-id="hf-781c">bater de lado</span></div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    // Quadro 0: a primeira frase já está na tela (capa e gancho)
+    tl.fromTo("#hk-l1", { scale: 1.04 }, { scale: 1, duration: 0.6, ease: "expo.out", transformOrigin: "50% 50%" }, 0);
+    // A virada entra batendo junto com "até o sol" (2,2 s)
+    tl.fromTo("#hk-l2 span", { opacity: 0, scale: 1.35 }, { opacity: 1, scale: 1, duration: 0.24, ease: "expo.out", stagger: 0.1 }, 2.2);
+    // Saída quando a voz termina "bater de lado" e a luz começa a varrer
+    tl.to(["#hk-l1", "#hk-l2"], { y: -60, opacity: 0, duration: 0.24, ease: "power2.in", stagger: 0.04 }, 3.7);
+    window.__timelines["hook"] = tl;
+  </script>
+</template>

@@ -1,0 +1,726 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      font-family: Poppins, sans-serif;
+      color: #0b1d3f;
+      pointer-events: none;
+    }
+    .hud-abs {
+      position: absolute;
+      opacity: 0;
+    }
+    /* Barra de progresso 1-2-3 */
+    #hud-chips {
+      position: absolute;
+      left: 54px;
+      right: 54px;
+      top: 196px;
+      display: flex;
+      gap: 14px;
+    }
+    .hud-chip {
+      flex: 1;
+      height: 88px;
+      border-radius: 12px;
+      background: #ffffff;
+      border: 2px solid #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      font-size: 28px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #6b7280;
+      box-shadow: 0 12px 28px -18px rgba(11, 29, 63, 0.45);
+      opacity: 0;
+      white-space: nowrap;
+    }
+    .hud-chip b {
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 500;
+    }
+    /* Card de dado */
+    .hud-card {
+      left: 64px;
+      top: 330px;
+      padding: 22px 32px 24px;
+      border-radius: 16px;
+      background: #ffffff;
+      border: 2px solid #e5e7eb;
+      box-shadow: 0 18px 40px -18px rgba(11, 29, 63, 0.4);
+      max-width: 900px;
+    }
+    .hud-card .v {
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 500;
+      font-size: 92px;
+      line-height: 1;
+      letter-spacing: -0.02em;
+      color: #0b1d3f;
+      white-space: nowrap;
+    }
+    .hud-card .v em {
+      font-style: normal;
+      color: #c2410c;
+    }
+    .hud-card .l {
+      margin-top: 10px;
+      font-size: 30px;
+      font-weight: 500;
+      line-height: 1.25;
+      color: #4b5563;
+    }
+    .hud-card.is-red {
+      background: #fdecec;
+      border-color: rgba(211, 47, 47, 0.35);
+    }
+    .hud-card.is-red .v {
+      color: #b3261e;
+    }
+    .hud-card.is-green {
+      background: #ecf8f2;
+      border-color: rgba(59, 178, 115, 0.45);
+    }
+    .hud-card.is-green .v {
+      color: #1f7a4c;
+    }
+    .hud-quote {
+      font-size: 52px;
+      font-weight: 600;
+      line-height: 1.15;
+      color: #0b1d3f;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .hud-quote svg {
+      width: 64px;
+      height: 64px;
+      flex: none;
+      color: #3bb273;
+    }
+    /* Títulos */
+    .hud-title {
+      left: 72px;
+      right: 72px;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 0.98;
+    }
+    .hud-title .w {
+      display: inline-block;
+    }
+    .hud-orange {
+      color: #c2410c;
+    }
+    .hud-kicker {
+      font-size: 60px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      color: #0b1d3f;
+      margin-bottom: 18px;
+    }
+    .hud-series {
+      display: inline-block;
+      margin-bottom: 26px;
+      padding: 10px 22px;
+      border-radius: 9999px;
+      background: #0b1d3f;
+      color: #ffffff;
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 500;
+      font-size: 30px;
+      letter-spacing: 0.02em;
+    }
+    .hud-series b {
+      color: #fb923c;
+      font-weight: 500;
+    }
+    /* Número gigante de seção */
+    .hud-section {
+      left: 72px;
+      top: 330px;
+    }
+    .hud-section .n {
+      font-size: 300px;
+      font-weight: 700;
+      line-height: 0.82;
+      letter-spacing: -0.06em;
+      color: #f97316;
+      display: inline-block;
+    }
+    .hud-section .t {
+      margin-top: 14px;
+      font-size: 92px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      text-transform: uppercase;
+      display: inline-block;
+      color: #0b1d3f;
+    }
+    .hud-section .s {
+      margin-top: 12px;
+      font-size: 46px;
+      font-weight: 500;
+      color: #0b1d3f;
+      display: inline-block;
+    }
+    .hud-section .pad {
+      display: inline-block;
+      padding: 6px 18px 10px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.86);
+    }
+    /* Comparação de escala (barras) */
+    .hud-cmp {
+      left: 64px;
+      right: 64px;
+      top: 330px;
+      padding: 30px 34px 34px;
+      border-radius: 16px;
+      background: #ffffff;
+      border: 2px solid #e5e7eb;
+      box-shadow: 0 18px 40px -18px rgba(11, 29, 63, 0.4);
+    }
+    .hud-cmp .row + .row {
+      margin-top: 26px;
+    }
+    .hud-cmp .lab {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 34px;
+      font-weight: 600;
+    }
+    .hud-cmp .lab .num {
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 500;
+      font-size: 44px;
+    }
+    .hud-cmp .track {
+      margin-top: 10px;
+      height: 64px;
+      border-radius: 10px;
+      background: #eef1f6;
+      display: flex;
+      overflow: hidden;
+    }
+    .hud-cmp .bar {
+      height: 100%;
+      transform-origin: 0% 50%;
+    }
+    /* Alerta */
+    #hud-alert {
+      left: 64px;
+      top: 330px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 28px;
+      border-radius: 9999px;
+      background: #fdecec;
+      border: 2px solid rgba(211, 47, 47, 0.35);
+      color: #b3261e;
+      font-size: 40px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    #hud-alert svg {
+      width: 48px;
+      height: 48px;
+    }
+    /* Norma e listas */
+    #hud-norma-head {
+      left: 64px;
+      top: 330px;
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 500;
+      font-size: 44px;
+      color: #c2410c;
+      padding: 10px 22px;
+      border-radius: 8px;
+      background: #fff1e6;
+    }
+    .hud-item {
+      left: 64px;
+      width: 760px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      padding: 24px 28px;
+      border-radius: 16px;
+      background: #ffffff;
+      border: 2px solid #e5e7eb;
+      box-shadow: 0 18px 40px -20px rgba(11, 29, 63, 0.4);
+    }
+    .hud-item .ic {
+      width: 88px;
+      height: 88px;
+      flex: none;
+      border-radius: 12px;
+      background: #fff1e6;
+      color: #f97316;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 500;
+      font-size: 60px;
+    }
+    .hud-item .ic svg {
+      width: 52px;
+      height: 52px;
+    }
+    .hud-item .tx {
+      font-size: 44px;
+      font-weight: 600;
+      line-height: 1.1;
+    }
+    .hud-item .sub {
+      display: block;
+      margin-top: 6px;
+      font-size: 32px;
+      font-weight: 500;
+      color: #c2410c;
+    }
+    /* Placa de PARE */
+    #hud-stop {
+      left: 64px;
+      top: 330px;
+      display: flex;
+      align-items: center;
+      gap: 34px;
+    }
+    #hud-stop .oct {
+      width: 300px;
+      height: 300px;
+      flex: none;
+    }
+    #hud-stop .aqui {
+      font-size: 110px;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 0.95;
+      color: #0b1d3f;
+    }
+    #hud-stop .aqui span {
+      display: block;
+      margin-top: 14px;
+      font-size: 40px;
+      font-weight: 500;
+      letter-spacing: 0;
+      color: #b3261e;
+    }
+    /* Vinheta vermelha nos momentos de perigo */
+    #hud-vig {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      box-shadow: inset 0 0 240px 40px rgba(211, 47, 47, 0.42);
+    }
+    /* Planta com os cômodos que pedem DR */
+    #hud-rooms {
+      left: 64px;
+      right: 64px;
+      top: 330px;
+      padding: 26px 30px 30px;
+      border-radius: 16px;
+      background: #ffffff;
+      border: 2px solid #e5e7eb;
+      box-shadow: 0 18px 40px -18px rgba(11, 29, 63, 0.4);
+    }
+    #hud-rooms .hd {
+      font-size: 34px;
+      font-weight: 600;
+      margin-bottom: 18px;
+    }
+    #hud-rooms .hd b {
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 500;
+      color: #c2410c;
+    }
+    #hud-rooms .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .hud-room {
+      height: 104px;
+      border-radius: 12px;
+      border: 2px solid #e5e7eb;
+      background: #eef1f6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 38px;
+      font-weight: 600;
+      color: #6b7280;
+    }
+  </style>
+  <div id="root" data-composition-id="hud" data-width="1080" data-height="1920">
+    <div id="hud-vig"></div>
+
+    <!-- Abertura -->
+    <div id="hud-hook" class="hud-abs hud-title" style="top: 236px; font-size: 132px">
+      <div class="hud-series">Série Energia Elétrica · <b>EP 4/4</b></div>
+      <div class="hud-kicker">Abriu a seccionadora.</div>
+      <span class="w">Já pode</span><br />
+      <span class="w hud-orange">encostar?</span>
+    </div>
+    <div id="hud-ainda" class="hud-abs hud-title hud-orange" style="top: 230px; font-size: 280px">Não.</div>
+    <div id="hud-live" class="hud-abs hud-card is-red">
+      <div class="v" style="font-size: 54px">chave aberta ≠ cabine segura</div>
+      <div class="l">a entrada da concessionária continua energizada</div>
+    </div>
+
+    <!-- Barra 1-2-3 -->
+    <div id="hud-chips">
+      <div class="hud-chip" id="hud-chip1"><b>1</b>Autorizar</div>
+      <div class="hud-chip" id="hud-chip2"><b>2</b>Bloquear</div>
+      <div class="hud-chip" id="hud-chip3"><b>3</b>Aterrar</div>
+    </div>
+
+    <!-- Problema -->
+    <div id="hud-cv" class="hud-abs hud-card">
+      <div class="v"><em id="hud-vkv">0</em> V</div>
+      <div class="l">tensão da cabine primária</div>
+    </div>
+    <div id="hud-at" class="hud-abs hud-cmp">
+      <div class="lab"><span>pela NR-10, é</span><span class="num" style="color: #b3261e">alta tensão</span></div>
+      <div class="track" style="position: relative; overflow: visible">
+        <div class="bar" id="hud-b-bt" style="width: 7.2%; background: #fed7b5"></div>
+        <div class="bar" id="hud-b-at" style="width: 92.8%; background: #d32f2f"></div>
+      </div>
+      <div class="lab" style="margin-top: 14px"><span class="num" style="font-size: 30px; color: #c2410c">BT até 1.000 V</span><span class="num" style="font-size: 30px; color: #b3261e">13.800 V</span></div>
+    </div>
+    <div id="hud-carc" class="hud-abs hud-card is-red">
+      <div class="v" style="font-size: 72px">arco sem contato</div>
+      <div class="l">chegar perto demais já pode abrir um arco</div>
+    </div>
+    <div id="hud-zonas" class="hud-abs hud-cmp">
+      <div class="lab" style="margin-bottom: 18px"><span>zonas da NR-10 · 13,8 kV</span></div>
+      <div class="row" id="hud-z1" style="display: flex; align-items: center; gap: 22px">
+        <div style="width: 54px; height: 54px; border-radius: 50%; background: rgba(239, 68, 68, 0.55); flex: none"></div>
+        <div style="flex: 1; font-size: 36px; font-weight: 600">zona de risco</div>
+        <div class="num" style="font-family: 'JetBrains Mono', monospace; font-size: 52px; color: #b3261e">0,38 m</div>
+      </div>
+      <div class="row" id="hud-z2" style="display: flex; align-items: center; gap: 22px">
+        <div style="width: 54px; height: 54px; border-radius: 50%; border: 5px dashed #f97316; flex: none; box-sizing: border-box"></div>
+        <div style="flex: 1; font-size: 36px; font-weight: 600">zona controlada</div>
+        <div class="num" style="font-family: 'JetBrains Mono', monospace; font-size: 52px; color: #c2410c">1,38 m</div>
+      </div>
+    </div>
+
+    <!-- Camada 1 -->
+    <div id="hud-s1" class="hud-abs hud-section">
+      <div class="n">1</div><br />
+      <div class="t pad">Autorizar</div><br />
+      <div class="s pad">antes de entrar na cabine</div>
+    </div>
+    <div id="hud-p1" class="hud-abs hud-item" style="top: 330px">
+      <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><path d="M14 2v4a2 2 0 0 0 2 2h4" /><path d="m9 15 2 2 4-4" /></svg></div>
+      <div class="tx">Ordem de serviço<span class="sub">específica para data e local</span></div>
+    </div>
+    <div id="hud-p2" class="hud-abs hud-item" style="top: 520px">
+      <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20a6.5 6.5 0 0 1 13 0" /><circle cx="17" cy="9" r="2.5" /><path d="M16 14.5a5 5 0 0 1 6 5" /></svg></div>
+      <div class="tx">Equipe de 2<span class="sub">com curso SEP</span></div>
+    </div>
+    <div id="hud-p3" class="hud-abs hud-item" style="top: 710px">
+      <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.6-7 10-7 10Z" /><path d="M12 9v5" /><path d="M9.5 11.5h5" /></svg></div>
+      <div class="tx">Plano de resgate<span class="sub">e equipe treinada</span></div>
+    </div>
+
+    <!-- Camada 2 -->
+    <div id="hud-s2" class="hud-abs hud-section">
+      <div class="n">2</div><br />
+      <div class="t pad">Bloquear</div><br />
+      <div class="s pad">e testar antes de tocar</div>
+    </div>
+    <div id="hud-b1" class="hud-abs hud-item" style="top: 330px">
+      <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg></div>
+      <div class="tx">Seccionadora travada<span class="sub">cadeado e etiqueta</span></div>
+    </div>
+    <div id="hud-b2" class="hud-abs hud-item" style="top: 520px">
+      <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg></div>
+      <div class="tx">Gerador travado<span class="sub">a outra fonte da cabine</span></div>
+    </div>
+    <div id="hud-b3" class="hud-abs hud-item" style="top: 710px">
+      <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" /></svg></div>
+      <div class="tx">Detector de AT no bastão<span class="sub">testado antes de usar</span></div>
+    </div>
+
+    <!-- Camada 3 -->
+    <div id="hud-s3" class="hud-abs hud-section">
+      <div class="n">3</div><br />
+      <div class="t pad">Aterrar</div><br />
+      <div class="s pad">dos dois lados</div>
+    </div>
+    <div id="hud-t1" class="hud-abs hud-item" style="top: 330px">
+      <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v9" /><path d="M5 12h14" /><path d="M8 16h8" /><path d="M10.5 20h3" /></svg></div>
+      <div class="tx">Aterramento temporário<span class="sub">dos dois lados do ponto de trabalho</span></div>
+    </div>
+    <div id="hud-t2" class="hud-abs hud-item" style="top: 520px">
+      <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 21h16Z" /><path d="M7.5 14h9" /></svg></div>
+      <div class="tx">Zona sinalizada<span class="sub">cones e fita no chão</span></div>
+    </div>
+
+    <!-- Mito -->
+    <div id="hud-alert" class="hud-abs">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" /><path d="M12 9v4" /><path d="M12 17h.01" /></svg>
+      Mito
+    </div>
+    <div id="hud-cneq" class="hud-abs hud-card is-red" style="top: 460px">
+      <div class="v" style="font-size: 64px">sem energia? <em id="hud-nao" style="color: #0b1d3f; display: inline-block">Não.</em></div>
+      <div class="l">e se o gerador de emergência ligar?</div>
+    </div>
+    <div id="hud-cmp" class="hud-abs hud-cmp" style="top: 460px">
+      <div class="row">
+        <div class="lab"><span>entram (gerador)</span><span class="num">380 V</span></div>
+        <div class="track"><div class="bar" id="hud-b-in" style="width: 2.75%; background: #f97316"></div></div>
+      </div>
+      <div class="row">
+        <div class="lab"><span>saem (cabine)</span><span class="num" style="color: #b3261e"><span id="hud-vout">0</span> V</span></div>
+        <div class="track"><div class="bar" id="hud-b-out" style="width: 100%; background: #d32f2f"></div></div>
+      </div>
+      <div class="row" id="hud-36x" style="display: flex; align-items: baseline; gap: 24px">
+        <div style="font-family: 'JetBrains Mono', monospace; font-weight: 500; font-size: 110px; line-height: 1; color: #b3261e">36×</div>
+        <div style="font-family: 'JetBrains Mono', monospace; font-weight: 500; font-size: 36px; color: #4b5563">13.800 ÷ 380</div>
+      </div>
+    </div>
+    <div id="hud-cterra" class="hud-abs hud-card is-green" style="top: 460px">
+      <div class="v" style="font-size: 60px">aterrado dos dois lados</div>
+      <div class="l">a energia vai para a terra, não para você</div>
+    </div>
+
+    <!-- Norma -->
+    <div id="hud-norma-head" class="hud-abs">O que a norma exige</div>
+    <div id="hud-k1" class="hud-abs hud-item" style="top: 450px">
+      <div class="ic">10</div>
+      <div class="tx">NR-10<span class="sub">curso complementar SEP · 40 h</span></div>
+    </div>
+    <div id="hud-k2" class="hud-abs hud-item" style="top: 640px">
+      <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" /></svg></div>
+      <div class="tx">NBR 14039<span class="sub">média tensão · 1 a 36,2 kV</span></div>
+    </div>
+
+    <!-- Fecho em loop -->
+    <div id="hud-end" class="hud-abs hud-title" style="top: 330px; font-size: 92px">
+      <span class="w" id="hud-end1">Confira as</span><br />
+      <span class="w hud-orange" id="hud-end2">3 camadas</span><br />
+      <span class="w" id="hud-end3">antes de encostar.</span>
+    </div>
+  </div>
+  <script>
+    /*CUES*/
+    const C = {
+      "hook": 0.0,
+      "secc": 0.56,
+      "cabine": 1.44,
+      "pode": 2.4,
+      "encostar": 2.72,
+      "nao": 4.16,
+      "chave": 4.8,
+      "aberta": 5.28,
+      "camadas": 8.08,
+      "problema": 11.04,
+      "v13800": 12.48,
+      "nr10": 15.04,
+      "alta": 16,
+      "mil": 17.76,
+      "nem": 19.44,
+      "chegar": 20.96,
+      "arco": 23.28,
+      "zonas": 25.92,
+      "r38": 26.88,
+      "risco": 29.68,
+      "r138": 30.56,
+      "controlada": 32.72,
+      "c1": 33.76,
+      "autorizar": 34.88,
+      "ordem": 35.92,
+      "equipe": 37.2,
+      "duas": 38.4,
+      "sep": 39.76,
+      "plano": 40.72,
+      "c2": 42.16,
+      "bloquear": 43.44,
+      "testar": 44.4,
+      "seccionadora2": 45.12,
+      "gerador": 46.16,
+      "travados": 46.72,
+      "detector": 47.76,
+      "bastao": 49.28,
+      "testado": 49.92,
+      "usar": 50.96,
+      "c3": 51.68,
+      "aterrar": 52.96,
+      "aterramento": 53.92,
+      "dois": 55.52,
+      "lados": 55.84,
+      "sinal": 58,
+      "chao": 58.88,
+      "mito": 59.63,
+      "semEnergia": 61.31,
+      "naoMito": 62.35,
+      "gerador2": 63.23,
+      "ligar": 64.35,
+      "voltar": 65.87,
+      "transformador": 66.59,
+      "entram": 67.63,
+      "v380": 68.19,
+      "saem": 70.03,
+      "x36": 72.43,
+      "terra": 74.75,
+      "lados2": 76.19,
+      "norma": 76.91,
+      "complementar": 78.99,
+      "nbr": 80.91,
+      "mediaTensao": 84.43,
+      "cta": 85.55,
+      "treinamento": 86.11,
+      "ecasi": 88.43,
+      "proximo": 90.43,
+      "reveja": 92.03,
+      "loop": 94.19,
+      "confira": 95.79,
+      "antes": 97.71,
+      "end": 99.81
+    };
+    /*END-CUES*/
+
+    const tl = gsap.timeline({ paused: true });
+    const $ = (s) => document.querySelector(s);
+    const ENTER = "expo.out";
+
+    // Entrada da marca: 0,7 s, opacidade + 24 px. Saída mais curta, com desfoque.
+    function show(sel, a, b, opts = {}) {
+      const el = $(sel);
+      const dy = opts.dy ?? 24;
+      tl.set(el, { visibility: "visible" }, 0);
+      tl.fromTo(el, { opacity: 0, y: dy, filter: "blur(6px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: opts.dur ?? 0.7, ease: ENTER }, a);
+      if (b != null) {
+        tl.to(el, { opacity: 0, y: -10, filter: "blur(6px)", duration: 0.25, ease: "power2.in" }, b - 0.25);
+        tl.set(el, { visibility: "hidden" }, b);
+      }
+    }
+    function section(sel, a, b) {
+      const el = $(sel);
+      tl.fromTo(el, { opacity: 0 }, { opacity: 1, duration: 0.01 }, a);
+      tl.fromTo(el.querySelector(".n"), { scale: 0.55, opacity: 0, filter: "blur(14px)", transformOrigin: "0% 80%" }, { scale: 1, opacity: 1, filter: "blur(0px)", duration: 0.55, ease: "expo.out" }, a);
+      tl.fromTo(el.querySelector(".t"), { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.6, ease: ENTER }, a + 0.22);
+      tl.fromTo(el.querySelector(".s"), { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.6, ease: ENTER }, a + 0.36);
+      tl.to(el, { opacity: 0, y: -16, filter: "blur(8px)", duration: 0.25, ease: "power2.in" }, b - 0.25);
+      tl.set(el, { visibility: "hidden" }, b);
+    }
+    // Número com separador de milhar (13.800)
+    const fmt = (v) => String(Math.round(v)).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    function count(sel, from, to, at, dur = 0.8, ease = "power2.out") {
+      const p = { v: from };
+      tl.fromTo(p, { v: from }, { v: to, duration: dur, ease, onUpdate: () => ($(sel).textContent = fmt(p.v)) }, at);
+    }
+    function bar(sel, at, dur = 0.6) {
+      tl.fromTo(sel, { scaleX: 0 }, { scaleX: 1, duration: dur, ease: "power3.out" }, at);
+    }
+    const CHIP = {
+      off: { backgroundColor: "#ffffff", borderColor: "#e5e7eb", color: "#6b7280" },
+      on: { backgroundColor: "#c2410c", borderColor: "#c2410c", color: "#ffffff" },
+      done: { backgroundColor: "#fff1e6", borderColor: "#fed7b5", color: "#c2410c" },
+    };
+    function chip(n, state, at) {
+      tl.to("#hud-chip" + n, { ...CHIP[state], duration: 0.3, ease: "power2.inOut" }, at);
+    }
+    function vignette(a, b, peak = 1) {
+      tl.to("#hud-vig", { opacity: peak, duration: 0.5, ease: "power2.out" }, a);
+      tl.to("#hud-vig", { opacity: 0, duration: 0.6, ease: "power2.inOut" }, b - 0.6);
+    }
+
+    // Abertura (o primeiro quadro já mostra o título, para o loop emendar)
+    tl.set("#hud-hook", { opacity: 1 }, 0);
+    tl.set("#hud-vig", { opacity: 0.7 }, 0);
+    tl.to("#hud-hook", { opacity: 0, filter: "blur(10px)", duration: 0.2, ease: "power2.in" }, C.nao - 0.12);
+    tl.set("#hud-hook", { visibility: "hidden" }, C.nao + 0.1);
+    tl.fromTo("#hud-ainda", { opacity: 0, scale: 1.25, filter: "blur(12px)", transformOrigin: "0% 50%" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.3, ease: "expo.out" }, C.nao);
+    tl.to("#hud-ainda", { opacity: 0, filter: "blur(8px)", duration: 0.2, ease: "power2.in" }, C.chave - 0.1);
+    tl.set("#hud-ainda", { visibility: "hidden" }, C.chave + 0.1);
+    tl.to("#hud-vig", { opacity: 0, duration: 0.6, ease: "power2.inOut" }, C.camadas);
+    show("#hud-live", C.chave + 0.1, C.camadas - 0.1);
+
+    // Barra 1-2-3: entra em "três camadas"
+    [1, 2, 3].forEach((n, i) => {
+      tl.fromTo("#hud-chip" + n, { opacity: 0, y: -20 }, { opacity: 1, y: 0, duration: 0.6, ease: ENTER }, C.camadas + i * 0.12);
+    });
+    chip(1, "on", C.c1);
+    chip(1, "done", C.c2);
+    chip(2, "on", C.c2);
+    chip(2, "done", C.c3);
+    chip(3, "on", C.c3);
+    chip(3, "done", C.mito);
+    tl.to("#hud-chips", { opacity: 0, y: -20, duration: 0.3, ease: "power2.in" }, C.cta - 0.1);
+    tl.fromTo("#hud-chips", { opacity: 0, y: -20 }, { opacity: 1, y: 0, duration: 0.6, ease: ENTER, immediateRender: false }, C.loop + 0.1);
+    chip(1, "on", C.confira + 0.56);
+    chip(2, "on", C.confira + 0.72);
+    chip(3, "on", C.confira + 1.04);
+
+    // Problema: 13.800 V, alta tensão, arco sem contato e as zonas
+    show("#hud-cv", C.problema + 0.4, C.nr10 - 0.1);
+    count("#hud-vkv", 0, 13800, C.problema + 0.6, C.v13800 + 0.5 - C.problema, "power2.out");
+    show("#hud-at", C.nr10 - 0.1, C.nem - 0.1);
+    bar("#hud-b-bt", C.nr10 + 0.2, 0.5);
+    bar("#hud-b-at", C.alta + 0.2, 0.9);
+    show("#hud-carc", C.nem - 0.1, C.zonas - 0.1);
+    vignette(C.arco - 0.2, C.zonas, 0.8);
+    show("#hud-zonas", C.zonas - 0.1, C.c1);
+    tl.fromTo("#hud-z1", { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.5, ease: ENTER }, C.r38 - 0.1);
+    tl.fromTo("#hud-z2", { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.5, ease: ENTER }, C.r138 - 0.1);
+
+    // Camada 1
+    section("#hud-s1", C.c1, C.ordem - 0.1);
+    show("#hud-p1", C.ordem - 0.1, C.c2);
+    show("#hud-p2", C.equipe - 0.1, C.c2);
+    show("#hud-p3", C.plano - 0.1, C.c2);
+
+    // Camada 2
+    section("#hud-s2", C.c2, C.seccionadora2 - 0.2);
+    show("#hud-b1", C.seccionadora2 - 0.2, C.c3);
+    show("#hud-b2", C.gerador - 0.1, C.c3);
+    show("#hud-b3", C.detector - 0.1, C.c3);
+
+    // Camada 3
+    section("#hud-s3", C.c3, C.aterramento - 0.1);
+    show("#hud-t1", C.aterramento - 0.1, C.mito);
+    show("#hud-t2", C.sinal - 0.15, C.mito);
+
+    // Mito: o gerador devolve 13.800 V pelo transformador; o aterramento leva para a terra
+    show("#hud-alert", C.mito, C.norma, { dur: 0.45 });
+    show("#hud-cneq", C.mito + 0.1, C.entram - 0.2);
+    tl.fromTo("#hud-nao", { opacity: 0, scale: 1.3, transformOrigin: "0% 50%" }, { opacity: 1, scale: 1, duration: 0.3, ease: "expo.out" }, C.naoMito);
+    show("#hud-cmp", C.entram - 0.2, C.terra - 0.6);
+    bar("#hud-b-in", C.v380, 0.4);
+    bar("#hud-b-out", C.saem + 0.3, 1.0);
+    count("#hud-vout", 0, 13800, C.saem + 0.3, 1.0);
+    tl.fromTo("#hud-36x", { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.5, ease: ENTER }, C.x36 - 0.1);
+    vignette(C.saem, C.terra + 0.3, 0.75);
+    show("#hud-cterra", C.terra - 0.6, C.norma);
+
+    // Norma
+    show("#hud-norma-head", C.norma + 0.2, C.cta);
+    show("#hud-k1", C.norma + 0.4, C.cta);
+    show("#hud-k2", C.nbr - 0.15, C.cta);
+
+    // Fecho: a vinheta volta aos poucos para emendar com o primeiro quadro
+    tl.set("#hud-end", { opacity: 1, visibility: "visible" }, C.confira - 0.05);
+    tl.fromTo("#hud-end1", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" }, C.confira);
+    tl.fromTo("#hud-end2", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" }, C.confira + 0.72);
+    tl.fromTo("#hud-end3", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" }, C.antes);
+    tl.to("#hud-vig", { opacity: 0.7, duration: 1.2, ease: "power1.inOut" }, C.end - 1.4);
+
+    window.__timelines["hud"] = tl;
+  </script>
+</template>

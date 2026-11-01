@@ -1,0 +1,30 @@
+# Mídia pesada: vídeos e áudios ficam só no computador (não sobem para o GitHub)
+*.mp4
+*.mov
+*.webm
+*.mkv
+*.mp3
+*.wav
+*.m4a
+*.aac
+*.ogg
+
+# Logs e temporários
+*.log
+*.tmp
+__pycache__/
+*.pyc
+
+# Dependências e builds
+node_modules/
+.hyperframes/
+.cache/
+
+# Segredos
+.env
+.env.*
+
+# Sistema
+Thumbs.db
+desktop.ini
+.DS_Store

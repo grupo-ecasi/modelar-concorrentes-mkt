@@ -1,0 +1,232 @@
+{
+  "inversor": {
+    "word": "inversor"
+  },
+  "motor": {
+    "word": "motor"
+  },
+  "pode": {
+    "word": "pode"
+  },
+  "abrir": {
+    "word": "abrir"
+  },
+  "nao": {
+    "word": "nao"
+  },
+  "desligar": {
+    "word": "desligar"
+  },
+  "desenergizar": {
+    "word": "desenergizar"
+  },
+  "camadas": {
+    "word": "camadas"
+  },
+  "problema": {
+    "word": "problema"
+  },
+  "painel2": {
+    "word": "painel",
+    "n": 2
+  },
+  "v380": {
+    "word": "380v"
+  },
+  "capacitores": {
+    "word": "capacitores"
+  },
+  "barramento": {
+    "word": "barramento"
+  },
+  "v540": {
+    "word": "540v"
+  },
+  "minutos": {
+    "word": "minutos"
+  },
+  "alguem": {
+    "word": "alguem"
+  },
+  "partida": {
+    "word": "partida"
+  },
+  "curto": {
+    "word": "curto"
+  },
+  "arco": {
+    "word": "arco"
+  },
+  "c1": {
+    "word": "camada"
+  },
+  "planejar": {
+    "word": "planejar"
+  },
+  "analise": {
+    "word": "analise"
+  },
+  "permissao": {
+    "word": "permissao"
+  },
+  "diagrama": {
+    "word": "diagrama"
+  },
+  "c2": {
+    "word": "camada",
+    "n": 2
+  },
+  "bloquear": {
+    "word": "bloquear"
+  },
+  "todas": {
+    "word": "todas"
+  },
+  "fontes": {
+    "word": "fontes"
+  },
+  "chave": {
+    "word": "chave"
+  },
+  "cada": {
+    "word": "cada"
+  },
+  "proprio": {
+    "word": "proprio"
+  },
+  "cadeado": {
+    "word": "cadeado"
+  },
+  "tira": {
+    "word": "tira"
+  },
+  "c3": {
+    "word": "camada",
+    "n": 3
+  },
+  "testar": {
+    "word": "testar"
+  },
+  "espere": {
+    "word": "espere"
+  },
+  "etiqueta": {
+    "word": "etiqueta"
+  },
+  "tente": {
+    "word": "tente"
+  },
+  "partida2": {
+    "word": "partida",
+    "n": 2
+  },
+  "meca": {
+    "word": "meca"
+  },
+  "barramento2": {
+    "word": "barramento",
+    "n": 2
+  },
+  "instrumento": {
+    "word": "instrumento"
+  },
+  "depois": {
+    "word": "depois",
+    "n": 2
+  },
+  "mito": {
+    "word": "display"
+  },
+  "apagou": {
+    "word": "apagou"
+  },
+  "descarregou": {
+    "word": "descarregou"
+  },
+  "naoMito": {
+    "word": "nao",
+    "n": 4
+  },
+  "display2": {
+    "word": "display",
+    "n": 2
+  },
+  "apaga": {
+    "word": "apaga"
+  },
+  "centenas": {
+    "word": "centenas"
+  },
+  "v540b": {
+    "word": "540v",
+    "n": 2
+  },
+  "nr10": {
+    "word": "nr10"
+  },
+  "baixa": {
+    "word": "baixa"
+  },
+  "mas": {
+    "word": "mas"
+  },
+  "risco": {
+    "word": "risco",
+    "n": 2
+  },
+  "norma": {
+    "word": "nr10",
+    "n": 2,
+    "shift": -1
+  },
+  "prontuario": {
+    "word": "prontuario"
+  },
+  "pie": {
+    "word": "pie"
+  },
+  "kw": {
+    "word": "75"
+  },
+  "nr12": {
+    "word": "nr12"
+  },
+  "bloqueio": {
+    "word": "bloqueio"
+  },
+  "nr1": {
+    "word": "nr1"
+  },
+  "pgr": {
+    "word": "pgr"
+  },
+  "cta": {
+    "word": "faca"
+  },
+  "treinamento": {
+    "word": "treinamento"
+  },
+  "ecasi": {
+    "word": "grupo"
+  },
+  "proximo": {
+    "word": "proximo"
+  },
+  "cabine": {
+    "word": "cabine"
+  },
+  "basta": {
+    "word": "basta"
+  },
+  "loop": {
+    "word": "desligou",
+    "n": 2
+  },
+  "confira": {
+    "word": "confira"
+  },
+  "antes": {
+    "word": "antes",
+    "n": 3
+  }
+}

@@ -1,0 +1,655 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      font-family: Poppins, sans-serif;
+      color: #0b1d3f;
+      pointer-events: none;
+    }
+    .hud-abs {
+      position: absolute;
+      opacity: 0;
+    }
+    /* Barra de progresso 1-2-3 */
+    #hud-chips {
+      position: absolute;
+      left: 54px;
+      right: 54px;
+      top: 196px;
+      display: flex;
+      gap: 14px;
+    }
+    .hud-chip {
+      flex: 1;
+      height: 88px;
+      border-radius: 12px;
+      background: #ffffff;
+      border: 2px solid #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      font-size: 28px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #6b7280;
+      box-shadow: 0 12px 28px -18px rgba(11, 29, 63, 0.45);
+      opacity: 0;
+      white-space: nowrap;
+    }
+    .hud-chip b {
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 500;
+    }
+    /* Card de dado */
+    .hud-card {
+      left: 64px;
+      top: 330px;
+      padding: 22px 32px 24px;
+      border-radius: 16px;
+      background: #ffffff;
+      border: 2px solid #e5e7eb;
+      box-shadow: 0 18px 40px -18px rgba(11, 29, 63, 0.4);
+      max-width: 900px;
+    }
+    .hud-card .v {
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 500;
+      font-size: 92px;
+      line-height: 1;
+      letter-spacing: -0.02em;
+      color: #0b1d3f;
+      white-space: nowrap;
+    }
+    .hud-card .v em {
+      font-style: normal;
+      color: #c2410c;
+    }
+    .hud-card .l {
+      margin-top: 10px;
+      font-size: 30px;
+      font-weight: 500;
+      line-height: 1.25;
+      color: #4b5563;
+    }
+    .hud-card.is-red {
+      background: #fdecec;
+      border-color: rgba(211, 47, 47, 0.35);
+    }
+    .hud-card.is-red .v {
+      color: #b3261e;
+    }
+    .hud-card.is-green {
+      background: #ecf8f2;
+      border-color: rgba(59, 178, 115, 0.45);
+    }
+    .hud-card.is-green .v {
+      color: #1f7a4c;
+    }
+    .hud-quote {
+      font-size: 52px;
+      font-weight: 600;
+      line-height: 1.15;
+      color: #0b1d3f;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .hud-quote svg {
+      width: 64px;
+      height: 64px;
+      flex: none;
+      color: #3bb273;
+    }
+    /* Títulos */
+    .hud-title {
+      left: 72px;
+      right: 72px;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 0.98;
+    }
+    .hud-title .w {
+      display: inline-block;
+    }
+    .hud-orange {
+      color: #c2410c;
+    }
+    .hud-kicker {
+      font-size: 60px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      color: #0b1d3f;
+      margin-bottom: 18px;
+    }
+    .hud-series {
+      display: inline-block;
+      margin-bottom: 26px;
+      padding: 10px 22px;
+      border-radius: 9999px;
+      background: #0b1d3f;
+      color: #ffffff;
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 500;
+      font-size: 30px;
+      letter-spacing: 0.02em;
+    }
+    .hud-series b {
+      color: #fb923c;
+      font-weight: 500;
+    }
+    /* Número gigante de seção */
+    .hud-section {
+      left: 72px;
+      top: 330px;
+    }
+    .hud-section .n {
+      font-size: 300px;
+      font-weight: 700;
+      line-height: 0.82;
+      letter-spacing: -0.06em;
+      color: #f97316;
+      display: inline-block;
+    }
+    .hud-section .t {
+      margin-top: 14px;
+      font-size: 92px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      text-transform: uppercase;
+      display: inline-block;
+      color: #0b1d3f;
+    }
+    .hud-section .s {
+      margin-top: 12px;
+      font-size: 46px;
+      font-weight: 500;
+      color: #0b1d3f;
+      display: inline-block;
+    }
+    .hud-section .pad {
+      display: inline-block;
+      padding: 6px 18px 10px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.86);
+    }
+    /* Comparação de escala (barras) */
+    .hud-cmp {
+      left: 64px;
+      right: 64px;
+      top: 330px;
+      padding: 30px 34px 34px;
+      border-radius: 16px;
+      background: #ffffff;
+      border: 2px solid #e5e7eb;
+      box-shadow: 0 18px 40px -18px rgba(11, 29, 63, 0.4);
+    }
+    .hud-cmp .row + .row {
+      margin-top: 26px;
+    }
+    .hud-cmp .lab {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 34px;
+      font-weight: 600;
+    }
+    .hud-cmp .lab .num {
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 500;
+      font-size: 44px;
+    }
+    .hud-cmp .track {
+      margin-top: 10px;
+      height: 64px;
+      border-radius: 10px;
+      background: #eef1f6;
+      display: flex;
+      overflow: hidden;
+    }
+    .hud-cmp .bar {
+      height: 100%;
+      transform-origin: 0% 50%;
+    }
+    /* Alerta */
+    #hud-alert {
+      left: 64px;
+      top: 330px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 28px;
+      border-radius: 9999px;
+      background: #fdecec;
+      border: 2px solid rgba(211, 47, 47, 0.35);
+      color: #b3261e;
+      font-size: 40px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    #hud-alert svg {
+      width: 48px;
+      height: 48px;
+    }
+    /* Norma e listas */
+    #hud-norma-head {
+      left: 64px;
+      top: 330px;
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 500;
+      font-size: 44px;
+      color: #c2410c;
+      padding: 10px 22px;
+      border-radius: 8px;
+      background: #fff1e6;
+    }
+    .hud-item {
+      left: 64px;
+      width: 760px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      padding: 24px 28px;
+      border-radius: 16px;
+      background: #ffffff;
+      border: 2px solid #e5e7eb;
+      box-shadow: 0 18px 40px -20px rgba(11, 29, 63, 0.4);
+    }
+    .hud-item .ic {
+      width: 88px;
+      height: 88px;
+      flex: none;
+      border-radius: 12px;
+      background: #fff1e6;
+      color: #f97316;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 500;
+      font-size: 60px;
+    }
+    .hud-item .ic svg {
+      width: 52px;
+      height: 52px;
+    }
+    .hud-item .tx {
+      font-size: 44px;
+      font-weight: 600;
+      line-height: 1.1;
+    }
+    .hud-item .sub {
+      display: block;
+      margin-top: 6px;
+      font-size: 32px;
+      font-weight: 500;
+      color: #c2410c;
+    }
+    /* Placa de PARE */
+    #hud-stop {
+      left: 64px;
+      top: 330px;
+      display: flex;
+      align-items: center;
+      gap: 34px;
+    }
+    #hud-stop .oct {
+      width: 300px;
+      height: 300px;
+      flex: none;
+    }
+    #hud-stop .aqui {
+      font-size: 110px;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 0.95;
+      color: #0b1d3f;
+    }
+    #hud-stop .aqui span {
+      display: block;
+      margin-top: 14px;
+      font-size: 40px;
+      font-weight: 500;
+      letter-spacing: 0;
+      color: #b3261e;
+    }
+    /* Vinheta vermelha nos momentos de perigo */
+    #hud-vig {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      box-shadow: inset 0 0 240px 40px rgba(211, 47, 47, 0.42);
+    }
+  </style>
+  <div data-hf-id="hf-nhps" id="root" data-composition-id="hud" data-width="1080" data-height="1920">
+    <div data-hf-id="hf-z83x" id="hud-vig"></div>
+
+    <!-- Abertura -->
+    <div data-hf-id="hf-463r" id="hud-hook" class="hud-abs hud-title" style="top: 236px; font-size: 132px">
+      <div data-hf-id="hf-v8ya" class="hud-series">Série Energia Elétrica · <b data-hf-id="hf-v6hs">EP 1/4</b></div>
+      <div data-hf-id="hf-jnvp" class="hud-kicker">Fechou o chuveiro.</div>
+      <span data-hf-id="hf-7geq" class="w">Pode</span> <span data-hf-id="hf-om1z" class="w">dar</span><br data-hf-id="hf-x5px" />
+      <span data-hf-id="hf-23ks" class="w hud-orange">choque?</span>
+    </div>
+    <div data-hf-id="hf-fxjg" id="hud-pode" class="hud-abs hud-title hud-orange" style="top: 220px; font-size: 300px">Pode.</div>
+    <div data-hf-id="hf-8i9g" id="hud-live" class="hud-abs hud-card is-red">
+      <div data-hf-id="hf-boy1" class="v">127 · 220 V</div>
+      <div data-hf-id="hf-tvan" class="l">os fios da parede continuam com energia</div>
+    </div>
+
+    <!-- Barra 1-2-3 -->
+    <div data-hf-id="hf-japm" id="hud-chips">
+      <div data-hf-id="hf-1afg" class="hud-chip" id="hud-chip1"><b data-hf-id="hf-t4n0">1</b>Desligar</div>
+      <div data-hf-id="hf-8d5m" class="hud-chip" id="hud-chip2"><b data-hf-id="hf-rxpx">2</b>Conferir</div>
+      <div data-hf-id="hf-2vry" class="hud-chip" id="hud-chip3"><b data-hf-id="hf-sc0y">3</b>Saber parar</div>
+    </div>
+
+    <!-- Problema -->
+    <div data-hf-id="hf-yoha" id="hud-c34" class="hud-abs hud-card">
+      <div data-hf-id="hf-aonp" class="v"><em data-hf-id="hf-cjvl" id="hud-v34">0</em> A</div>
+      <div data-hf-id="hf-sm7y" class="l">chuveiro de 7.500 W ÷ 220 V</div>
+    </div>
+    <div data-hf-id="hf-q3mf" id="hud-cmp1" class="hud-abs hud-cmp">
+      <div data-hf-id="hf-thy4" class="row">
+        <div data-hf-id="hf-mnnx" class="lab"><span data-hf-id="hf-7tew">chuveiro</span><span data-hf-id="hf-c4lr" class="num hud-orange">34 A</span></div>
+        <div data-hf-id="hf-64lp" class="track"><div data-hf-id="hf-t9ap" class="bar" id="hud-b-show" style="width: 100%; background: #f97316"></div></div>
+      </div>
+      <div data-hf-id="hf-lt04" class="row">
+        <div data-hf-id="hf-8io1" class="lab"><span data-hf-id="hf-tf0l" id="hud-cmp1-lab">geladeira + TV + micro-ondas</span><span data-hf-id="hf-omvc" class="num" id="hud-cmp1-num">≈ 13 A</span></div>
+        <div data-hf-id="hf-gav5" class="track">
+          <div data-hf-id="hf-argq" class="bar" id="hud-b-gel" style="width: 3.5%; background: #2563eb"></div>
+          <div data-hf-id="hf-8gg5" class="bar" id="hud-b-tv" style="width: 2.4%; background: #0b1d3f"></div>
+          <div data-hf-id="hf-ly2w" class="bar" id="hud-b-mic" style="width: 32.4%; background: #64748b"></div>
+        </div>
+      </div>
+    </div>
+    <div data-hf-id="hf-w3c2" id="hud-c10" class="hud-abs hud-card is-red">
+      <div data-hf-id="hf-f3sz" class="v">10 mA</div>
+      <div data-hf-id="hf-knn5" class="l">o músculo trava · não consegue soltar</div>
+    </div>
+    <div data-hf-id="hf-o8gm" id="hud-c50" class="hud-abs hud-card is-red">
+      <div data-hf-id="hf-ydpr" class="v">50 mA</div>
+      <div data-hf-id="hf-lznv" class="l">o coração pode parar</div>
+    </div>
+
+    <!-- Camada 1 -->
+    <div data-hf-id="hf-dzgn" id="hud-s1" class="hud-abs hud-section">
+      <div data-hf-id="hf-mfcd" class="n">1</div><br data-hf-id="hf-rsrt" />
+      <div data-hf-id="hf-1b88" class="t pad">Desligar</div><br data-hf-id="hf-szow" />
+      <div data-hf-id="hf-q1p3" class="s pad">no quadro de luz</div>
+    </div>
+    <div data-hf-id="hf-m0pi" id="hud-q1" class="hud-abs hud-card">
+      <div data-hf-id="hf-t7i6" class="hud-quote">
+        <svg data-hf-id="hf-12oc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-2q26" d="M20 6 9 17l-5-5" /></svg>
+        Só o disjuntor<br data-hf-id="hf-sldv" />corta a energia.
+      </div>
+    </div>
+
+    <!-- Camada 2 -->
+    <div data-hf-id="hf-33z0" id="hud-s2" class="hud-abs hud-section">
+      <div data-hf-id="hf-nm9g" class="n">2</div><br data-hf-id="hf-qluq" />
+      <div data-hf-id="hf-q42d" class="t pad">Conferir</div><br data-hf-id="hf-q7jp" />
+      <div data-hf-id="hf-76uc" class="s pad">a resistência e os fios</div>
+    </div>
+    <div data-hf-id="hf-ijr2" id="hud-cvolt" class="hud-abs hud-card">
+      <div data-hf-id="hf-j9ms" class="v"><em data-hf-id="hf-kn79">127</em> ou <em data-hf-id="hf-2i6d">220</em> V</div>
+      <div data-hf-id="hf-mov6" class="l">a mesma tensão do chuveiro</div>
+    </div>
+    <div data-hf-id="hf-6uoa" id="hud-cburn" class="hud-abs hud-card is-red">
+      <div data-hf-id="hf-npcw" class="v">fio queimado?</div>
+      <div data-hf-id="hf-fvgq" class="l">o problema é na instalação</div>
+    </div>
+
+    <!-- Camada 3 -->
+    <div data-hf-id="hf-3vmt" id="hud-s3" class="hud-abs hud-section">
+      <div data-hf-id="hf-n7yf" class="n">3</div><br data-hf-id="hf-regs" />
+      <div data-hf-id="hf-0jm4" class="t pad">Saber parar</div><br data-hf-id="hf-r05r" />
+      <div data-hf-id="hf-ek2e" class="s pad">na dúvida, não mexa</div>
+    </div>
+    <div data-hf-id="hf-77vs" id="hud-a1" class="hud-abs hud-item" style="top: 330px">
+      <div data-hf-id="hf-h2dh" class="ic">?</div>
+      <div data-hf-id="hf-li00" class="tx">Achou o disjuntor<br data-hf-id="hf-p0mm" />do chuveiro?</div>
+    </div>
+    <div data-hf-id="hf-kcfg" id="hud-a2" class="hud-abs hud-item" style="top: 520px">
+      <div data-hf-id="hf-wpzt" class="ic">?</div>
+      <div data-hf-id="hf-p4os" class="tx">Dá para confirmar<br data-hf-id="hf-ombl" />que está sem tensão?</div>
+    </div>
+    <div data-hf-id="hf-b40e" id="hud-stop" class="hud-abs">
+      <svg data-hf-id="hf-7sg4" class="oct" viewBox="0 0 100 100">
+        <polygon data-hf-id="hf-jy9a" points="29.3,2 70.7,2 98,29.3 98,70.7 70.7,98 29.3,98 2,70.7 2,29.3" fill="#d32f2f" stroke="#ffffff" stroke-width="4" />
+        <text data-hf-id="hf-gqkb" x="50" y="61" text-anchor="middle" font-family="Poppins, sans-serif" font-weight="700" font-size="28" fill="#ffffff">PARE</text>
+      </svg>
+      <div data-hf-id="hf-r0hu" class="aqui">aqui.<span data-hf-id="hf-e15u">chame um eletricista</span></div>
+    </div>
+
+    <!-- Mito -->
+    <div data-hf-id="hf-cfvt" id="hud-alert" class="hud-abs">
+      <svg data-hf-id="hf-8nvo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-fn22" d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" /><path data-hf-id="hf-mlkx" d="M12 9v4" /><path data-hf-id="hf-c2s1" d="M12 17h.01" /></svg>
+      Atenção
+    </div>
+    <div data-hf-id="hf-obdu" id="hud-cneq" class="hud-abs hud-card is-red" style="top: 460px">
+      <div data-hf-id="hf-lj7m" class="v">127 V ≠ 220 V</div>
+      <div data-hf-id="hf-6aju" class="l">resistência não é tudo igual</div>
+    </div>
+    <div data-hf-id="hf-hfoz" id="hud-cmp2" class="hud-abs hud-cmp" style="top: 460px">
+      <div data-hf-id="hf-km31" class="row">
+        <div data-hf-id="hf-9pl4" class="lab"><span data-hf-id="hf-9g2r">resistência certa</span><span data-hf-id="hf-0ira" class="num">5.500 W</span></div>
+        <div data-hf-id="hf-hhs8" class="track"><div data-hf-id="hf-qcxt" class="bar" id="hud-b-ok" style="width: 33.3%; background: #3bb273"></div></div>
+      </div>
+      <div data-hf-id="hf-l0e2" class="row">
+        <div data-hf-id="hf-9ba3" class="lab"><span data-hf-id="hf-6hzx">127 V ligada em 220 V</span><span data-hf-id="hf-6lbp" class="num" style="color: #b3261e"><span data-hf-id="hf-7s2n" id="hud-v16">0</span> W</span></div>
+        <div data-hf-id="hf-h3h7" class="track"><div data-hf-id="hf-k3us" class="bar" id="hud-b-bad" style="width: 100%; background: #d32f2f"></div></div>
+      </div>
+      <div data-hf-id="hf-brbx" class="row" id="hud-3x" style="display: flex; align-items: baseline; gap: 24px">
+        <div data-hf-id="hf-k9bn" style="font-family: 'JetBrains Mono', monospace; font-weight: 500; font-size: 110px; line-height: 1; color: #b3261e">3×</div>
+        <div data-hf-id="hf-ne23" style="font-family: 'JetBrains Mono', monospace; font-weight: 500; font-size: 36px; color: #4b5563">(220 ÷ 127)² ≈ 3</div>
+      </div>
+    </div>
+
+    <!-- Norma -->
+    <div data-hf-id="hf-4khf" id="hud-norma-head" class="hud-abs">A NBR 5410 exige</div>
+    <div data-hf-id="hf-lp9v" id="hud-k1" class="hud-abs hud-item" style="top: 450px">
+      <div data-hf-id="hf-w92w" class="ic"><svg data-hf-id="hf-h0hq" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-jet5" d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" /></svg></div>
+      <div data-hf-id="hf-vb6e" class="tx">Circuito exclusivo<span data-hf-id="hf-d36n" class="sub">só para o chuveiro</span></div>
+    </div>
+    <div data-hf-id="hf-r3uj" id="hud-k2" class="hud-abs hud-item" style="top: 640px">
+      <div data-hf-id="hf-yz80" class="ic"><svg data-hf-id="hf-pmle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-49ze" d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" /></svg></div>
+      <div data-hf-id="hf-d7rb" class="tx">Proteção DR<span data-hf-id="hf-wzsb" class="sub">30 mA · contra choque</span></div>
+    </div>
+
+    <!-- Fecho em loop -->
+    <div data-hf-id="hf-oiil" id="hud-end" class="hud-abs hud-title" style="top: 330px; font-size: 92px">
+      <span data-hf-id="hf-mw7i" class="w" id="hud-end1">Confira as</span><br data-hf-id="hf-qsyj" />
+      <span data-hf-id="hf-z51a" class="w hud-orange" id="hud-end2">3 camadas</span><br data-hf-id="hf-r79k" />
+      <span data-hf-id="hf-hz81" class="w" id="hud-end3">antes de encostar.</span>
+    </div>
+  </div>
+  <script>
+    /*CUES*/
+    const C = {
+      "hook": 0.0,
+      "resist": 1.68,
+      "choque": 3.28,
+      "pode": 4,
+      "fios": 4.88,
+      "camadas": 8,
+      "problema": 10.8,
+      "puxa": 12.16,
+      "a34": 12.88,
+      "geladeira": 14.96,
+      "tv": 15.92,
+      "micro": 16.56,
+      "juntos": 17.44,
+      "molhada": 18.72,
+      "ma10": 20.64,
+      "trava": 22.4,
+      "ma50": 23.52,
+      "coracao": 24.4,
+      "c1": 26,
+      "desligar": 27.12,
+      "registro": 29.12,
+      "chave": 30.08,
+      "cortam": 31.2,
+      "disjuntor": 33.04,
+      "c2": 34.72,
+      "conferir": 36,
+      "modelo": 38.16,
+      "tensao": 39.28,
+      "v127": 40,
+      "v220": 41.28,
+      "fio": 42.88,
+      "queimado": 43.28,
+      "instalacao": 45.12,
+      "c3": 46.08,
+      "saber": 47.52,
+      "achou": 48.88,
+      "confirmar": 50.8,
+      "pare": 52.56,
+      "mito": 53.84,
+      "naoMito": 55.68,
+      "ligada": 58.08,
+      "esquenta": 59.68,
+      "vezes": 60.64,
+      "queimar": 62,
+      "norma": 63.49,
+      "exige": 65.81,
+      "circuito": 66.37,
+      "protecao": 68.13,
+      "cta": 69.57,
+      "eletricista": 71.01,
+      "segue": 72.69,
+      "proximo": 74.45,
+      "loop": 77.41,
+      "confira": 78.93,
+      "antes": 80.85,
+      "end": 82.87
+    };
+    /*END-CUES*/
+
+    const tl = gsap.timeline({ paused: true });
+    const $ = (s) => document.querySelector(s);
+    const ENTER = "expo.out";
+
+    // Entrada da marca: 0,7 s, opacidade + 24 px. Saída mais curta, com desfoque.
+    function show(sel, a, b, opts = {}) {
+      const el = $(sel);
+      const dy = opts.dy ?? 24;
+      tl.set(el, { visibility: "visible" }, 0);
+      tl.fromTo(el, { opacity: 0, y: dy, filter: "blur(6px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: opts.dur ?? 0.7, ease: ENTER }, a);
+      if (b != null) {
+        tl.to(el, { opacity: 0, y: -10, filter: "blur(6px)", duration: 0.25, ease: "power2.in" }, b - 0.25);
+        tl.set(el, { visibility: "hidden" }, b);
+      }
+    }
+    function section(sel, a, b) {
+      const el = $(sel);
+      tl.fromTo(el, { opacity: 0 }, { opacity: 1, duration: 0.01 }, a);
+      tl.fromTo(el.querySelector(".n"), { scale: 0.55, opacity: 0, filter: "blur(14px)", transformOrigin: "0% 80%" }, { scale: 1, opacity: 1, filter: "blur(0px)", duration: 0.55, ease: "expo.out" }, a);
+      tl.fromTo(el.querySelector(".t"), { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.6, ease: ENTER }, a + 0.22);
+      tl.fromTo(el.querySelector(".s"), { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.6, ease: ENTER }, a + 0.36);
+      tl.to(el, { opacity: 0, y: -16, filter: "blur(8px)", duration: 0.25, ease: "power2.in" }, b - 0.25);
+      tl.set(el, { visibility: "hidden" }, b);
+    }
+    function count(sel, to, at, dur = 0.8, fmt = (v) => String(Math.round(v))) {
+      const p = { v: 0 };
+      tl.fromTo(p, { v: 0 }, { v: to, duration: dur, ease: "power2.out", onUpdate: () => ($(sel).textContent = fmt(p.v)) }, at);
+    }
+    function bar(sel, at, dur = 0.6) {
+      tl.fromTo(sel, { scaleX: 0 }, { scaleX: 1, duration: dur, ease: "power3.out" }, at);
+    }
+    const CHIP = {
+      off: { backgroundColor: "#ffffff", borderColor: "#e5e7eb", color: "#6b7280" },
+      on: { backgroundColor: "#c2410c", borderColor: "#c2410c", color: "#ffffff" },
+      done: { backgroundColor: "#fff1e6", borderColor: "#fed7b5", color: "#c2410c" },
+    };
+    function chip(n, state, at) {
+      tl.to("#hud-chip" + n, { ...CHIP[state], duration: 0.3, ease: "power2.inOut" }, at);
+    }
+    function vignette(a, b, peak = 1) {
+      tl.to("#hud-vig", { opacity: peak, duration: 0.5, ease: "power2.out" }, a);
+      tl.to("#hud-vig", { opacity: 0, duration: 0.6, ease: "power2.inOut" }, b - 0.6);
+    }
+
+    // Abertura (o primeiro quadro já mostra o título, para o loop emendar)
+    tl.set("#hud-hook", { opacity: 1 }, 0);
+    tl.set("#hud-vig", { opacity: 0.7 }, 0);
+    tl.to("#hud-hook", { opacity: 0, filter: "blur(10px)", duration: 0.2, ease: "power2.in" }, C.pode - 0.12);
+    tl.set("#hud-hook", { visibility: "hidden" }, C.pode + 0.1);
+    tl.fromTo("#hud-pode", { opacity: 0, scale: 1.25, filter: "blur(12px)", transformOrigin: "0% 50%" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.3, ease: "expo.out" }, C.pode);
+    tl.to("#hud-pode", { opacity: 0, filter: "blur(8px)", duration: 0.2, ease: "power2.in" }, C.fios - 0.1);
+    tl.set("#hud-pode", { visibility: "hidden" }, C.fios + 0.1);
+    tl.to("#hud-vig", { opacity: 0, duration: 0.6, ease: "power2.inOut" }, C.camadas);
+    show("#hud-live", C.fios + 0.1, C.problema);
+
+    // Barra 1-2-3: entra em "três camadas"
+    [1, 2, 3].forEach((n, i) => {
+      tl.fromTo("#hud-chip" + n, { opacity: 0, y: -20 }, { opacity: 1, y: 0, duration: 0.6, ease: ENTER }, C.camadas + i * 0.12);
+    });
+    chip(1, "on", C.c1);
+    chip(1, "done", C.c2);
+    chip(2, "on", C.c2);
+    chip(2, "done", C.c3);
+    chip(3, "on", C.c3);
+    chip(3, "done", C.mito);
+    tl.to("#hud-chips", { opacity: 0, y: -20, duration: 0.3, ease: "power2.in" }, C.cta - 0.1);
+    tl.fromTo("#hud-chips", { opacity: 0, y: -20 }, { opacity: 1, y: 0, duration: 0.6, ease: ENTER, immediateRender: false }, C.loop + 0.1);
+    chip(1, "on", C.confira + 0.56);
+    chip(2, "on", C.confira + 0.72);
+    chip(3, "on", C.confira + 0.96);
+
+    // Problema: 34 A e a comparação com os aparelhos da casa
+    show("#hud-c34", C.a34 - 0.2, C.geladeira - 0.1);
+    count("#hud-v34", 34, C.a34 - 0.1);
+    show("#hud-cmp1", C.geladeira - 0.1, C.molhada);
+    bar("#hud-b-show", C.geladeira, 0.7);
+    bar("#hud-b-gel", C.geladeira + 0.3, 0.4);
+    bar("#hud-b-tv", C.tv, 0.4);
+    bar("#hud-b-mic", C.micro, 0.6);
+    tl.fromTo(["#hud-cmp1-lab", "#hud-cmp1-num"], { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power2.out" }, C.juntos - 0.1);
+    show("#hud-c10", C.ma10 + 0.1, C.ma50);
+    show("#hud-c50", C.ma50 + 0.1, C.c1);
+    vignette(C.coracao, C.c1 + 0.2, 0.8);
+
+    // Camadas
+    section("#hud-s1", C.c1, C.registro - 0.1);
+    show("#hud-q1", C.disjuntor - 0.4, C.c2);
+    section("#hud-s2", C.c2, C.modelo + 0.2);
+    show("#hud-cvolt", C.tensao, C.fio - 0.1);
+    show("#hud-cburn", C.queimado, C.c3);
+    section("#hud-s3", C.c3, C.achou - 0.1);
+    show("#hud-a1", C.achou - 0.2, C.pare);
+    show("#hud-a2", C.confirmar - 0.2, C.pare);
+    tl.fromTo("#hud-stop", { opacity: 0, scale: 0.7, rotation: -8, transformOrigin: "20% 50%" }, { opacity: 1, scale: 1, rotation: 0, duration: 0.5, ease: "back.out(2)" }, C.pare - 0.05);
+    tl.to("#hud-stop", { opacity: 0, filter: "blur(6px)", duration: 0.25, ease: "power2.in" }, C.mito - 0.25);
+    tl.set("#hud-stop", { visibility: "hidden" }, C.mito);
+
+    // Mito: resistência de 127 V em 220 V
+    show("#hud-alert", C.mito, C.norma, { dur: 0.45 });
+    show("#hud-cneq", C.naoMito, C.esquenta - 0.1);
+    show("#hud-cmp2", C.esquenta - 0.1, C.norma);
+    bar("#hud-b-ok", C.esquenta, 0.5);
+    bar("#hud-b-bad", C.esquenta + 0.3, 0.9);
+    count("#hud-v16", 16500, C.esquenta + 0.3, 0.9, (v) => (Math.round(v / 100) * 100).toLocaleString("pt-BR"));
+    tl.fromTo("#hud-3x", { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.5, ease: ENTER }, C.vezes - 0.1);
+    vignette(C.queimar - 0.2, C.norma + 0.2, 0.85);
+
+    // Norma
+    show("#hud-norma-head", C.norma + 0.3, C.cta);
+    show("#hud-k1", C.circuito - 0.2, C.cta);
+    show("#hud-k2", C.protecao - 0.1, C.cta);
+
+    // Fecho: a vinheta volta aos poucos para emendar com o primeiro quadro
+    tl.set("#hud-end", { opacity: 1, visibility: "visible" }, C.confira - 0.05);
+    tl.fromTo("#hud-end1", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" }, C.confira);
+    tl.fromTo("#hud-end2", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" }, C.confira + 0.72);
+    tl.fromTo("#hud-end3", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" }, C.antes);
+    tl.to("#hud-vig", { opacity: 0.7, duration: 1.2, ease: "power1.inOut" }, C.end - 1.4);
+
+    window.__timelines["hud"] = tl;
+  </script>
+</template>

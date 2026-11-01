@@ -1,0 +1,222 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Barlow Condensed";
+      font-weight: 800;
+      src: url("assets/fonts/BarlowCondensed-800.woff2") format("woff2");
+    }
+    @font-face {
+      font-family: "Barlow Condensed";
+      font-weight: 900;
+      src: url("assets/fonts/BarlowCondensed-900.woff2") format("woff2");
+    }
+    @font-face {
+      font-family: "Bricolage Grotesque";
+      font-weight: 700;
+      src: url("assets/fonts/BricolageGrotesque-700.woff2") format("woff2");
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+    .lb-pill {
+      position: absolute;
+      left: 72px;
+      top: 200px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      padding: 14px 32px 12px 18px;
+      border-radius: 999px;
+      font-family: "Barlow Condensed", sans-serif;
+      font-weight: 900;
+      font-size: 64px;
+      line-height: 1;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      color: #ffffff;
+      box-shadow: 0 18px 40px -14px rgba(11, 18, 32, 0.55);
+      transform-origin: 0% 50%;
+    }
+    .lb-pill svg {
+      width: 62px;
+      height: 62px;
+      flex: none;
+    }
+    #lb-bad {
+      background: #d93b41;
+    }
+    #lb-good {
+      background: #1a9e4b;
+      opacity: 0;
+    }
+    #lb-rings {
+      position: absolute;
+      inset: 0;
+      width: 1080px;
+      height: 1920px;
+    }
+    #lb-rings ellipse {
+      fill: none;
+      stroke: #ff4f56;
+      stroke-width: 9;
+      stroke-linecap: round;
+      stroke-dasharray: 1;
+      stroke-dashoffset: 1;
+      filter: drop-shadow(0 4px 10px rgba(11, 18, 32, 0.35));
+    }
+    .lb-tag {
+      position: absolute;
+      padding: 12px 26px 10px;
+      border-radius: 12px;
+      background: #0b1220;
+      color: #ffffff;
+      font-family: "Barlow Condensed", sans-serif;
+      font-weight: 800;
+      font-size: 54px;
+      line-height: 1;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      opacity: 0;
+      box-shadow: 0 14px 30px -10px rgba(11, 18, 32, 0.6);
+    }
+    .lb-tag::before {
+      content: "";
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      margin: 0 14px 6px 0;
+      border-radius: 50%;
+      background: #ff4f56;
+      vertical-align: middle;
+    }
+    #lb-head {
+      position: absolute;
+      left: 72px;
+      right: 72px;
+      top: 400px;
+      font-family: "Barlow Condensed", sans-serif;
+      font-weight: 900;
+      font-size: 124px;
+      line-height: 0.95;
+      text-transform: uppercase;
+      color: #ffffff;
+      text-shadow: 0 6px 30px rgba(11, 18, 32, 0.75);
+    }
+    #lb-head span {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 6px 24px 0;
+      border-radius: 12px;
+      background: #2457d6;
+      text-shadow: none;
+      box-shadow: 0 18px 40px -12px rgba(22, 60, 133, 0.6);
+    }
+    .lb-head-l {
+      opacity: 0;
+    }
+    #lb-steps {
+      position: absolute;
+      left: 72px;
+      top: 800px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+    .lb-step {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      padding: 18px 34px 18px 22px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: 0 16px 34px -14px rgba(11, 18, 32, 0.45);
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-weight: 700;
+      font-size: 46px;
+      color: #0b1220;
+      opacity: 0;
+    }
+    .lb-step b {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 74px;
+      height: 74px;
+      border-radius: 14px;
+      background: #2457d6;
+      color: #ffffff;
+      font-family: "Barlow Condensed", sans-serif;
+      font-weight: 900;
+      font-size: 46px;
+    }
+  </style>
+  <div data-hf-id="hf-npio" id="root" data-composition-id="labels" data-width="1080" data-height="1920" data-layout-allow-overlap>
+    <!-- Contornos no estrago (posições casadas com tools/bake_wall.py) -->
+    <svg data-hf-id="hf-g0le" id="lb-rings" viewBox="0 0 1080 1920">
+      <ellipse data-hf-id="hf-q03l" id="lb-r-agua" cx="230" cy="640" rx="120" ry="220" pathLength="1" />
+      <ellipse data-hf-id="hf-a7ys" id="lb-r-estufa" cx="720" cy="800" rx="165" ry="150" pathLength="1" />
+      <ellipse data-hf-id="hf-83dz" id="lb-r-descasca" cx="360" cy="1080" rx="215" ry="160" pathLength="1" />
+    </svg>
+    <div data-hf-id="hf-1afk" id="lb-t-agua" class="lb-tag" style="left: 60px; top: 330px">Puxa água</div>
+    <div data-hf-id="hf-aq0u" id="lb-t-estufa" class="lb-tag" style="left: 640px; top: 570px">Estufa</div>
+    <div data-hf-id="hf-lqy9" id="lb-t-descasca" class="lb-tag" style="left: 140px; top: 1250px">Descasca</div>
+
+    <div data-hf-id="hf-oria" id="lb-bad" class="lb-pill">
+      <svg data-hf-id="hf-yr0a" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round"><circle data-hf-id="hf-lf6y" cx="12" cy="12" r="10.5" stroke-width="2" /><path data-hf-id="hf-ashy" d="M8 8l8 8M16 8l-8 8" /></svg>
+      Massa comum na chuva
+    </div>
+    <div data-hf-id="hf-nlkj" id="lb-good" class="lb-pill">
+      <svg data-hf-id="hf-z1g6" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle data-hf-id="hf-ove6" cx="12" cy="12" r="10.5" stroke-width="2" /><path data-hf-id="hf-pgfp" d="M7 12.5l3.2 3.2L17 9" /></svg>
+      Do jeito certo
+    </div>
+
+    <div data-hf-id="hf-ijtm" id="lb-head"><div data-hf-id="hf-yy7q" id="lb-h1" class="lb-head-l">Mesma chuva.</div><span data-hf-id="hf-hrq3" id="lb-h2" class="lb-head-l">Parede inteira.</span></div>
+    <div data-hf-id="hf-rrsd" id="lb-steps">
+      <div data-hf-id="hf-r30e" id="lb-s1" class="lb-step"><b data-hf-id="hf-27a2">01</b>Selador</div>
+      <div data-hf-id="hf-jnre" id="lb-s2" class="lb-step"><b data-hf-id="hf-2ll3">02</b>Massa acrílica</div>
+      <div data-hf-id="hf-89ss" id="lb-s3" class="lb-step"><b data-hf-id="hf-2zw4">03</b>Tinta para fachada</div>
+    </div>
+  </div>
+  <script>
+    // A cena começa em 6,0 s. Deixas em tempo GLOBAL da narração (assets/transcript.json); para ressincronizar, mude só aqui.
+    const START = 6.0;
+    const CUE = {
+      chuva: 6.2, // "Na chuva"
+      puxaAgua: 6.96,
+      estufa: 7.94,
+      descasca: 8.72,
+      sai: 9.45,
+      certo: 10.32, // "Do jeito certo"
+      selador: 10.96,
+      massaAcrilica: 11.84,
+      tinta: 13.04,
+      mesmaChuva: 14.48,
+      paredeInteira: 15.68,
+    };
+    const at = (t) => t - START;
+    const tl = gsap.timeline({ paused: true });
+
+    tl.fromTo("#lb-bad", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(2)" }, at(CUE.chuva));
+    [
+      ["#lb-r-agua", "#lb-t-agua", CUE.puxaAgua],
+      ["#lb-r-estufa", "#lb-t-estufa", CUE.estufa],
+      ["#lb-r-descasca", "#lb-t-descasca", CUE.descasca],
+    ].forEach(([ring, tag, t]) => {
+      tl.to(ring, { strokeDashoffset: 0, duration: 0.4, ease: "power2.out" }, at(t));
+      tl.fromTo(tag, { opacity: 0, y: 20, scale: 0.85 }, { opacity: 1, y: 0, scale: 1, duration: 0.3, ease: "back.out(2)" }, at(t) + 0.06);
+    });
+    tl.to(["#lb-rings", ".lb-tag", "#lb-bad"], { opacity: 0, duration: 0.22, ease: "power2.in" }, at(CUE.sai));
+
+    tl.fromTo("#lb-good", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(2)" }, at(CUE.certo));
+    tl.fromTo("#lb-s1", { opacity: 0, x: -60 }, { opacity: 1, x: 0, duration: 0.35, ease: "expo.out" }, at(CUE.selador));
+    tl.fromTo("#lb-s2", { opacity: 0, x: -60 }, { opacity: 1, x: 0, duration: 0.35, ease: "expo.out" }, at(CUE.massaAcrilica));
+    tl.fromTo("#lb-s3", { opacity: 0, x: -60 }, { opacity: 1, x: 0, duration: 0.35, ease: "expo.out" }, at(CUE.tinta));
+    tl.fromTo("#lb-h1", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.4, ease: "expo.out" }, at(CUE.mesmaChuva));
+    tl.fromTo("#lb-h2", { opacity: 0, y: 40, scale: 1.2 }, { opacity: 1, y: 0, scale: 1, duration: 0.35, ease: "expo.out", transformOrigin: "0% 50%" }, at(CUE.paredeInteira));
+
+    window.__timelines["labels"] = tl;
+  </script>
+</template>

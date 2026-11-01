@@ -1,0 +1,1184 @@
+[
+  {
+    "id": "w0",
+    "text": "Pintou",
+    "start": 0.16,
+    "end": 0.64
+  },
+  {
+    "id": "w1",
+    "text": "por",
+    "start": 0.64,
+    "end": 0.8
+  },
+  {
+    "id": "w2",
+    "text": "cima",
+    "start": 0.8,
+    "end": 0.96
+  },
+  {
+    "id": "w3",
+    "text": "do",
+    "start": 0.96,
+    "end": 1.04
+  },
+  {
+    "id": "w4",
+    "text": "mofo.",
+    "start": 1.04,
+    "end": 1.52
+  },
+  {
+    "id": "w5",
+    "text": "Ele",
+    "start": 1.52,
+    "end": 1.76
+  },
+  {
+    "id": "w6",
+    "text": "volta?",
+    "start": 1.76,
+    "end": 2.24
+  },
+  {
+    "id": "w7",
+    "text": "Volta.",
+    "start": 2.48,
+    "end": 3.36
+  },
+  {
+    "id": "w8",
+    "text": "A",
+    "start": 3.36,
+    "end": 3.6
+  },
+  {
+    "id": "w9",
+    "text": "mancha",
+    "start": 3.6,
+    "end": 4.16
+  },
+  {
+    "id": "w10",
+    "text": "some,",
+    "start": 4.16,
+    "end": 4.72
+  },
+  {
+    "id": "w11",
+    "text": "mas",
+    "start": 4.72,
+    "end": 4.96
+  },
+  {
+    "id": "w12",
+    "text": "o",
+    "start": 4.96,
+    "end": 5.04
+  },
+  {
+    "id": "w13",
+    "text": "fungo",
+    "start": 5.04,
+    "end": 5.44
+  },
+  {
+    "id": "w14",
+    "text": "continua",
+    "start": 5.44,
+    "end": 5.92
+  },
+  {
+    "id": "w15",
+    "text": "vivo",
+    "start": 5.92,
+    "end": 6.32
+  },
+  {
+    "id": "w16",
+    "text": "embaixo",
+    "start": 6.32,
+    "end": 6.72
+  },
+  {
+    "id": "w17",
+    "text": "da",
+    "start": 6.72,
+    "end": 6.88
+  },
+  {
+    "id": "w18",
+    "text": "tinta.",
+    "start": 6.88,
+    "end": 7.6
+  },
+  {
+    "id": "w19",
+    "text": "Existem",
+    "start": 7.6,
+    "end": 8.08
+  },
+  {
+    "id": "w20",
+    "text": "três",
+    "start": 8.08,
+    "end": 8.4
+  },
+  {
+    "id": "w21",
+    "text": "camadas",
+    "start": 8.4,
+    "end": 8.88
+  },
+  {
+    "id": "w22",
+    "text": "para",
+    "start": 8.88,
+    "end": 9.12
+  },
+  {
+    "id": "w23",
+    "text": "ele",
+    "start": 9.12,
+    "end": 9.28
+  },
+  {
+    "id": "w24",
+    "text": "não",
+    "start": 9.28,
+    "end": 9.44
+  },
+  {
+    "id": "w25",
+    "text": "voltar.",
+    "start": 9.44,
+    "end": 10
+  },
+  {
+    "id": "w26",
+    "text": "Primeiro,",
+    "start": 10.24,
+    "end": 10.88
+  },
+  {
+    "id": "w27",
+    "text": "o",
+    "start": 10.88,
+    "end": 11.04
+  },
+  {
+    "id": "w28",
+    "text": "problema.",
+    "start": 11.04,
+    "end": 11.68
+  },
+  {
+    "id": "w29",
+    "text": "Mofo",
+    "start": 11.84,
+    "end": 12.32
+  },
+  {
+    "id": "w30",
+    "text": "é",
+    "start": 12.32,
+    "end": 12.4
+  },
+  {
+    "id": "w31",
+    "text": "um",
+    "start": 12.4,
+    "end": 12.48
+  },
+  {
+    "id": "w32",
+    "text": "fungo.",
+    "start": 12.48,
+    "end": 13.04
+  },
+  {
+    "id": "w33",
+    "text": "Ele",
+    "start": 13.04,
+    "end": 13.28
+  },
+  {
+    "id": "w34",
+    "text": "cresce",
+    "start": 13.28,
+    "end": 13.68
+  },
+  {
+    "id": "w35",
+    "text": "quando",
+    "start": 13.68,
+    "end": 13.84
+  },
+  {
+    "id": "w36",
+    "text": "a",
+    "start": 13.84,
+    "end": 13.92
+  },
+  {
+    "id": "w37",
+    "text": "umidade",
+    "start": 13.92,
+    "end": 14.4
+  },
+  {
+    "id": "w38",
+    "text": "do",
+    "start": 14.4,
+    "end": 14.48
+  },
+  {
+    "id": "w39",
+    "text": "ar",
+    "start": 14.48,
+    "end": 14.72
+  },
+  {
+    "id": "w40",
+    "text": "passa",
+    "start": 14.72,
+    "end": 15.04
+  },
+  {
+    "id": "w41",
+    "text": "de",
+    "start": 15.04,
+    "end": 15.2
+  },
+  {
+    "id": "w42",
+    "text": "um",
+    "start": 15.2,
+    "end": 15.36
+  },
+  {
+    "id": "w43",
+    "text": "70%",
+    "start": 15.36,
+    "end": 16.08
+  },
+  {
+    "id": "w44",
+    "text": "por",
+    "start": 16.24,
+    "end": 16.48
+  },
+  {
+    "id": "w45",
+    "text": "muito",
+    "start": 16.48,
+    "end": 16.8
+  },
+  {
+    "id": "w46",
+    "text": "tempo",
+    "start": 16.8,
+    "end": 17.12
+  },
+  {
+    "id": "w47",
+    "text": "e",
+    "start": 17.44,
+    "end": 17.76
+  },
+  {
+    "id": "w48",
+    "text": "cria",
+    "start": 17.76,
+    "end": 18.16
+  },
+  {
+    "id": "w49",
+    "text": "raízes",
+    "start": 18.16,
+    "end": 18.72
+  },
+  {
+    "id": "w50",
+    "text": "dentro",
+    "start": 18.72,
+    "end": 18.96
+  },
+  {
+    "id": "w51",
+    "text": "dos",
+    "start": 18.96,
+    "end": 19.12
+  },
+  {
+    "id": "w52",
+    "text": "poros",
+    "start": 19.12,
+    "end": 19.52
+  },
+  {
+    "id": "w53",
+    "text": "do",
+    "start": 19.52,
+    "end": 19.6
+  },
+  {
+    "id": "w54",
+    "text": "reboco.",
+    "start": 19.6,
+    "end": 20.4
+  },
+  {
+    "id": "w55",
+    "text": "A",
+    "start": 20.4,
+    "end": 20.56
+  },
+  {
+    "id": "w56",
+    "text": "tinta",
+    "start": 20.56,
+    "end": 21.04
+  },
+  {
+    "id": "w57",
+    "text": "só",
+    "start": 21.04,
+    "end": 21.28
+  },
+  {
+    "id": "w58",
+    "text": "esconde",
+    "start": 21.28,
+    "end": 21.76
+  },
+  {
+    "id": "w59",
+    "text": "a",
+    "start": 21.76,
+    "end": 21.92
+  },
+  {
+    "id": "w60",
+    "text": "mancha.",
+    "start": 21.92,
+    "end": 22.64
+  },
+  {
+    "id": "w61",
+    "text": "Camada",
+    "start": 22.64,
+    "end": 23.28
+  },
+  {
+    "id": "w62",
+    "text": "1.",
+    "start": 23.28,
+    "end": 23.6
+  },
+  {
+    "id": "w63",
+    "text": "Achar",
+    "start": 23.84,
+    "end": 24.48
+  },
+  {
+    "id": "w64",
+    "text": "a",
+    "start": 24.48,
+    "end": 24.64
+  },
+  {
+    "id": "w65",
+    "text": "umidade.",
+    "start": 24.64,
+    "end": 25.36
+  },
+  {
+    "id": "w66",
+    "text": "Infiltração,",
+    "start": 25.6,
+    "end": 26.72
+  },
+  {
+    "id": "w67",
+    "text": "vazamento",
+    "start": 26.72,
+    "end": 27.52
+  },
+  {
+    "id": "w68",
+    "text": "ou",
+    "start": 27.68,
+    "end": 28
+  },
+  {
+    "id": "w69",
+    "text": "vapor",
+    "start": 28,
+    "end": 28.48
+  },
+  {
+    "id": "w70",
+    "text": "do",
+    "start": 28.48,
+    "end": 28.64
+  },
+  {
+    "id": "w71",
+    "text": "banho",
+    "start": 28.64,
+    "end": 28.96
+  },
+  {
+    "id": "w72",
+    "text": "sem",
+    "start": 28.96,
+    "end": 29.12
+  },
+  {
+    "id": "w73",
+    "text": "ventilação.",
+    "start": 29.12,
+    "end": 30.16
+  },
+  {
+    "id": "w74",
+    "text": "Sem",
+    "start": 30.16,
+    "end": 30.48
+  },
+  {
+    "id": "w75",
+    "text": "resolver",
+    "start": 30.48,
+    "end": 31.04
+  },
+  {
+    "id": "w76",
+    "text": "a",
+    "start": 31.04,
+    "end": 31.2
+  },
+  {
+    "id": "w77",
+    "text": "causa,",
+    "start": 31.2,
+    "end": 31.84
+  },
+  {
+    "id": "w78",
+    "text": "nada",
+    "start": 31.84,
+    "end": 32.16
+  },
+  {
+    "id": "w79",
+    "text": "segura.",
+    "start": 32.24,
+    "end": 32.96
+  },
+  {
+    "id": "w80",
+    "text": "Camada",
+    "start": 33.2,
+    "end": 33.84
+  },
+  {
+    "id": "w81",
+    "text": "2.",
+    "start": 33.84,
+    "end": 34.24
+  },
+  {
+    "id": "w82",
+    "text": "Matar",
+    "start": 34.48,
+    "end": 35.04
+  },
+  {
+    "id": "w83",
+    "text": "o",
+    "start": 35.04,
+    "end": 35.2
+  },
+  {
+    "id": "w84",
+    "text": "fungo.",
+    "start": 35.2,
+    "end": 35.84
+  },
+  {
+    "id": "w85",
+    "text": "Água",
+    "start": 35.84,
+    "end": 36.24
+  },
+  {
+    "id": "w86",
+    "text": "sanitária",
+    "start": 36.24,
+    "end": 36.72
+  },
+  {
+    "id": "w87",
+    "text": "diluída,",
+    "start": 36.72,
+    "end": 37.36
+  },
+  {
+    "id": "w88",
+    "text": "do",
+    "start": 37.36,
+    "end": 37.52
+  },
+  {
+    "id": "w89",
+    "text": "jeito",
+    "start": 37.52,
+    "end": 37.76
+  },
+  {
+    "id": "w90",
+    "text": "que",
+    "start": 37.76,
+    "end": 37.92
+  },
+  {
+    "id": "w91",
+    "text": "está",
+    "start": 37.92,
+    "end": 38.08
+  },
+  {
+    "id": "w92",
+    "text": "no",
+    "start": 38.08,
+    "end": 38.16
+  },
+  {
+    "id": "w93",
+    "text": "rótulo,",
+    "start": 38.16,
+    "end": 38.8
+  },
+  {
+    "id": "w94",
+    "text": "com",
+    "start": 38.8,
+    "end": 39.04
+  },
+  {
+    "id": "w95",
+    "text": "luva",
+    "start": 39.04,
+    "end": 39.44
+  },
+  {
+    "id": "w96",
+    "text": "e",
+    "start": 39.44,
+    "end": 39.6
+  },
+  {
+    "id": "w97",
+    "text": "janela",
+    "start": 39.6,
+    "end": 40
+  },
+  {
+    "id": "w98",
+    "text": "aberta.",
+    "start": 40,
+    "end": 40.48
+  },
+  {
+    "id": "w99",
+    "text": "Deixa",
+    "start": 40.72,
+    "end": 41.12
+  },
+  {
+    "id": "w100",
+    "text": "agir,",
+    "start": 41.12,
+    "end": 41.92
+  },
+  {
+    "id": "w101",
+    "text": "enxágua",
+    "start": 41.92,
+    "end": 42.64
+  },
+  {
+    "id": "w102",
+    "text": "e",
+    "start": 42.8,
+    "end": 43.04
+  },
+  {
+    "id": "w103",
+    "text": "espera",
+    "start": 43.04,
+    "end": 43.52
+  },
+  {
+    "id": "w104",
+    "text": "a",
+    "start": 43.52,
+    "end": 43.6
+  },
+  {
+    "id": "w105",
+    "text": "parede",
+    "start": 43.6,
+    "end": 44
+  },
+  {
+    "id": "w106",
+    "text": "secar",
+    "start": 44,
+    "end": 44.56
+  },
+  {
+    "id": "w107",
+    "text": "bem.",
+    "start": 44.56,
+    "end": 45.12
+  },
+  {
+    "id": "w108",
+    "text": "Nunca",
+    "start": 45.12,
+    "end": 45.6
+  },
+  {
+    "id": "w109",
+    "text": "misture",
+    "start": 45.6,
+    "end": 46.16
+  },
+  {
+    "id": "w110",
+    "text": "com",
+    "start": 46.32,
+    "end": 46.48
+  },
+  {
+    "id": "w111",
+    "text": "outro",
+    "start": 46.48,
+    "end": 46.8
+  },
+  {
+    "id": "w112",
+    "text": "produto.",
+    "start": 46.8,
+    "end": 47.52
+  },
+  {
+    "id": "w113",
+    "text": "Camada",
+    "start": 47.84,
+    "end": 48.48
+  },
+  {
+    "id": "w114",
+    "text": "3.",
+    "start": 48.48,
+    "end": 49.2
+  },
+  {
+    "id": "w115",
+    "text": "A",
+    "start": 49.2,
+    "end": 49.44
+  },
+  {
+    "id": "w116",
+    "text": "tinta",
+    "start": 49.44,
+    "end": 50
+  },
+  {
+    "id": "w117",
+    "text": "certa.",
+    "start": 50,
+    "end": 50.64
+  },
+  {
+    "id": "w118",
+    "text": "Base",
+    "start": 50.88,
+    "end": 51.28
+  },
+  {
+    "id": "w119",
+    "text": "certa",
+    "start": 51.44,
+    "end": 51.68
+  },
+  {
+    "id": "w120",
+    "text": "para",
+    "start": 51.84,
+    "end": 52
+  },
+  {
+    "id": "w121",
+    "text": "a",
+    "start": 52,
+    "end": 52.08
+  },
+  {
+    "id": "w122",
+    "text": "parede",
+    "start": 52.08,
+    "end": 52.48
+  },
+  {
+    "id": "w123",
+    "text": "e",
+    "start": 52.56,
+    "end": 52.72
+  },
+  {
+    "id": "w124",
+    "text": "tinta",
+    "start": 52.72,
+    "end": 53.12
+  },
+  {
+    "id": "w125",
+    "text": "com",
+    "start": 53.12,
+    "end": 53.2
+  },
+  {
+    "id": "w126",
+    "text": "antimofo.",
+    "start": 53.28,
+    "end": 54.32
+  },
+  {
+    "id": "w127",
+    "text": "No",
+    "start": 54.32,
+    "end": 54.48
+  },
+  {
+    "id": "w128",
+    "text": "banheiro",
+    "start": 54.48,
+    "end": 54.88
+  },
+  {
+    "id": "w129",
+    "text": "e",
+    "start": 54.88,
+    "end": 55.04
+  },
+  {
+    "id": "w130",
+    "text": "na",
+    "start": 55.04,
+    "end": 55.12
+  },
+  {
+    "id": "w131",
+    "text": "cozinha,",
+    "start": 55.12,
+    "end": 55.76
+  },
+  {
+    "id": "w132",
+    "text": "acabamento",
+    "start": 55.76,
+    "end": 56.48
+  },
+  {
+    "id": "w133",
+    "text": "lavável.",
+    "start": 56.48,
+    "end": 57.52
+  },
+  {
+    "id": "w134",
+    "text": "E",
+    "start": 57.76,
+    "end": 58
+  },
+  {
+    "id": "w135",
+    "text": "tinta",
+    "start": 58.16,
+    "end": 58.56
+  },
+  {
+    "id": "w136",
+    "text": "antimofo",
+    "start": 58.56,
+    "end": 59.12
+  },
+  {
+    "id": "w137",
+    "text": "resolve",
+    "start": 59.2,
+    "end": 59.6
+  },
+  {
+    "id": "w138",
+    "text": "sozinha?",
+    "start": 59.6,
+    "end": 60.4
+  },
+  {
+    "id": "w139",
+    "text": "Não.",
+    "start": 60.4,
+    "end": 60.88
+  },
+  {
+    "id": "w140",
+    "text": "Ela",
+    "start": 61.21,
+    "end": 61.53
+  },
+  {
+    "id": "w141",
+    "text": "protege",
+    "start": 61.53,
+    "end": 61.93
+  },
+  {
+    "id": "w142",
+    "text": "a",
+    "start": 62.09,
+    "end": 62.17
+  },
+  {
+    "id": "w143",
+    "text": "superfície.",
+    "start": 62.17,
+    "end": 63.21
+  },
+  {
+    "id": "w144",
+    "text": "Se",
+    "start": 63.21,
+    "end": 63.45
+  },
+  {
+    "id": "w145",
+    "text": "a",
+    "start": 63.45,
+    "end": 63.53
+  },
+  {
+    "id": "w146",
+    "text": "parede",
+    "start": 63.53,
+    "end": 63.93
+  },
+  {
+    "id": "w147",
+    "text": "continua",
+    "start": 63.93,
+    "end": 64.33
+  },
+  {
+    "id": "w148",
+    "text": "úmida,",
+    "start": 64.49,
+    "end": 65.05
+  },
+  {
+    "id": "w149",
+    "text": "o",
+    "start": 65.05,
+    "end": 65.21
+  },
+  {
+    "id": "w150",
+    "text": "fungo",
+    "start": 65.21,
+    "end": 65.61
+  },
+  {
+    "id": "w151",
+    "text": "volta",
+    "start": 65.61,
+    "end": 65.85
+  },
+  {
+    "id": "w152",
+    "text": "por",
+    "start": 66.01,
+    "end": 66.17
+  },
+  {
+    "id": "w153",
+    "text": "baixo.",
+    "start": 66.17,
+    "end": 66.73
+  },
+  {
+    "id": "w154",
+    "text": "A",
+    "start": 66.73,
+    "end": 66.89
+  },
+  {
+    "id": "w155",
+    "text": "NBR",
+    "start": 67.05,
+    "end": 67.77
+  },
+  {
+    "id": "w156",
+    "text": "1245,",
+    "start": 67.77,
+    "end": 69.77
+  },
+  {
+    "id": "w157",
+    "text": "a",
+    "start": 69.77,
+    "end": 69.93
+  },
+  {
+    "id": "w158",
+    "text": "norma",
+    "start": 69.93,
+    "end": 70.25
+  },
+  {
+    "id": "w159",
+    "text": "de",
+    "start": 70.25,
+    "end": 70.41
+  },
+  {
+    "id": "w160",
+    "text": "preparo",
+    "start": 70.41,
+    "end": 70.89
+  },
+  {
+    "id": "w161",
+    "text": "da",
+    "start": 70.89,
+    "end": 71.05
+  },
+  {
+    "id": "w162",
+    "text": "superfície,",
+    "start": 71.05,
+    "end": 71.77
+  },
+  {
+    "id": "w163",
+    "text": "pede",
+    "start": 71.77,
+    "end": 72.17
+  },
+  {
+    "id": "w164",
+    "text": "parede",
+    "start": 72.17,
+    "end": 72.65
+  },
+  {
+    "id": "w165",
+    "text": "limpa,",
+    "start": 72.65,
+    "end": 73.29
+  },
+  {
+    "id": "w166",
+    "text": "seca",
+    "start": 73.29,
+    "end": 73.77
+  },
+  {
+    "id": "w167",
+    "text": "e",
+    "start": 73.77,
+    "end": 74.01
+  },
+  {
+    "id": "w168",
+    "text": "sem",
+    "start": 74.01,
+    "end": 74.25
+  },
+  {
+    "id": "w169",
+    "text": "mofo",
+    "start": 74.25,
+    "end": 74.65
+  },
+  {
+    "id": "w170",
+    "text": "antes",
+    "start": 74.89,
+    "end": 75.13
+  },
+  {
+    "id": "w171",
+    "text": "de",
+    "start": 75.13,
+    "end": 75.29
+  },
+  {
+    "id": "w172",
+    "text": "pintar.",
+    "start": 75.29,
+    "end": 76.01
+  },
+  {
+    "id": "w173",
+    "text": "Na",
+    "start": 76.01,
+    "end": 76.25
+  },
+  {
+    "id": "w174",
+    "text": "dúvida,",
+    "start": 76.25,
+    "end": 76.65
+  },
+  {
+    "id": "w175",
+    "text": "chama",
+    "start": 76.81,
+    "end": 77.05
+  },
+  {
+    "id": "w176",
+    "text": "house",
+    "start": 77.21,
+    "end": 77.53
+  },
+  {
+    "id": "w177",
+    "text": "pinturas.",
+    "start": 77.77,
+    "end": 78.33
+  },
+  {
+    "id": "w178",
+    "text": "A",
+    "start": 78.49,
+    "end": 78.65
+  },
+  {
+    "id": "w179",
+    "text": "gente",
+    "start": 78.65,
+    "end": 78.89
+  },
+  {
+    "id": "w180",
+    "text": "acha",
+    "start": 78.89,
+    "end": 79.21
+  },
+  {
+    "id": "w181",
+    "text": "a",
+    "start": 79.21,
+    "end": 79.29
+  },
+  {
+    "id": "w182",
+    "text": "causa",
+    "start": 79.29,
+    "end": 79.77
+  },
+  {
+    "id": "w183",
+    "text": "antes",
+    "start": 79.77,
+    "end": 80.09
+  },
+  {
+    "id": "w184",
+    "text": "de",
+    "start": 80.09,
+    "end": 80.25
+  },
+  {
+    "id": "w185",
+    "text": "pintar.",
+    "start": 80.25,
+    "end": 80.65
+  },
+  {
+    "id": "w186",
+    "text": "Orçamento",
+    "start": 80.81,
+    "end": 81.45
+  },
+  {
+    "id": "w187",
+    "text": "grátis",
+    "start": 81.45,
+    "end": 81.77
+  },
+  {
+    "id": "w188",
+    "text": "no",
+    "start": 81.85,
+    "end": 81.93
+  },
+  {
+    "id": "w189",
+    "text": "WhatsApp.",
+    "start": 81.93,
+    "end": 82.65
+  },
+  {
+    "id": "w190",
+    "text": "Mofo",
+    "start": 83.05,
+    "end": 83.45
+  },
+  {
+    "id": "w191",
+    "text": "voltou?",
+    "start": 83.61,
+    "end": 84.41
+  },
+  {
+    "id": "w192",
+    "text": "Uma",
+    "start": 84.41,
+    "end": 84.73
+  },
+  {
+    "id": "w193",
+    "text": "dessas",
+    "start": 84.73,
+    "end": 85.13
+  },
+  {
+    "id": "w194",
+    "text": "camadas",
+    "start": 85.13,
+    "end": 85.69
+  },
+  {
+    "id": "w195",
+    "text": "está",
+    "start": 85.69,
+    "end": 85.85
+  },
+  {
+    "id": "w196",
+    "text": "faltando.",
+    "start": 85.85,
+    "end": 86.41
+  }
+]

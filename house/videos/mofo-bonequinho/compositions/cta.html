@@ -1,0 +1,200 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Barlow Condensed";
+      font-weight: 900;
+      src: url("assets/fonts/BarlowCondensed-900.woff2") format("woff2");
+    }
+    @font-face {
+      font-family: "Bricolage Grotesque";
+      font-weight: 500;
+      src: url("assets/fonts/BricolageGrotesque-500.woff2") format("woff2");
+    }
+    @font-face {
+      font-family: "Bricolage Grotesque";
+      font-weight: 700;
+      src: url("assets/fonts/BricolageGrotesque-700.woff2") format("woff2");
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      font-family: "Bricolage Grotesque", sans-serif;
+      color: #0b1220;
+      pointer-events: none;
+    }
+    #cta-card {
+      position: absolute;
+      left: 72px;
+      right: 72px;
+      top: 230px;
+      padding: 40px 48px 44px;
+      border-radius: 32px;
+      background: #ffffff;
+      border: 2px solid #dfe6f1;
+      box-shadow: 0 40px 80px -30px rgba(11, 18, 32, 0.45);
+      opacity: 0;
+    }
+    #cta-head {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+    #cta-logo {
+      width: 130px;
+      height: 130px;
+      border-radius: 24px;
+      flex: none;
+    }
+    #cta-name {
+      font-family: "Barlow Condensed", sans-serif;
+      font-weight: 900;
+      font-size: 54px;
+      line-height: 1;
+      text-transform: uppercase;
+    }
+    #cta-name span {
+      display: block;
+      margin-top: 6px;
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-weight: 500;
+      font-size: 30px;
+      text-transform: none;
+      color: #6b7689;
+    }
+    #cta-q {
+      margin-top: 30px;
+      font-family: "Barlow Condensed", sans-serif;
+      font-size: 92px;
+      font-weight: 900;
+      line-height: 0.95;
+      text-transform: uppercase;
+    }
+    #cta-q span {
+      color: #2457d6;
+    }
+    #cta-sub {
+      margin-top: 18px;
+      font-size: 40px;
+      font-weight: 500;
+      line-height: 1.2;
+      color: #4b5563;
+      opacity: 0;
+    }
+    #cta-btn {
+      margin-top: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      height: 112px;
+      border-radius: 14px;
+      background: #1a9e4b;
+      box-shadow: 0 18px 40px -14px rgba(26, 158, 75, 0.7);
+      color: #ffffff;
+      font-size: 42px;
+      font-weight: 700;
+      opacity: 0;
+    }
+    #cta-btn svg {
+      width: 52px;
+      height: 52px;
+    }
+    #cta-links {
+      margin-top: 22px;
+      text-align: center;
+      font-size: 32px;
+      font-weight: 500;
+      color: #2457d6;
+      opacity: 0;
+    }
+  </style>
+  <div data-hf-id="hf-rebv" id="root" data-composition-id="cta" data-width="1080" data-height="1920">
+    <div data-hf-id="hf-duuo" id="cta-card">
+      <div data-hf-id="hf-okrw" id="cta-head">
+        <img data-hf-id="hf-37ht" id="cta-logo" src="assets/brand-house/logo-house.jpg" alt="House Pinturas e Decorações" />
+        <div data-hf-id="hf-y61t" id="cta-name">House Pinturas<span data-hf-id="hf-zgi0">e Decorações · Atibaia - SP</span></div>
+      </div>
+      <div data-hf-id="hf-psh1" id="cta-q">Na dúvida, chama a <span data-hf-id="hf-85pn">House.</span></div>
+      <div data-hf-id="hf-9sr3" id="cta-sub">A gente acha a causa antes de pintar.</div>
+      <div data-hf-id="hf-68fj" id="cta-btn">
+        <svg data-hf-id="hf-h0hq" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-2fyj" d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" /></svg>
+        Orçamento grátis no WhatsApp
+      </div>
+      <div data-hf-id="hf-lq4y" id="cta-links">@house_pintura10</div>
+    </div>
+  </div>
+  <script>
+    /*CUES*/
+    const C = {
+      "hook": 0.0,
+      "volta": 2.48,
+      "mancha": 3.6,
+      "mas": 4.72,
+      "vivo": 5.92,
+      "embaixo": 6.32,
+      "camadas": 8.4,
+      "problema": 11.04,
+      "fungo2": 12.48,
+      "umidade1": 13.92,
+      "p70": 15.36,
+      "tempo": 16.8,
+      "cria": 17.76,
+      "raizes": 18.16,
+      "poros": 19.12,
+      "esconde": 21.28,
+      "c1": 22.64,
+      "achar": 23.84,
+      "infiltracao": 25.6,
+      "vazamento": 26.72,
+      "vapor": 28,
+      "ventilacao": 29.12,
+      "resolver": 30.48,
+      "c2": 33.2,
+      "matar": 34.48,
+      "agua": 35.84,
+      "rotulo": 38.16,
+      "luva": 39.04,
+      "janela": 39.6,
+      "agir": 41.12,
+      "enxagua": 41.92,
+      "secar": 44,
+      "nunca": 45.12,
+      "c3": 47.84,
+      "certa": 50,
+      "base": 50.88,
+      "antimofo1": 53.28,
+      "banheiro": 54.48,
+      "lavavel": 56.48,
+      "mito": 57.76,
+      "naoMito": 60.4,
+      "protege": 61.53,
+      "umida": 64.49,
+      "voltaBaixo": 66.17,
+      "norma": 66.73,
+      "limpa": 72.65,
+      "seca": 73.29,
+      "semMofo": 74.25,
+      "cta": 76.01,
+      "house": 77.21,
+      "causa2": 79.29,
+      "orcamento": 80.81,
+      "loop": 83.05,
+      "dessas": 84.73,
+      "faltando": 85.85,
+      "end": 87.31
+    };
+    /*END-CUES*/
+    // Tempos locais à cena (a cena começa em "Na dúvida")
+    const at = (t) => t - C.cta;
+    const OUT = C.loop + 0.39 - C.cta;
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#cta-card", { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: 0.7, ease: "expo.out" }, 0.05);
+    tl.fromTo("#cta-sub", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6, ease: "expo.out" }, at(C.causa2) - 0.6);
+    tl.fromTo("#cta-btn", { opacity: 0, y: 24, scale: 0.96 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "expo.out" }, at(C.orcamento) - 0.1);
+    tl.fromTo("#cta-links", { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power2.out" }, at(C.orcamento) + 0.3);
+    tl.to("#cta-btn", { scale: 1.05, duration: 0.18, ease: "power2.out" }, at(C.orcamento) + 1.0);
+    tl.to("#cta-btn", { scale: 1, duration: 0.4, ease: "power2.inOut" }, at(C.orcamento) + 1.18);
+    tl.to("#cta-card", { opacity: 0, y: -30, filter: "blur(8px)", duration: 0.35, ease: "power3.in" }, OUT - 0.35);
+    window.__timelines["cta"] = tl;
+  </script>
+</template>

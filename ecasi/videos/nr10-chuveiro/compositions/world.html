@@ -1,0 +1,863 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: #eef1f6;
+    }
+    #world-canvas {
+      position: absolute;
+      inset: 0;
+      width: 1080px;
+      height: 1920px;
+    }
+    #world-lines {
+      position: absolute;
+      inset: 0;
+      width: 1080px;
+      height: 1920px;
+      pointer-events: none;
+    }
+    .world-callout {
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      padding: 12px 20px;
+      border-radius: 12px;
+      background: #ffffff;
+      border: 2px solid #e5e7eb;
+      box-shadow: 0 10px 24px -12px rgba(11, 29, 63, 0.35);
+      color: #0b1d3f;
+      font-family: Poppins, sans-serif;
+      font-weight: 600;
+      font-size: 30px;
+      line-height: 1.15;
+      white-space: nowrap;
+    }
+    .world-callout.is-tech {
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 500;
+    }
+    .world-callout.is-orange {
+      background: #c2410c;
+      border-color: #c2410c;
+      color: #ffffff;
+    }
+    .world-callout.is-red {
+      background: #fdecec;
+      border-color: rgba(211, 47, 47, 0.45);
+      color: #b3261e;
+    }
+    .world-callout.is-green {
+      background: #ecf8f2;
+      border-color: rgba(59, 178, 115, 0.5);
+      color: #1f7a4c;
+    }
+  </style>
+  <div id="root" data-composition-id="world" data-width="1080" data-height="1920" data-layout-allow-overflow>
+    <canvas id="world-canvas" width="1080" height="1920"></canvas>
+    <svg id="world-lines" viewBox="0 0 1080 1920" data-layout-ignore></svg>
+    <div id="co-res" class="world-callout">resistência</div>
+    <div id="co-220" class="world-callout is-orange is-tech">220 V</div>
+    <div id="co-mao" class="world-callout">mão molhada conduz</div>
+    <div id="co-trava" class="world-callout is-red">o músculo trava</div>
+    <div id="co-heart" class="world-callout is-red">coração</div>
+    <div id="co-circ" class="world-callout is-tech">CHUVEIRO · 2 polos</div>
+    <div id="co-lock" class="world-callout is-orange">cadeado</div>
+    <div id="co-tag" class="world-callout is-red is-tech">NÃO RELIGUE</div>
+    <div id="co-plug" class="world-callout">ponto com energia</div>
+    <div id="co-0v" class="world-callout is-green is-tech">0 V · sem tensão</div>
+    <div id="co-clamps" class="world-callout">grampos nas fases</div>
+    <div id="co-earth" class="world-callout is-green">terra</div>
+    <div id="co-glove" class="world-callout is-orange">luva isolante</div>
+    <div id="co-tool" class="world-callout">ferramenta isolada</div>
+    <div id="co-1p" class="world-callout is-red">disjuntor de 1 polo</div>
+    <div id="co-f12" class="world-callout is-red is-tech">F1 desligada · F2 ligada</div>
+    <div id="co-127" class="world-callout is-red is-tech">127 V</div>
+    <div id="co-det" class="world-callout is-red">detector acusa tensão</div>
+  </div>
+  <script type="module">
+    import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js";
+
+    // Tempos ancorados na narração (assets/transcript.json). Fonte única: tools/cues.json
+    /*CUES*/
+    const C = {
+      "hook": 0.0,
+      "disjuntor": 0.96,
+      "chuveiro": 2.16,
+      "encostar": 4.64,
+      "nao": 5.6,
+      "nr10": 6.48,
+      "camadas": 8.24,
+      "problema": 11.36,
+      "v220": 13.36,
+      "molhada": 16.16,
+      "ma10": 18.08,
+      "trava": 20.08,
+      "ma50": 22.8,
+      "coracao": 24,
+      "c1": 25.6,
+      "bloquear": 27.76,
+      "desliga": 28.72,
+      "circuito": 29.44,
+      "cadeado": 30.96,
+      "etiqueta": 31.68,
+      "religa": 34.08,
+      "c2": 36.16,
+      "testar": 37.44,
+      "detector": 39.44,
+      "energia": 40.8,
+      "mede": 42.16,
+      "semTensao": 43.52,
+      "agoraSim": 44.64,
+      "c3": 45.76,
+      "aterrar": 47.04,
+      "aterramento": 49.04,
+      "luva": 51.28,
+      "ferramenta": 52.56,
+      "atencao": 54.32,
+      "taSeguro": 56.88,
+      "nemSempre": 57.68,
+      "rede": 58.96,
+      "duasFases": 63.04,
+      "polo": 65.43,
+      "desligaUma": 66.47,
+      "continua": 68.47,
+      "v127": 69.35,
+      "soDetector": 70.95,
+      "norma": 73.11,
+      "desenergizacao": 75.99,
+      "treino": 77.35,
+      "reciclagem": 79.43,
+      "cta": 81.75,
+      "fale": 83.27,
+      "loop": 85.11,
+      "confira": 86.47,
+      "antes": 88.31,
+      "end": 90.33
+    };
+    /*END-CUES*/
+
+    const W = 1080;
+    const H = 1920;
+    const canvas = document.getElementById("world-canvas");
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
+    renderer.setPixelRatio(1);
+    renderer.setSize(W, H, false);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFShadowMap;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color("#eef1f6");
+    scene.fog = new THREE.Fog("#eef1f6", 12, 30);
+
+    const camera = new THREE.PerspectiveCamera(34, W / H, 0.05, 100);
+
+    // ---------- Luz: chave quente, preenchimento frio ----------
+    scene.add(new THREE.HemisphereLight("#ffffff", "#c9c3b8", 1.35));
+    const key = new THREE.DirectionalLight("#fff4e6", 2.0);
+    key.position.set(4, 7, 6);
+    key.castShadow = true;
+    key.shadow.mapSize.set(2048, 2048);
+    key.shadow.camera.left = -5;
+    key.shadow.camera.right = 5;
+    key.shadow.camera.top = 5;
+    key.shadow.camera.bottom = -5;
+    key.shadow.bias = -0.0006;
+    scene.add(key);
+    const rim = new THREE.DirectionalLight("#dbe8ff", 0.6);
+    rim.position.set(-5, 4, 3);
+    scene.add(rim);
+
+    // ---------- Materiais (paleta ECASI) ----------
+    const mat = (color, extra = {}) =>
+      new THREE.MeshStandardMaterial({ color, flatShading: true, roughness: 0.85, metalness: 0, ...extra });
+    // Azulejo desenhado num canvas (determinístico)
+    function tileTex(base, line, repX, repY) {
+      const cv = document.createElement("canvas");
+      cv.width = cv.height = 256;
+      const g = cv.getContext("2d");
+      g.fillStyle = base;
+      g.fillRect(0, 0, 256, 256);
+      g.strokeStyle = line;
+      g.lineWidth = 5;
+      for (let i = 0; i <= 4; i++) {
+        const p = i * 64;
+        g.beginPath();
+        g.moveTo(p, 0);
+        g.lineTo(p, 256);
+        g.moveTo(0, p);
+        g.lineTo(256, p);
+        g.stroke();
+      }
+      const tx = new THREE.CanvasTexture(cv);
+      tx.wrapS = tx.wrapT = THREE.RepeatWrapping;
+      tx.repeat.set(repX, repY);
+      tx.colorSpace = THREE.SRGBColorSpace;
+      return tx;
+    }
+    const M = {
+      wallTile: mat("#ffffff", { map: tileTex("#eceae4", "#d9d4ca", 5.3, 2.3) }),
+      floorTile: mat("#ffffff", { map: tileTex("#dcd7ce", "#c9c2b6", 10, 10) }),
+      partition: mat("#ffffff", { map: tileTex("#e6ebf2", "#cfd6e1", 0.9, 1.7) }),
+      steel: mat("#5b6474", { roughness: 0.55 }),
+      steelLight: mat("#c9ced6", { roughness: 0.6 }),
+      navy: mat("#0b1d3f"),
+      navyLight: mat("#142b52"),
+      orange: mat("#f97316"),
+      white: mat("#f8f8f6"),
+      skin: mat("#d9a074"),
+      glove: mat("#f97316", { roughness: 0.6 }),
+      boot: mat("#2a2f38"),
+      reflect: mat("#e5e7eb", { roughness: 0.4 }),
+      red: mat("#d32f2f"),
+      green: mat("#3bb273"),
+      yellow: mat("#facc15"),
+      wood: mat("#c7a77a"),
+      dark: mat("#1f2937"),
+      locker: mat("#8fa3bf"),
+    };
+
+    const box = (w, h, d, m) => {
+      const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      return mesh;
+    };
+    const cyl = (r, h, m, seg = 10) => {
+      const mesh = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, seg), m);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      return mesh;
+    };
+
+    // ---------- Cenário: vestiário ----------
+    const WALL_Z = -1.4; // face da parede do fundo
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(16, 16), M.floorTile);
+    floor.rotation.x = -Math.PI / 2;
+    floor.receiveShadow = true;
+    scene.add(floor);
+    const backWall = box(6.4, 2.8, 0.2, M.wallTile);
+    backWall.position.set(0.6, 1.4, WALL_Z - 0.1);
+    scene.add(backWall);
+    // Divisória do box do chuveiro
+    const partition = box(0.08, 2.1, 1.1, M.partition);
+    partition.position.set(-1.25, 1.05, WALL_Z + 0.55);
+    scene.add(partition);
+    // Ralo
+    const drain = box(0.16, 0.01, 0.16, M.steelLight);
+    drain.position.set(0, 0.005, WALL_Z + 0.55);
+    scene.add(drain);
+    // Armários e banco do vestiário
+    for (let i = 0; i < 3; i++) {
+      const lk = box(0.42, 1.8, 0.45, M.locker);
+      lk.position.set(2.85 + i * 0.44, 0.9, WALL_Z + 0.23);
+      scene.add(lk);
+      for (let v = 0; v < 3; v++) {
+        const vent = box(0.22, 0.02, 0.01, M.navyLight);
+        vent.position.set(2.85 + i * 0.44, 1.55 - v * 0.05, WALL_Z + 0.46);
+        scene.add(vent);
+      }
+      const handle = box(0.03, 0.12, 0.02, M.steel);
+      handle.position.set(2.99 + i * 0.44, 1.0, WALL_Z + 0.46);
+      scene.add(handle);
+    }
+    const bench = box(1.3, 0.06, 0.34, M.wood);
+    bench.position.set(3.29, 0.45, WALL_Z + 0.95);
+    scene.add(bench);
+    for (const dx of [-0.5, 0.5]) {
+      const leg = box(0.06, 0.42, 0.3, M.steel);
+      leg.position.set(3.29 + dx, 0.21, WALL_Z + 0.95);
+      scene.add(leg);
+    }
+
+    // ---------- Chuveiro elétrico ----------
+    const SH = new THREE.Vector3(0, 2.1, WALL_Z + 0.28); // centro do corpo
+    const inlet = cyl(0.025, 0.28, M.steelLight, 8);
+    inlet.rotation.x = Math.PI / 2;
+    inlet.position.set(0, 2.24, WALL_Z + 0.14);
+    scene.add(inlet);
+    const shellMat = new THREE.MeshStandardMaterial({ color: "#f8f8f6", flatShading: true, roughness: 0.5, transparent: true, opacity: 1 });
+    const shell = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.15, 0.24, 14), shellMat);
+    shell.position.copy(SH);
+    shell.castShadow = true;
+    scene.add(shell);
+    const plate = cyl(0.17, 0.025, M.steelLight, 14);
+    plate.position.set(SH.x, SH.y - 0.13, SH.z);
+    scene.add(plate);
+    // Resistência em espiral (vista no raio-x)
+    const coilPts = [];
+    for (let k = 0; k <= 60; k++) {
+      const a = k * 0.42;
+      coilPts.push(new THREE.Vector3(SH.x + Math.cos(a) * 0.1, SH.y - 0.08 + (k / 60) * 0.14, SH.z + Math.sin(a) * 0.1));
+    }
+    const coilMat = new THREE.MeshStandardMaterial({ color: "#c2410c", emissive: "#ff5a1f", emissiveIntensity: 0, flatShading: true });
+    const coil = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(coilPts), 200, 0.011, 5), coilMat);
+    scene.add(coil);
+    // Câmara de plástico em volta da resistência
+    const chamber = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.125, 0.125, 0.18, 14, 1, true),
+      new THREE.MeshStandardMaterial({ color: "#bfe3f2", transparent: true, opacity: 0.35, side: THREE.DoubleSide, depthWrite: false }),
+    );
+    chamber.position.set(SH.x, SH.y - 0.01, SH.z);
+    scene.add(chamber);
+    // Registro na parede
+    const valve = cyl(0.045, 0.05, M.steelLight, 10);
+    valve.rotation.x = Math.PI / 2;
+    valve.position.set(0, 1.2, WALL_Z + 0.025);
+    scene.add(valve);
+    const valveHandle = box(0.14, 0.03, 0.03, M.steelLight);
+    valveHandle.position.set(0, 1.2, WALL_Z + 0.06);
+    scene.add(valveHandle);
+    // Água (só na explicação do problema)
+    const drops = [];
+    const dropMat = new THREE.MeshStandardMaterial({ color: "#7cc3e6", transparent: true, opacity: 0.55, depthWrite: false });
+    for (let i = 0; i < 7; i++) {
+      for (let j = 0; j < 4; j++) {
+        const d = new THREE.Mesh(new THREE.BoxGeometry(0.012, 0.16, 0.012), dropMat);
+        d.userData = { x: SH.x + Math.cos(i * 0.9) * 0.1, z: SH.z + Math.sin(i * 0.9) * 0.1, off: (i * 0.37 + j * 0.25) % 1 };
+        scene.add(d);
+        drops.push(d);
+      }
+    }
+
+    // ---------- Quadro de distribuição ----------
+    const QD = new THREE.Vector3(1.9, 1.55, WALL_Z + 0.08);
+    const enclosure = box(0.62, 0.82, 0.16, M.steelLight);
+    enclosure.position.copy(QD);
+    scene.add(enclosure);
+    const innerPlate = box(0.54, 0.72, 0.01, M.white);
+    innerPlate.position.set(QD.x, QD.y, QD.z + 0.08);
+    scene.add(innerPlate);
+    const rail = box(0.5, 0.025, 0.02, M.steel);
+    rail.position.set(QD.x, 1.6, QD.z + 0.09);
+    scene.add(rail);
+    // Seis módulos; o 3 e o 4 são os dois polos do chuveiro
+    const BR_Y = 1.6;
+    const BR_Z = QD.z + 0.14;
+    const breakers = [];
+    for (let i = 0; i < 6; i++) {
+      const x = QD.x - 0.19 + i * 0.075 + (i >= 3 ? 0.01 : 0) + (i >= 5 ? 0.01 : 0);
+      const body = box(0.065, 0.16, 0.09, M.white);
+      body.position.set(x, BR_Y, BR_Z - 0.02);
+      const lever = box(0.024, 0.05, 0.03, i === 3 || i === 4 ? M.navy : M.dark);
+      lever.position.set(x, BR_Y + 0.035, BR_Z + 0.04);
+      scene.add(body, lever);
+      breakers.push({ body, lever, x });
+    }
+    const POLE1 = breakers[3];
+    const POLE2 = breakers[4];
+    // Barra de acoplamento: transforma os dois polos num disjuntor bipolar
+    const tieBar = box(0.1, 0.014, 0.018, M.orange);
+    scene.add(tieBar);
+    // Cadeado e etiqueta de bloqueio
+    const lock = new THREE.Group();
+    const lockBody = box(0.07, 0.06, 0.03, M.red);
+    const shackle = new THREE.Mesh(new THREE.TorusGeometry(0.024, 0.007, 6, 14, Math.PI), M.steel);
+    shackle.position.y = 0.03;
+    lock.add(lockBody, shackle);
+    scene.add(lock);
+    const tag = new THREE.Group();
+    const tagCard = box(0.09, 0.13, 0.006, M.white);
+    tagCard.position.y = -0.08;
+    const tagStripe = box(0.09, 0.035, 0.008, M.red);
+    tagStripe.position.y = -0.03;
+    tag.add(tagCard, tagStripe);
+    scene.add(tag);
+    // Tomada (ponto com energia para testar o detector)
+    const PLUG = new THREE.Vector3(1.15, 1.15, WALL_Z + 0.012);
+    const plug = box(0.1, 0.1, 0.02, M.white);
+    plug.position.copy(PLUG);
+    scene.add(plug);
+    for (const dx of [-0.018, 0.018]) {
+      const hole = box(0.01, 0.022, 0.005, M.dark);
+      hole.position.set(PLUG.x + dx, PLUG.y, PLUG.z + 0.012);
+      scene.add(hole);
+    }
+    // Barramento de terra
+    const EARTH = new THREE.Vector3(0.75, 0.42, WALL_Z + 0.03);
+    const earthBar = box(0.16, 0.06, 0.05, M.green);
+    earthBar.position.copy(EARTH);
+    scene.add(earthBar);
+
+    // ---------- Fiação: F1, F2 e terra, do chuveiro ao quadro ----------
+    const W_Z = WALL_Z + 0.03;
+    function wirePath(pts) {
+      const path = new THREE.CurvePath();
+      for (let i = 0; i < pts.length - 1; i++) path.add(new THREE.LineCurve3(new THREE.Vector3(...pts[i]), new THREE.Vector3(...pts[i + 1])));
+      return path;
+    }
+    const WIRES = [
+      { id: 1, color: "#1f2937", pts: [[-0.035, 2.24, SH.z], [-0.035, 2.24, W_Z], [-0.035, 2.66, W_Z], [POLE1.x, 2.66, W_Z], [POLE1.x, 1.96, W_Z]] },
+      { id: 2, color: "#d32f2f", pts: [[0.035, 2.24, SH.z], [0.035, 2.24, W_Z], [0.035, 2.59, W_Z], [POLE2.x, 2.59, W_Z], [POLE2.x, 1.96, W_Z]] },
+      { id: 0, color: "#3bb273", pts: [[0, 2.22, SH.z + 0.02], [0, 2.18, W_Z], [0.11, 2.18, W_Z], [0.11, 2.52, W_Z], [QD.x + 0.25, 2.52, W_Z], [QD.x + 0.25, 1.96, W_Z]] },
+    ];
+    for (const w of WIRES) {
+      w.path = wirePath(w.pts);
+      w.mat = new THREE.MeshStandardMaterial({ color: w.color, emissive: "#ff7a1a", emissiveIntensity: 0, flatShading: true });
+      w.mesh = new THREE.Mesh(new THREE.TubeGeometry(w.path, 200, 0.016, 6, false), w.mat);
+      w.mesh.castShadow = true;
+      scene.add(w.mesh);
+      w.pulses = [];
+      if (w.id) {
+        for (let k = 0; k < 9; k++) {
+          const p = new THREE.Mesh(new THREE.SphereGeometry(0.026, 8, 6), new THREE.MeshBasicMaterial({ color: "#fde047" }));
+          scene.add(p);
+          w.pulses.push(p);
+        }
+      }
+    }
+    // Eletroduto por cima dos fios (canaleta)
+    const duct = box(QD.x + 0.25 + 0.1, 0.16, 0.035, mat("#e8e6e1"));
+    duct.position.set((QD.x + 0.25) / 2, 2.62, WALL_Z + 0.005);
+    scene.add(duct);
+
+    // ---------- Aterramento temporário ----------
+    const clamps = [];
+    for (const dx of [-0.035, 0.035]) {
+      const c = box(0.05, 0.07, 0.05, M.yellow);
+      c.position.set(dx, 2.42, W_Z + 0.02);
+      scene.add(c);
+      clamps.push(c);
+    }
+    const jumper = box(0.12, 0.018, 0.018, mat("#84cc16"));
+    jumper.position.set(0, 2.4, W_Z + 0.05);
+    scene.add(jumper);
+    const groundCurve = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(0, 2.4, W_Z + 0.06),
+      new THREE.Vector3(0.22, 2.0, WALL_Z + 0.22),
+      new THREE.Vector3(0.42, 1.25, WALL_Z + 0.24),
+      new THREE.Vector3(0.62, 0.62, WALL_Z + 0.16),
+      new THREE.Vector3(EARTH.x, EARTH.y + 0.04, EARTH.z + 0.03),
+    ]);
+    const groundCable = new THREE.Mesh(new THREE.TubeGeometry(groundCurve, 120, 0.013, 6, false), mat("#84cc16"));
+    groundCable.castShadow = true;
+    scene.add(groundCable);
+    const groundIdx = groundCable.geometry.index.count;
+
+    // ---------- Detector de tensão ----------
+    const detector = new THREE.Group();
+    const detBody = box(0.04, 0.17, 0.04, M.yellow);
+    const detTip = cyl(0.007, 0.07, M.steel, 6);
+    detTip.position.y = -0.12;
+    const ledMat = new THREE.MeshBasicMaterial({ color: "#9ca3af" });
+    const led = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.03, 0.042), ledMat);
+    led.position.y = 0.06;
+    detector.add(detBody, detTip, led);
+    detector.rotation.x = 1.0; // ponta para a parede
+    scene.add(detector);
+    const TIP_DIR = new THREE.Vector3(0, Math.cos(1.0), Math.sin(1.0)); // da ponta para o centro
+
+    // ---------- Eletricista low-poly ----------
+    function makeWorker() {
+      const g = new THREE.Group();
+      const hips = new THREE.Group();
+      hips.position.y = 0.9;
+      g.add(hips);
+      for (const s of [-1, 1]) {
+        const leg = new THREE.Group();
+        leg.position.set(s * 0.13, 0, 0);
+        const thigh = box(0.22, 0.82, 0.26, M.navy);
+        thigh.position.y = -0.41;
+        const boot = box(0.24, 0.13, 0.36, M.boot);
+        boot.position.set(0, -0.84, 0.05);
+        leg.add(thigh, boot);
+        hips.add(leg);
+      }
+      const torso = box(0.56, 0.68, 0.32, M.navyLight);
+      torso.position.y = 0.34;
+      hips.add(torso);
+      const vest = box(0.6, 0.5, 0.36, M.orange);
+      vest.position.y = 0.36;
+      hips.add(vest);
+      for (const y of [0.24, 0.44]) {
+        const stripe = box(0.61, 0.05, 0.37, M.reflect);
+        stripe.position.y = y;
+        hips.add(stripe);
+      }
+      const arms = [];
+      const hands = [];
+      for (const s of [-1, 1]) {
+        const arm = new THREE.Group();
+        arm.position.set(s * 0.36, 0.64, 0);
+        const upper = box(0.16, 0.6, 0.18, M.navyLight);
+        upper.position.y = -0.3;
+        const hand = box(0.14, 0.14, 0.14, M.skin);
+        hand.position.y = -0.66;
+        arm.add(upper, hand);
+        hips.add(arm);
+        arms.push(arm);
+        hands.push(hand);
+      }
+      const head = new THREE.Mesh(new THREE.IcosahedronGeometry(0.19, 0), M.skin);
+      head.position.y = 0.9;
+      head.castShadow = true;
+      hips.add(head);
+      const helmet = new THREE.Mesh(new THREE.SphereGeometry(0.215, 8, 4, 0, Math.PI * 2, 0, Math.PI / 2), M.white);
+      helmet.position.y = 0.95;
+      helmet.castShadow = true;
+      hips.add(helmet);
+      const brim = cyl(0.25, 0.03, M.white, 10);
+      brim.position.set(0, 0.95, 0.03);
+      hips.add(brim);
+      g.userData = { hips, arms, hands };
+      return g;
+    }
+    const worker = makeWorker();
+    const WPOS = [-0.6, 0, WALL_Z + 0.62];
+    worker.position.set(...WPOS);
+    worker.rotation.y = Math.PI / 2 - 0.35; // de lado para a câmera, virado para o chuveiro
+    scene.add(worker);
+    const [armReach, armTool] = worker.userData.arms;
+    // Chave de fenda isolada na outra mão
+    const tool = new THREE.Group();
+    const toolGrip = cyl(0.022, 0.12, M.yellow, 8);
+    const toolShaft = cyl(0.007, 0.13, M.steel, 6);
+    toolShaft.position.y = -0.12;
+    tool.add(toolGrip, toolShaft);
+    tool.position.set(0, -0.76, 0.02);
+    armTool.add(tool);
+    // Caminho da corrente: bolinha vermelha da mão ao coração
+    const spark = new THREE.Mesh(new THREE.SphereGeometry(0.045, 10, 8), new THREE.MeshBasicMaterial({ color: "#ef4444" }));
+    const sparkHalo = new THREE.Mesh(
+      new THREE.SphereGeometry(0.09, 12, 10),
+      new THREE.MeshBasicMaterial({ color: "#ef4444", transparent: true, opacity: 0.3, depthWrite: false }),
+    );
+    scene.add(spark, sparkHalo);
+
+    // ---------- Utilidades de tempo ----------
+    const clamp01 = (x) => Math.min(1, Math.max(0, x));
+    const prog = (t, a, b) => clamp01((t - a) / (b - a));
+    const easeInOut = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+    const easeOut = (x) => 1 - Math.pow(1 - x, 3);
+    const easeOutExpo = (x) => (x >= 1 ? 1 : 1 - Math.pow(2, -10 * x));
+    const lerp = (a, b, x) => a + (b - a) * x;
+    const lerp3 = (a, b, x) => [lerp(a[0], b[0], x), lerp(a[1], b[1], x), lerp(a[2], b[2], x)];
+    // Mola fechada (amortecimento ~0,6), função pura de t
+    const spring = (x) => (x <= 0 ? 0 : 1 - Math.exp(-6 * x) * Math.cos(9 * x));
+    // Valor por quadros-chave [[t, v], ...], com ease in-out entre eles
+    function track(t, keys) {
+      if (t <= keys[0][0]) return keys[0][1];
+      for (let i = 0; i < keys.length - 1; i++) {
+        const [ta, va] = keys[i];
+        const [tb, vb] = keys[i + 1];
+        if (t <= tb) return tb === ta ? vb : lerp(va, vb, easeInOut((t - ta) / (tb - ta)));
+      }
+      return keys[keys.length - 1][1];
+    }
+    function track3(t, keys) {
+      if (t <= keys[0][0]) return keys[0][1];
+      for (let i = 0; i < keys.length - 1; i++) {
+        const [ta, va] = keys[i];
+        const [tb, vb] = keys[i + 1];
+        if (t <= tb) return lerp3(va, vb, easeInOut((t - ta) / Math.max(1e-6, tb - ta)));
+      }
+      return keys[keys.length - 1][1];
+    }
+
+    // ---------- Câmera: plano-sequência por quadros-chave ----------
+    // p = posição, q = alvo. Entre chaves: ease in-out.
+    // z: afastamento da câmera ao longo de (p - q); 1,7 por padrão, menor nos planos abertos
+    const CAM_OPEN = { p: [2.3, 1.95, 3.7], q: [-0.2, 1.5, -1.0] };
+    const QD_Q = (dy = 0) => [1.62, 1.62 + dy, -1.32]; // alvo à esquerda do quadro: ele fica à direita da tela
+    const K = [
+      { t: C.hook, ...CAM_OPEN },
+      { t: C.nao, p: [2.0, 1.85, 3.2], q: [-0.15, 1.35, -1.0] },
+      { t: C.camadas, p: [3.4, 2.2, 6.2], q: [0.8, 1.35, -1.0], z: 1.15 },
+      { t: C.problema + 0.9, p: [0.75, 2.05, 0.15], q: [0.0, 2.0, -1.12], z: 1.5 },
+      { t: C.molhada - 0.4, p: [0.8, 2.0, 0.25], q: [0.0, 1.98, -1.12], z: 1.5 },
+      { t: C.molhada + 0.6, p: [1.7, 1.75, 2.2], q: [-0.35, 1.45, -0.95] },
+      { t: C.coracao + 0.6, p: [1.5, 1.65, 1.9], q: [-0.45, 1.4, -0.9] },
+      { t: C.c1 + 0.7, p: [2.55, 1.75, 0.9], q: QD_Q() },
+      { t: C.etiqueta + 0.4, p: [2.35, 1.66, 0.35], q: QD_Q(-0.04), z: 1.6 },
+      { t: C.religa + 0.4, p: [2.4, 1.7, 0.5], q: QD_Q(-0.04), z: 1.6 },
+      { t: C.c2 + 0.6, p: [2.3, 1.75, 3.0], q: [0.65, 1.35, -1.2], z: 1.35 },
+      { t: C.energia + 0.2, p: [1.6, 1.35, 0.6], q: [1.15, 1.12, -1.38], z: 1.6 },
+      { t: C.mede + 0.7, p: [0.75, 2.1, 0.2], q: [0.05, 2.0, -1.12], z: 1.5 },
+      { t: C.agoraSim + 0.4, p: [0.85, 2.1, 0.35], q: [0.05, 1.98, -1.12], z: 1.5 },
+      { t: C.c3 + 0.6, p: [1.8, 2.0, 2.8], q: [0.15, 1.5, -1.1], z: 1.5 },
+      { t: C.aterramento + 1.6, p: [1.7, 1.8, 2.9], q: [0.35, 1.3, -1.15], z: 1.35 },
+      { t: C.luva + 0.3, p: [1.3, 1.75, 2.1], q: [-0.4, 1.35, -0.95] },
+      { t: C.ferramenta + 0.8, p: [1.25, 1.7, 2.0], q: [-0.45, 1.3, -0.95] },
+      { t: C.atencao + 0.4, p: [3.3, 2.3, 5.6], q: [0.95, 1.75, -1.2], z: 1.15 },
+      { t: C.duasFases + 0.5, p: [2.9, 2.35, 4.6], q: [0.95, 1.95, -1.3], z: 1.2 },
+      { t: C.polo + 0.2, p: [2.5, 1.8, 1.0], q: QD_Q(0.1) },
+      { t: C.desligaUma + 0.6, p: [2.5, 1.85, 1.1], q: QD_Q(0.1) },
+      { t: C.continua + 0.4, p: [2.4, 2.45, 3.6], q: [0.8, 2.0, -1.3], z: 1.3 },
+      { t: C.soDetector + 0.4, p: [0.8, 2.12, 0.3], q: [0.05, 1.98, -1.12], z: 1.5 },
+      { t: C.norma + 1.2, p: [3.6, 2.5, 6.6], q: [0.7, 1.35, -1.0], z: 1.1 },
+      { t: C.cta, p: [4.0, 2.8, 7.4], q: [0.7, 1.35, -1.0], z: 1.05 },
+      { t: C.loop + 0.3, p: [3.0, 2.1, 5.0], q: [0.1, 1.35, -1.0], z: 1.3 },
+      { t: C.end, ...CAM_OPEN },
+    ].map((k) => {
+      const z = k.z ?? 1.7;
+      return { t: k.t, q: k.q, p: k.q.map((q, i) => q + (k.p[i] - q) * z) };
+    });
+    function cameraAt(t) {
+      if (t <= K[0].t) return K[0];
+      for (let i = 0; i < K.length - 1; i++) {
+        const a = K[i];
+        const b = K[i + 1];
+        if (t <= b.t) {
+          const x = easeInOut((t - a.t) / (b.t - a.t));
+          return { p: lerp3(a.p, b.p, x), q: lerp3(a.q, b.q, x) };
+        }
+      }
+      return K[K.length - 1];
+    }
+
+    // ---------- Estado elétrico ----------
+    // Alavanca: 1 = ligado, 0 = desligado. No início ele já desligou o disjuntor.
+    const leverKeys = (pole) => {
+      const k = [
+        [0, 0],
+        [C.problema, 0],
+        [C.problema + 0.25, 1],
+        [C.desliga + 0.6, 1],
+        [C.desliga + 0.85, 0],
+        [C.rede, 0],
+        [C.rede + 0.25, 1],
+      ];
+      if (pole === 1) k.push([C.desligaUma - 0.05, 1], [C.desligaUma + 0.2, 0]);
+      else k.push([C.norma, 1], [C.norma + 0.25, 0]);
+      return k;
+    };
+    const LEV1 = leverKeys(1);
+    const LEV2 = leverKeys(2);
+
+    // ---------- Callouts presos a pontos 3D ----------
+    const svg = document.getElementById("world-lines");
+    const SVGNS = "http://www.w3.org/2000/svg";
+    function worldOf(obj, x, y, z) {
+      obj.updateMatrixWorld(true);
+      return obj.localToWorld(new THREE.Vector3(x, y, z)).toArray();
+    }
+    const handOf = (i) => worldOf(worker.userData.hands[i], 0, 0, 0);
+    const CALLOUTS = [
+      { id: "co-res", a: C.chuveiro + 0.2, b: C.nao, at: () => [SH.x + 0.1, SH.y - 0.04, SH.z], dx: 90, dy: -110 },
+      { id: "co-220", a: C.v220, b: C.molhada, at: () => [POLE2.x - 0.6, 2.59, W_Z], dx: 60, dy: 170 },
+      { id: "co-mao", a: C.molhada, b: C.ma10, at: () => handOf(0), dx: 120, dy: 190 },
+      { id: "co-trava", a: C.trava, b: C.ma50, at: () => worldOf(worker.userData.arms[0], 0, -0.2, 0), dx: 140, dy: 160 },
+      { id: "co-heart", a: C.coracao, b: C.c1, at: () => spark.position.toArray(), dx: 150, dy: 140 },
+      { id: "co-circ", a: C.circuito, b: C.cadeado, at: () => [(POLE1.x + POLE2.x) / 2, BR_Y + 0.07, BR_Z + 0.04], dx: -120, dy: -190 },
+      { id: "co-lock", a: C.cadeado, b: C.c2, at: () => lock.position.toArray(), dx: -170, dy: 120 },
+      { id: "co-tag", a: C.etiqueta + 0.1, b: C.c2, at: () => worldOf(tagCard, 0, -0.03, 0), dx: 110, dy: 170 },
+      { id: "co-plug", a: C.energia - 0.1, b: C.mede, at: () => [PLUG.x - 0.04, PLUG.y - 0.04, PLUG.z], dx: -100, dy: 180 },
+      { id: "co-0v", a: C.semTensao, b: C.c3, at: () => [SH.x + 0.13, SH.y - 0.02, SH.z + 0.08], dx: 120, dy: 170 },
+      { id: "co-clamps", a: C.aterramento + 0.2, b: C.luva, at: () => [0.04, 2.42, W_Z + 0.04], dx: 120, dy: -140 },
+      { id: "co-earth", a: C.aterramento + 1.0, b: C.luva, at: () => EARTH.toArray(), dx: 120, dy: 60 },
+      { id: "co-glove", a: C.luva, b: C.atencao, at: () => handOf(0), dx: 140, dy: 150 },
+      { id: "co-tool", a: C.ferramenta, b: C.atencao, at: () => worldOf(tool, 0, -0.1, 0), dx: 140, dy: 230 },
+      { id: "co-1p", top: 690, a: C.polo + 0.1, b: C.continua, at: () => [POLE1.x, BR_Y + 0.05, BR_Z + 0.04], dx: -110, dy: -200 },
+      { id: "co-f12", top: 690, a: C.continua + 0.3, b: C.soDetector, at: () => [0.6, 2.59, W_Z], dx: 60, dy: 190 },
+      { id: "co-127", top: 690, a: C.v127, b: C.norma, at: () => [SH.x - 0.08, SH.y - 0.02, SH.z], dx: -110, dy: 150 },
+      { id: "co-det", top: 690, a: C.soDetector + 0.2, b: C.norma, at: () => detector.position.toArray(), dx: 120, dy: -170 },
+    ];
+    for (const c of CALLOUTS) {
+      c.el = document.getElementById(c.id);
+      c.line = document.createElementNS(SVGNS, "line");
+      c.line.setAttribute("stroke", "#0b1d3f");
+      c.line.setAttribute("stroke-width", "3");
+      c.dot = document.createElementNS(SVGNS, "circle");
+      c.dot.setAttribute("r", "8");
+      c.dot.setAttribute("fill", "#f97316");
+      c.dot.setAttribute("stroke", "#ffffff");
+      c.dot.setAttribute("stroke-width", "3");
+      svg.append(c.line, c.dot);
+    }
+    const proj = new THREE.Vector3();
+    function placeCallouts(t) {
+      for (const c of CALLOUTS) {
+        const fadeIn = prog(t, c.a, c.a + 0.25);
+        const fadeOut = 1 - prog(t, c.b - 0.2, c.b);
+        const o = Math.min(fadeIn, fadeOut);
+        if (o <= 0.001) {
+          c.el.style.opacity = "0";
+          c.line.setAttribute("opacity", "0");
+          c.dot.setAttribute("opacity", "0");
+          continue;
+        }
+        proj.fromArray(c.at()).project(camera);
+        const px = (proj.x * 0.5 + 0.5) * W;
+        const py = (-proj.y * 0.5 + 0.5) * H;
+        const el = c.el;
+        const bw = c.bw;
+        const bh = c.bh;
+        // Caixa deslocada do ponto; mantida dentro da faixa segura (top: abaixo dos cards do HUD)
+        let bx = px + c.dx - (c.dx < 0 ? bw : 0);
+        let by = py + c.dy - bh / 2;
+        bx = Math.min(W - 54 - bw, Math.max(54, bx));
+        by = Math.min(1160 - bh, Math.max(c.top ?? 330, by));
+        const lift = 14 * (1 - easeOutExpo(fadeIn));
+        el.style.opacity = String(o);
+        el.style.transform = `translate(${bx}px, ${by + lift}px)`;
+        const lx = bx + (c.dx < 0 ? bw : 0);
+        const ly = by + bh / 2;
+        const grow = easeOut(fadeIn);
+        c.line.setAttribute("x1", String(px));
+        c.line.setAttribute("y1", String(py));
+        c.line.setAttribute("x2", String(lerp(px, lx, grow)));
+        c.line.setAttribute("y2", String(lerp(py, ly, grow)));
+        c.line.setAttribute("opacity", String(o));
+        c.dot.setAttribute("cx", String(px));
+        c.dot.setAttribute("cy", String(py));
+        c.dot.setAttribute("opacity", String(o));
+      }
+    }
+
+    // ---------- Render de um quadro a partir de t ----------
+    const tmp = new THREE.Vector3();
+    function render(t) {
+      // Câmera
+      const cam = cameraAt(t);
+      camera.position.fromArray(cam.p);
+      camera.lookAt(cam.q[0], cam.q[1], cam.q[2]);
+      camera.updateMatrixWorld(true);
+
+      // Disjuntor: alavancas, barra de acoplamento (some na seção de atenção)
+      const l1 = track(t, LEV1);
+      const l2 = track(t, LEV2);
+      POLE1.lever.position.y = BR_Y + lerp(-0.035, 0.035, l1);
+      POLE2.lever.position.y = BR_Y + lerp(-0.035, 0.035, l2);
+      const tieK = t < C.atencao ? 1 : t < C.norma ? 1 - easeOut(prog(t, C.atencao + 0.3, C.atencao + 0.8)) : easeOut(prog(t, C.norma, C.norma + 0.5));
+      tieBar.visible = tieK > 0.01;
+      tieBar.scale.set(Math.max(0.01, tieK), 1, 1);
+      tieBar.position.set((POLE1.x + POLE2.x) / 2, (POLE1.lever.position.y + POLE2.lever.position.y) / 2, BR_Z + 0.06);
+      const on = { 1: l1 > 0.5, 2: l2 > 0.5 };
+
+      // Fios energizados: brilho + pulsos andando do quadro para o chuveiro
+      for (const w of WIRES) {
+        if (!w.id) continue;
+        const live = on[w.id];
+        w.mat.emissiveIntensity = live ? 0.55 : 0;
+        w.pulses.forEach((p, k) => {
+          p.visible = live;
+          if (live) {
+            const u = 1 - ((k / w.pulses.length + t * 0.32) % 1);
+            w.path.getPointAt(u, tmp);
+            p.position.copy(tmp);
+          }
+        });
+      }
+      const anyLive = on[1] || on[2];
+
+      // Raio-x do chuveiro: casca fica transparente e mostra a resistência
+      const xray = track(t, [
+        [0, 1], [C.chuveiro, 1], [C.chuveiro + 0.4, 0.28], [C.nao, 0.28], [C.nao + 0.4, 1],
+        [C.problema, 1], [C.problema + 0.5, 0.25], [C.c1 - 0.4, 0.25], [C.c1, 1],
+        [C.mede, 1], [C.mede + 0.5, 0.35], [C.c3, 0.35], [C.c3 + 0.4, 1],
+        [C.continua - 0.4, 1], [C.continua, 0.25], [C.norma, 0.25], [C.norma + 0.5, 1],
+      ]);
+      shellMat.opacity = xray;
+      shellMat.depthWrite = xray > 0.98;
+      coilMat.emissiveIntensity = anyLive ? 0.9 + 0.25 * Math.sin(t * 9) : 0;
+
+      // Água só enquanto o problema é explicado
+      const water = t >= C.problema + 0.3 && t < C.c1 - 0.2;
+      for (const d of drops) {
+        d.visible = water;
+        if (water) {
+          const f = (d.userData.off + t * 1.8) % 1;
+          d.position.set(d.userData.x, SH.y - 0.15 - f * 2.0, d.userData.z);
+        }
+      }
+
+      // Cadeado e etiqueta
+      const lockK = t < C.atencao ? spring(prog(t, C.cadeado, C.cadeado + 1)) : 1 - easeOut(prog(t, C.atencao, C.atencao + 0.3));
+      lock.visible = lockK > 0.01;
+      lock.scale.setScalar(Math.max(0.01, lockK));
+      lock.position.set((POLE1.x + POLE2.x) / 2, BR_Y - 0.075, BR_Z + 0.06);
+      const tagK = t < C.atencao ? spring(prog(t, C.etiqueta, C.etiqueta + 1)) : 1 - easeOut(prog(t, C.atencao, C.atencao + 0.3));
+      tag.visible = tagK > 0.01;
+      tag.scale.setScalar(Math.max(0.01, tagK));
+      tag.position.set((POLE1.x + POLE2.x) / 2, BR_Y - 0.1, BR_Z + 0.065);
+      const sw = Math.max(0, t - C.etiqueta);
+      tag.rotation.z = 0.35 * Math.exp(-3 * sw) * Math.cos(8 * sw);
+
+      // Detector: aparece na mão, testa na tomada, mede o chuveiro; volta no mito
+      const idle = [WPOS[0] + 0.45, 1.5, WPOS[2] + 0.25];
+      const atPlug = PLUG.clone().addScaledVector(TIP_DIR, 0.16).toArray();
+      const atShower = new THREE.Vector3(SH.x + 0.12, SH.y - 0.02, SH.z + 0.1).addScaledVector(TIP_DIR, 0.16).toArray();
+      let detK = 0;
+      if (t < C.c3 + 0.6) detK = easeOutExpo(prog(t, C.detector - 0.2, C.detector + 0.3)) * (1 - prog(t, C.c3 + 0.2, C.c3 + 0.6));
+      else if (t < C.norma + 0.3) detK = easeOutExpo(prog(t, C.soDetector - 0.4, C.soDetector + 0.1)) * (1 - prog(t, C.norma, C.norma + 0.3));
+      detector.visible = detK > 0.01;
+      detector.scale.setScalar(Math.max(0.01, detK));
+      const detPos =
+        t < C.c3 + 0.6
+          ? track3(t, [[C.detector, idle], [C.energia - 0.6, idle], [C.energia + 0.1, atPlug], [C.mede - 0.1, atPlug], [C.mede + 0.6, atShower]])
+          : atShower;
+      detector.position.fromArray(detPos);
+      const plugOn = t >= C.energia + 0.1 && t < C.mede;
+      const zeroV = t >= C.semTensao - 0.2 && t < C.c3 + 0.6;
+      const mito = t >= C.soDetector - 0.1 && t < C.norma + 0.3;
+      ledMat.color.set(plugOn || (mito && Math.sin(t * 14) > -0.2) ? "#ef4444" : zeroV ? "#22c55e" : "#9ca3af");
+
+      // Aterramento temporário: grampos e cabo crescendo até o terra
+      const gIn = t >= C.aterramento - 0.1 && t < C.atencao + 0.4;
+      const gOut = 1 - easeOut(prog(t, C.atencao, C.atencao + 0.4));
+      const clampK = spring(prog(t, C.aterramento, C.aterramento + 0.9)) * gOut;
+      for (const c of clamps) {
+        c.visible = gIn;
+        c.scale.setScalar(Math.max(0.01, clampK));
+      }
+      jumper.visible = gIn && t >= C.aterramento + 0.2;
+      groundCable.visible = gIn;
+      const grow = easeOut(prog(t, C.aterramento + 0.3, C.aterramento + 1.5)) * gOut;
+      groundCable.geometry.setDrawRange(0, Math.max(6, Math.floor((groundIdx * grow) / 6) * 6));
+
+      // Eletricista: braço que alcança o chuveiro (0 = solto, 1 = encostando)
+      const reach = track(t, [
+        [0, 0.4], [C.encostar, 1], [C.nao, 1], [C.nao + 0.6, 0.1],
+        [C.molhada - 0.7, 0.1], [C.molhada, 1], [C.c1, 1], [C.c1 + 0.6, 0],
+        [C.loop, 0], [C.end, 0.4],
+      ]);
+      armReach.rotation.set(-2.15 * reach, 0, 0.12 * reach);
+      const toolUp = track(t, [[C.ferramenta - 0.4, 0], [C.ferramenta + 0.3, 0.55], [C.atencao, 0.55], [C.atencao + 0.5, 0]]);
+      armTool.rotation.set(-1.3 * toolUp, 0, 0);
+      tool.visible = t >= C.ferramenta && t < C.atencao + 0.3;
+      tool.scale.setScalar(Math.max(0.01, spring(prog(t, C.ferramenta, C.ferramenta + 0.8))));
+      // Luvas isolantes de C.luva até a norma
+      const gloved = t >= C.luva && t < C.norma;
+      const pop = gloved ? 1 + 0.35 * (1 - spring(prog(t, C.luva, C.luva + 0.8))) : 1;
+      for (const h of worker.userData.hands) {
+        h.material = gloved ? M.glove : M.skin;
+        h.scale.setScalar(gloved ? 1.12 * pop : 1);
+      }
+
+      // Caminho da corrente: mão -> ombro -> coração
+      const showSpark = t >= C.ma10 && t < C.c1;
+      spark.visible = sparkHalo.visible = showSpark;
+      if (showSpark) {
+        const hand = new THREE.Vector3(...handOf(0));
+        const shoulder = new THREE.Vector3(...worldOf(armReach, 0, -0.05, 0));
+        const heart = new THREE.Vector3(...worldOf(worker.userData.hips, -0.08, 0.42, 0.2));
+        const k = track(t, [[C.ma10, 0], [C.trava, 0.5], [C.ma50, 0.5], [C.coracao, 1]]);
+        const pos = k < 0.5 ? hand.lerp(shoulder, k * 2) : shoulder.lerp(heart, (k - 0.5) * 2);
+        spark.position.copy(pos);
+        sparkHalo.position.copy(pos);
+        const beat = t >= C.coracao ? 1 + 0.45 * Math.pow(Math.abs(Math.sin(t * 6)), 3) : 1 + 0.15 * Math.sin(t * 10);
+        sparkHalo.scale.setScalar(beat);
+      }
+
+      renderer.render(scene, camera);
+      placeCallouts(t);
+    }
+
+    // Relógio: um tween do GSAP alimenta render(t); a linha do tempo é registrada no fim
+    document.fonts.ready.then(() => {
+      for (const c of CALLOUTS) {
+        c.bw = c.el.offsetWidth;
+        c.bh = c.el.offsetHeight;
+      }
+      const state = { t: 0 };
+      const tl = gsap.timeline({ paused: true });
+      tl.to(state, { t: C.end, duration: C.end, ease: "none", onUpdate: () => render(state.t) }, 0);
+      render(0);
+      window.__timelines["world"] = tl;
+    });
+  </script>
+</template>

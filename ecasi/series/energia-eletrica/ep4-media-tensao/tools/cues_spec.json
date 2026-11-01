@@ -1,0 +1,224 @@
+{
+  "secc": {
+    "word": "seccionadora"
+  },
+  "cabine": {
+    "word": "cabine"
+  },
+  "pode": {
+    "word": "pode"
+  },
+  "encostar": {
+    "word": "encostar"
+  },
+  "nao": {
+    "word": "nao"
+  },
+  "chave": {
+    "word": "chave"
+  },
+  "aberta": {
+    "word": "aberta"
+  },
+  "camadas": {
+    "word": "camadas"
+  },
+  "problema": {
+    "word": "problema"
+  },
+  "v13800": {
+    "word": "13800v"
+  },
+  "nr10": {
+    "word": "nr10"
+  },
+  "alta": {
+    "word": "alta"
+  },
+  "mil": {
+    "word": "1000"
+  },
+  "nem": {
+    "word": "nem"
+  },
+  "chegar": {
+    "word": "chegar"
+  },
+  "arco": {
+    "word": "arco"
+  },
+  "zonas": {
+    "word": "zonas"
+  },
+  "r38": {
+    "word": "38"
+  },
+  "risco": {
+    "word": "risco"
+  },
+  "r138": {
+    "word": "138"
+  },
+  "controlada": {
+    "word": "controlada"
+  },
+  "c1": {
+    "word": "camada"
+  },
+  "autorizar": {
+    "word": "autorizar"
+  },
+  "ordem": {
+    "word": "ordem"
+  },
+  "equipe": {
+    "word": "equipe"
+  },
+  "duas": {
+    "word": "duas"
+  },
+  "sep": {
+    "word": "sep"
+  },
+  "plano": {
+    "word": "plano"
+  },
+  "c2": {
+    "word": "camada",
+    "n": 2
+  },
+  "bloquear": {
+    "word": "bloquear"
+  },
+  "testar": {
+    "word": "testar"
+  },
+  "seccionadora2": {
+    "word": "seccionadora",
+    "n": 2
+  },
+  "gerador": {
+    "word": "gerador"
+  },
+  "travados": {
+    "word": "travados"
+  },
+  "detector": {
+    "word": "detector"
+  },
+  "bastao": {
+    "word": "bastao"
+  },
+  "testado": {
+    "word": "testado"
+  },
+  "usar": {
+    "word": "usar"
+  },
+  "c3": {
+    "word": "camada",
+    "n": 3
+  },
+  "aterrar": {
+    "word": "aterrar"
+  },
+  "aterramento": {
+    "word": "aterramento"
+  },
+  "dois": {
+    "word": "dois"
+  },
+  "lados": {
+    "word": "lados"
+  },
+  "sinal": {
+    "word": "sinalizada"
+  },
+  "chao": {
+    "word": "chao"
+  },
+  "mito": {
+    "word": "abriu",
+    "n": 2
+  },
+  "semEnergia": {
+    "word": "sem"
+  },
+  "naoMito": {
+    "word": "nao",
+    "n": 3
+  },
+  "gerador2": {
+    "word": "gerador",
+    "n": 2
+  },
+  "ligar": {
+    "word": "ligar"
+  },
+  "voltar": {
+    "word": "voltar"
+  },
+  "transformador": {
+    "word": "transformador"
+  },
+  "entram": {
+    "word": "entram"
+  },
+  "v380": {
+    "word": "380v"
+  },
+  "saem": {
+    "word": "saem"
+  },
+  "x36": {
+    "word": "36"
+  },
+  "terra": {
+    "word": "aterramento",
+    "n": 2
+  },
+  "lados2": {
+    "word": "lados",
+    "n": 2
+  },
+  "norma": {
+    "word": "nr10",
+    "n": 3,
+    "shift": -1
+  },
+  "complementar": {
+    "word": "complementar"
+  },
+  "nbr": {
+    "word": "nbr"
+  },
+  "mediaTensao": {
+    "word": "media"
+  },
+  "cta": {
+    "word": "faca"
+  },
+  "treinamento": {
+    "word": "treinamento"
+  },
+  "ecasi": {
+    "word": "grupo"
+  },
+  "proximo": {
+    "word": "ultimo"
+  },
+  "reveja": {
+    "word": "reveja"
+  },
+  "loop": {
+    "word": "abriu",
+    "n": 3
+  },
+  "confira": {
+    "word": "confira"
+  },
+  "antes": {
+    "word": "antes",
+    "n": 3
+  }
+}

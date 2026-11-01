@@ -1,0 +1,137 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Barlow Condensed";
+      font-weight: 800;
+      src: url("assets/fonts/BarlowCondensed-800.woff2") format("woff2");
+    }
+    @font-face {
+      font-family: "Barlow Condensed";
+      font-weight: 900;
+      src: url("assets/fonts/BarlowCondensed-900.woff2") format("woff2");
+    }
+    @font-face {
+      font-family: "Bricolage Grotesque";
+      font-weight: 500;
+      src: url("assets/fonts/BricolageGrotesque-500.woff2") format("woff2");
+    }
+    @font-face {
+      font-family: "Bricolage Grotesque";
+      font-weight: 700;
+      src: url("assets/fonts/BricolageGrotesque-700.woff2") format("woff2");
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      color: #ffffff;
+    }
+    #ec-bg {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      background: radial-gradient(120% 70% at 50% 35%, #1a2438 0%, #0b1220 62%);
+    }
+    #ec-wrap {
+      position: absolute;
+      left: 72px;
+      right: 72px;
+      top: 300px;
+      text-align: center;
+    }
+    #ec-logo {
+      display: block;
+      width: 260px;
+      height: 260px;
+      margin: 0 auto;
+      border-radius: 40px;
+      box-shadow: 0 0 0 4px rgba(90, 152, 239, 0.35), 0 30px 60px -20px rgba(36, 87, 214, 0.6);
+      opacity: 0;
+    }
+    #ec-name {
+      margin-top: 40px;
+      font-family: "Barlow Condensed", sans-serif;
+      font-weight: 800;
+      font-size: 60px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      opacity: 0;
+    }
+    #ec-serv {
+      margin-top: 10px;
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-weight: 500;
+      font-size: 36px;
+      color: #b4bccb;
+      opacity: 0;
+    }
+    #ec-cta {
+      margin-top: 56px;
+      font-family: "Barlow Condensed", sans-serif;
+      font-weight: 900;
+      font-size: 132px;
+      line-height: 0.9;
+      text-transform: uppercase;
+      opacity: 0;
+    }
+    #ec-cta span {
+      color: #5a98ef;
+    }
+    #ec-btn {
+      margin: 44px auto 0;
+      width: 760px;
+      height: 120px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      background: #1a9e4b;
+      box-shadow: 0 18px 40px -14px rgba(26, 158, 75, 0.7);
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-weight: 700;
+      font-size: 46px;
+      opacity: 0;
+    }
+    #ec-btn svg {
+      width: 56px;
+      height: 56px;
+    }
+    #ec-links {
+      margin-top: 34px;
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-weight: 500;
+      font-size: 34px;
+      color: #8db4f6;
+      opacity: 0;
+    }
+  </style>
+  <div id="root" data-composition-id="endcard" data-width="1080" data-height="1920">
+    <div id="ec-bg"></div>
+    <div id="ec-wrap">
+      <img id="ec-logo" src="assets/site/logo-house.jpg" alt="House Pinturas e Decorações" />
+      <div id="ec-name">House Pinturas e Decorações</div>
+      <div id="ec-serv">Madeira e verniz · Pintura residencial · Fachadas</div>
+      <div id="ec-cta">Orçamento<br /><span>grátis</span></div>
+      <div id="ec-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" /></svg>
+        Chamar no WhatsApp
+      </div>
+      <div id="ec-links">@house_pintura10 · housepintura.com.br</div>
+    </div>
+  </div>
+  <script>
+    // Tempos locais: a cena começa 0,4 s antes do fim do clipe da revelação
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#ec-bg", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power2.inOut" }, 0);
+    tl.fromTo("#ec-logo", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.6, ease: "back.out(1.8)" }, 0.35);
+    tl.fromTo("#ec-name", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: "expo.out" }, 0.6);
+    tl.fromTo("#ec-serv", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: "expo.out" }, 0.72);
+    tl.fromTo("#ec-cta", { opacity: 0, scale: 1.15 }, { opacity: 1, scale: 1, duration: 0.45, ease: "expo.out" }, 1.0);
+    tl.fromTo("#ec-btn", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, ease: "expo.out" }, 1.35);
+    tl.to("#ec-btn", { scale: 1.05, duration: 0.2, ease: "power2.out" }, 2.1);
+    tl.to("#ec-btn", { scale: 1, duration: 0.35, ease: "power2.inOut" }, 2.3);
+    tl.fromTo("#ec-links", { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power2.out" }, 1.6);
+    window.__timelines["endcard"] = tl;
+  </script>
+</template>

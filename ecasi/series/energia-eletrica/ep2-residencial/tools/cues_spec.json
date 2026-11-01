@@ -1,0 +1,210 @@
+{
+  "cliente": {
+    "word": "cliente"
+  },
+  "pode": {
+    "word": "pode"
+  },
+  "ainda": {
+    "word": "ainda"
+  },
+  "quadro2": {
+    "word": "quadro",
+    "n": 2
+  },
+  "seguro": {
+    "word": "seguro"
+  },
+  "camadas": {
+    "word": "camadas"
+  },
+  "problema": {
+    "word": "problema"
+  },
+  "cabo": {
+    "word": "cabo"
+  },
+  "esquenta": {
+    "word": "esquenta"
+  },
+  "pvc": {
+    "word": "pvc"
+  },
+  "g70": {
+    "word": "70"
+  },
+  "fuga": {
+    "word": "fuga"
+  },
+  "mili": {
+    "word": "miliamperes"
+  },
+  "percebe": {
+    "word": "percebe"
+  },
+  "semTerra": {
+    "word": "sem"
+  },
+  "carcaca": {
+    "word": "carcaca"
+  },
+  "energizada": {
+    "word": "energizada"
+  },
+  "c1": {
+    "word": "camada"
+  },
+  "protecao": {
+    "word": "protecao"
+  },
+  "escolhido": {
+    "word": "escolhido"
+  },
+  "carga": {
+    "word": "carga"
+  },
+  "cabo25": {
+    "word": "cabo",
+    "n": 3
+  },
+  "embutido": {
+    "word": "embutido"
+  },
+  "a24": {
+    "word": "24"
+  },
+  "entao": {
+    "word": "entao"
+  },
+  "d20": {
+    "word": "20"
+  },
+  "c2": {
+    "word": "camada",
+    "n": 2
+  },
+  "dr": {
+    "word": "dr"
+  },
+  "ma30": {
+    "word": "30"
+  },
+  "banheiro": {
+    "word": "banheiro"
+  },
+  "cozinha": {
+    "word": "cozinha"
+  },
+  "lavanderia": {
+    "word": "lavanderia"
+  },
+  "externa": {
+    "word": "area"
+  },
+  "aperte": {
+    "word": "aperte"
+  },
+  "teste": {
+    "word": "teste"
+  },
+  "desarmou": {
+    "word": "nao",
+    "n": 4
+  },
+  "naoEntrega": {
+    "word": "nao",
+    "n": 5
+  },
+  "c3": {
+    "word": "camada",
+    "n": 3
+  },
+  "fioTerra": {
+    "word": "fio"
+  },
+  "circuitos": {
+    "word": "circuitos"
+  },
+  "dps": {
+    "word": "dps"
+  },
+  "etiqueta": {
+    "word": "cada"
+  },
+  "mito": {
+    "word": "disjuntor",
+    "n": 5
+  },
+  "poe": {
+    "word": "poe"
+  },
+  "naoMito": {
+    "word": "nao",
+    "n": 6
+  },
+  "a40": {
+    "word": "40"
+  },
+  "cabo24": {
+    "word": "24",
+    "n": 2
+  },
+  "dobro": {
+    "word": "quase"
+  },
+  "semDesarmar": {
+    "word": "sem",
+    "n": 2
+  },
+  "fusivel": {
+    "word": "vira"
+  },
+  "parede": {
+    "word": "dentro"
+  },
+  "norma": {
+    "word": "nbr"
+  },
+  "define": {
+    "word": "define"
+  },
+  "nr10": {
+    "word": "nr10"
+  },
+  "desenergizar": {
+    "word": "desenergizar"
+  },
+  "antesNr": {
+    "word": "antes",
+    "n": 2
+  },
+  "curso": {
+    "word": "curso"
+  },
+  "cta": {
+    "word": "faca"
+  },
+  "treinamento": {
+    "word": "treinamento"
+  },
+  "ecasi": {
+    "word": "grupo"
+  },
+  "proximo": {
+    "word": "proximo"
+  },
+  "industria": {
+    "word": "industria"
+  },
+  "loop": {
+    "word": "terminou",
+    "n": 2
+  },
+  "confira": {
+    "word": "confira"
+  },
+  "antes": {
+    "word": "antes",
+    "n": 3
+  }
+}

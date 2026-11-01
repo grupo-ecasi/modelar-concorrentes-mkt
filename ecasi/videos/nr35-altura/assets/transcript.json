@@ -1,0 +1,1304 @@
+[
+  {
+    "id": "w0",
+    "text": "Você",
+    "start": 0,
+    "end": 0.32
+  },
+  {
+    "id": "w1",
+    "text": "está",
+    "start": 0.48,
+    "end": 0.64
+  },
+  {
+    "id": "w2",
+    "text": "a",
+    "start": 0.64,
+    "end": 0.8
+  },
+  {
+    "id": "w3",
+    "text": "3",
+    "start": 0.8,
+    "end": 1.12
+  },
+  {
+    "id": "w4",
+    "text": "metros",
+    "start": 1.12,
+    "end": 1.52
+  },
+  {
+    "id": "w5",
+    "text": "de",
+    "start": 1.52,
+    "end": 1.6
+  },
+  {
+    "id": "w6",
+    "text": "altura,",
+    "start": 1.6,
+    "end": 2.08
+  },
+  {
+    "id": "w7",
+    "text": "de",
+    "start": 2.08,
+    "end": 2.24
+  },
+  {
+    "id": "w8",
+    "text": "cinto",
+    "start": 2.24,
+    "end": 2.64
+  },
+  {
+    "id": "w9",
+    "text": "paraquedista.",
+    "start": 2.72,
+    "end": 3.76
+  },
+  {
+    "id": "w10",
+    "text": "Isso",
+    "start": 3.76,
+    "end": 4.08
+  },
+  {
+    "id": "w11",
+    "text": "basta?",
+    "start": 4.08,
+    "end": 4.88
+  },
+  {
+    "id": "w12",
+    "text": "Não.",
+    "start": 4.88,
+    "end": 5.36
+  },
+  {
+    "id": "w13",
+    "text": "A",
+    "start": 5.6,
+    "end": 5.84
+  },
+  {
+    "id": "w14",
+    "text": "NR35",
+    "start": 5.84,
+    "end": 7.2
+  },
+  {
+    "id": "w15",
+    "text": "organiza",
+    "start": 7.36,
+    "end": 7.84
+  },
+  {
+    "id": "w16",
+    "text": "a",
+    "start": 7.92,
+    "end": 8
+  },
+  {
+    "id": "w17",
+    "text": "sua",
+    "start": 8,
+    "end": 8.24
+  },
+  {
+    "id": "w18",
+    "text": "proteção",
+    "start": 8.24,
+    "end": 8.8
+  },
+  {
+    "id": "w19",
+    "text": "em",
+    "start": 8.8,
+    "end": 8.96
+  },
+  {
+    "id": "w20",
+    "text": "três",
+    "start": 8.96,
+    "end": 9.28
+  },
+  {
+    "id": "w21",
+    "text": "camadas.",
+    "start": 9.28,
+    "end": 10.32
+  },
+  {
+    "id": "w22",
+    "text": "Primeiro,",
+    "start": 10.32,
+    "end": 11.04
+  },
+  {
+    "id": "w23",
+    "text": "trabalho",
+    "start": 11.2,
+    "end": 11.76
+  },
+  {
+    "id": "w24",
+    "text": "em",
+    "start": 11.76,
+    "end": 12
+  },
+  {
+    "id": "w25",
+    "text": "altura",
+    "start": 12,
+    "end": 12.48
+  },
+  {
+    "id": "w26",
+    "text": "é",
+    "start": 12.48,
+    "end": 12.72
+  },
+  {
+    "id": "w27",
+    "text": "qualquer",
+    "start": 12.72,
+    "end": 13.2
+  },
+  {
+    "id": "w28",
+    "text": "atividade",
+    "start": 13.2,
+    "end": 13.68
+  },
+  {
+    "id": "w29",
+    "text": "acima",
+    "start": 13.68,
+    "end": 14.16
+  },
+  {
+    "id": "w30",
+    "text": "de",
+    "start": 14.16,
+    "end": 14.32
+  },
+  {
+    "id": "w31",
+    "text": "2",
+    "start": 14.32,
+    "end": 14.64
+  },
+  {
+    "id": "w32",
+    "text": "metros",
+    "start": 14.64,
+    "end": 15.04
+  },
+  {
+    "id": "w33",
+    "text": "do",
+    "start": 15.04,
+    "end": 15.2
+  },
+  {
+    "id": "w34",
+    "text": "nível",
+    "start": 15.2,
+    "end": 15.6
+  },
+  {
+    "id": "w35",
+    "text": "inferior,",
+    "start": 15.6,
+    "end": 16.24
+  },
+  {
+    "id": "w36",
+    "text": "onde",
+    "start": 16.24,
+    "end": 16.48
+  },
+  {
+    "id": "w37",
+    "text": "existe",
+    "start": 16.48,
+    "end": 16.88
+  },
+  {
+    "id": "w38",
+    "text": "risco",
+    "start": 16.88,
+    "end": 17.2
+  },
+  {
+    "id": "w39",
+    "text": "de",
+    "start": 17.2,
+    "end": 17.36
+  },
+  {
+    "id": "w40",
+    "text": "queda.",
+    "start": 17.36,
+    "end": 18
+  },
+  {
+    "id": "w41",
+    "text": "E",
+    "start": 18,
+    "end": 18.16
+  },
+  {
+    "id": "w42",
+    "text": "uma",
+    "start": 18.16,
+    "end": 18.32
+  },
+  {
+    "id": "w43",
+    "text": "queda",
+    "start": 18.4,
+    "end": 18.8
+  },
+  {
+    "id": "w44",
+    "text": "de",
+    "start": 18.8,
+    "end": 18.88
+  },
+  {
+    "id": "w45",
+    "text": "2",
+    "start": 18.88,
+    "end": 19.2
+  },
+  {
+    "id": "w46",
+    "text": "metros",
+    "start": 19.2,
+    "end": 19.68
+  },
+  {
+    "id": "w47",
+    "text": "dura",
+    "start": 19.68,
+    "end": 20.08
+  },
+  {
+    "id": "w48",
+    "text": "menos",
+    "start": 20.08,
+    "end": 20.32
+  },
+  {
+    "id": "w49",
+    "text": "de",
+    "start": 20.32,
+    "end": 20.48
+  },
+  {
+    "id": "w50",
+    "text": "um",
+    "start": 20.48,
+    "end": 20.64
+  },
+  {
+    "id": "w51",
+    "text": "segundo.",
+    "start": 20.8,
+    "end": 21.52
+  },
+  {
+    "id": "w52",
+    "text": "Você",
+    "start": 21.52,
+    "end": 21.84
+  },
+  {
+    "id": "w53",
+    "text": "chega",
+    "start": 21.84,
+    "end": 22.24
+  },
+  {
+    "id": "w54",
+    "text": "embaixo",
+    "start": 22.24,
+    "end": 22.64
+  },
+  {
+    "id": "w55",
+    "text": "a",
+    "start": 22.64,
+    "end": 22.8
+  },
+  {
+    "id": "w56",
+    "text": "mais",
+    "start": 22.8,
+    "end": 23.04
+  },
+  {
+    "id": "w57",
+    "text": "de",
+    "start": 23.04,
+    "end": 23.2
+  },
+  {
+    "id": "w58",
+    "text": "20",
+    "start": 23.2,
+    "end": 23.6
+  },
+  {
+    "id": "w59",
+    "text": "km",
+    "start": 23.6,
+    "end": 23.84
+  },
+  {
+    "id": "w60",
+    "text": "por",
+    "start": 24.32,
+    "end": 24.48
+  },
+  {
+    "id": "w61",
+    "text": "hora.",
+    "start": 24.48,
+    "end": 25.12
+  },
+  {
+    "id": "w62",
+    "text": "Camada",
+    "start": 25.12,
+    "end": 25.68
+  },
+  {
+    "id": "w63",
+    "text": "1.",
+    "start": 25.68,
+    "end": 26.08
+  },
+  {
+    "id": "w64",
+    "text": "Evitar.",
+    "start": 26.32,
+    "end": 26.88
+  },
+  {
+    "id": "w65",
+    "text": "Dá",
+    "start": 27.2,
+    "end": 27.44
+  },
+  {
+    "id": "w66",
+    "text": "para",
+    "start": 27.44,
+    "end": 27.6
+  },
+  {
+    "id": "w67",
+    "text": "fazer",
+    "start": 27.6,
+    "end": 27.92
+  },
+  {
+    "id": "w68",
+    "text": "do",
+    "start": 27.92,
+    "end": 28.08
+  },
+  {
+    "id": "w69",
+    "text": "chão?",
+    "start": 28.08,
+    "end": 28.64
+  },
+  {
+    "id": "w70",
+    "text": "Montar",
+    "start": 28.64,
+    "end": 29.12
+  },
+  {
+    "id": "w71",
+    "text": "a",
+    "start": 29.12,
+    "end": 29.2
+  },
+  {
+    "id": "w72",
+    "text": "peça",
+    "start": 29.2,
+    "end": 29.52
+  },
+  {
+    "id": "w73",
+    "text": "embaixo",
+    "start": 29.52,
+    "end": 29.92
+  },
+  {
+    "id": "w74",
+    "text": "e",
+    "start": 29.92,
+    "end": 30.16
+  },
+  {
+    "id": "w75",
+    "text": "isar.",
+    "start": 30.16,
+    "end": 30.64
+  },
+  {
+    "id": "w76",
+    "text": "Usar",
+    "start": 30.8,
+    "end": 31.2
+  },
+  {
+    "id": "w77",
+    "text": "uma",
+    "start": 31.2,
+    "end": 31.36
+  },
+  {
+    "id": "w78",
+    "text": "ferramenta",
+    "start": 31.36,
+    "end": 31.76
+  },
+  {
+    "id": "w79",
+    "text": "com",
+    "start": 31.76,
+    "end": 32
+  },
+  {
+    "id": "w80",
+    "text": "cabo",
+    "start": 32,
+    "end": 32.4
+  },
+  {
+    "id": "w81",
+    "text": "extensor.",
+    "start": 32.4,
+    "end": 33.2
+  },
+  {
+    "id": "w82",
+    "text": "Se",
+    "start": 33.2,
+    "end": 33.44
+  },
+  {
+    "id": "w83",
+    "text": "não",
+    "start": 33.44,
+    "end": 33.6
+  },
+  {
+    "id": "w84",
+    "text": "precisa",
+    "start": 33.6,
+    "end": 34.16
+  },
+  {
+    "id": "w85",
+    "text": "subir,",
+    "start": 34.16,
+    "end": 34.64
+  },
+  {
+    "id": "w86",
+    "text": "não",
+    "start": 34.88,
+    "end": 35.12
+  },
+  {
+    "id": "w87",
+    "text": "sobe.",
+    "start": 35.12,
+    "end": 35.92
+  },
+  {
+    "id": "w88",
+    "text": "Camada",
+    "start": 36,
+    "end": 36.56
+  },
+  {
+    "id": "w89",
+    "text": "2.",
+    "start": 36.56,
+    "end": 37.04
+  },
+  {
+    "id": "w90",
+    "text": "Eliminar",
+    "start": 37.28,
+    "end": 37.92
+  },
+  {
+    "id": "w91",
+    "text": "a",
+    "start": 37.92,
+    "end": 38.08
+  },
+  {
+    "id": "w92",
+    "text": "queda.",
+    "start": 38.08,
+    "end": 38.56
+  },
+  {
+    "id": "w93",
+    "text": "Proteção",
+    "start": 38.8,
+    "end": 39.44
+  },
+  {
+    "id": "w94",
+    "text": "coletiva.",
+    "start": 39.44,
+    "end": 40.32
+  },
+  {
+    "id": "w95",
+    "text": "Plataforma",
+    "start": 40.32,
+    "end": 40.96
+  },
+  {
+    "id": "w96",
+    "text": "de",
+    "start": 40.96,
+    "end": 41.12
+  },
+  {
+    "id": "w97",
+    "text": "trabalho",
+    "start": 41.12,
+    "end": 41.52
+  },
+  {
+    "id": "w98",
+    "text": "e",
+    "start": 41.52,
+    "end": 41.68
+  },
+  {
+    "id": "w99",
+    "text": "guarda-corpo,",
+    "start": 41.68,
+    "end": 42.56
+  },
+  {
+    "id": "w100",
+    "text": "com",
+    "start": 42.56,
+    "end": 42.72
+  },
+  {
+    "id": "w101",
+    "text": "travessão",
+    "start": 42.88,
+    "end": 43.44
+  },
+  {
+    "id": "w102",
+    "text": "superior",
+    "start": 43.44,
+    "end": 43.84
+  },
+  {
+    "id": "w103",
+    "text": "a",
+    "start": 43.84,
+    "end": 44
+  },
+  {
+    "id": "w104",
+    "text": "1",
+    "start": 44,
+    "end": 44.24
+  },
+  {
+    "id": "w105",
+    "text": "metro",
+    "start": 44.24,
+    "end": 44.56
+  },
+  {
+    "id": "w106",
+    "text": "e",
+    "start": 44.56,
+    "end": 44.64
+  },
+  {
+    "id": "w107",
+    "text": "20",
+    "start": 44.64,
+    "end": 44.8
+  },
+  {
+    "id": "w108",
+    "text": "do",
+    "start": 44.96,
+    "end": 45.12
+  },
+  {
+    "id": "w109",
+    "text": "piso.",
+    "start": 45.12,
+    "end": 45.84
+  },
+  {
+    "id": "w110",
+    "text": "Camada",
+    "start": 45.84,
+    "end": 46.48
+  },
+  {
+    "id": "w111",
+    "text": "3.",
+    "start": 46.48,
+    "end": 46.96
+  },
+  {
+    "id": "w112",
+    "text": "Reduzir",
+    "start": 47.2,
+    "end": 47.84
+  },
+  {
+    "id": "w113",
+    "text": "as",
+    "start": 47.84,
+    "end": 48
+  },
+  {
+    "id": "w114",
+    "text": "consequências.",
+    "start": 48,
+    "end": 49.12
+  },
+  {
+    "id": "w115",
+    "text": "É",
+    "start": 49.12,
+    "end": 49.36
+  },
+  {
+    "id": "w116",
+    "text": "aqui",
+    "start": 49.36,
+    "end": 49.68
+  },
+  {
+    "id": "w117",
+    "text": "que",
+    "start": 49.68,
+    "end": 49.84
+  },
+  {
+    "id": "w118",
+    "text": "entra",
+    "start": 49.84,
+    "end": 50.16
+  },
+  {
+    "id": "w119",
+    "text": "o",
+    "start": 50.16,
+    "end": 50.32
+  },
+  {
+    "id": "w120",
+    "text": "cinto.",
+    "start": 50.32,
+    "end": 50.96
+  },
+  {
+    "id": "w121",
+    "text": "Ponto",
+    "start": 50.96,
+    "end": 51.36
+  },
+  {
+    "id": "w122",
+    "text": "de",
+    "start": 51.36,
+    "end": 51.52
+  },
+  {
+    "id": "w123",
+    "text": "ancoragem.",
+    "start": 51.52,
+    "end": 52.08
+  },
+  {
+    "id": "w124",
+    "text": "Talabarte",
+    "start": 52.24,
+    "end": 53.04
+  },
+  {
+    "id": "w125",
+    "text": "com",
+    "start": 53.04,
+    "end": 53.12
+  },
+  {
+    "id": "w126",
+    "text": "absorvedor",
+    "start": 53.2,
+    "end": 53.84
+  },
+  {
+    "id": "w127",
+    "text": "de",
+    "start": 53.84,
+    "end": 54
+  },
+  {
+    "id": "w128",
+    "text": "energia",
+    "start": 54,
+    "end": 54.48
+  },
+  {
+    "id": "w129",
+    "text": "e",
+    "start": 54.48,
+    "end": 54.72
+  },
+  {
+    "id": "w130",
+    "text": "cinturão",
+    "start": 54.72,
+    "end": 55.36
+  },
+  {
+    "id": "w131",
+    "text": "paraquedista.",
+    "start": 55.36,
+    "end": 56.48
+  },
+  {
+    "id": "w132",
+    "text": "Na",
+    "start": 56.48,
+    "end": 56.64
+  },
+  {
+    "id": "w133",
+    "text": "queda,",
+    "start": 56.64,
+    "end": 57.2
+  },
+  {
+    "id": "w134",
+    "text": "o",
+    "start": 57.2,
+    "end": 57.36
+  },
+  {
+    "id": "w135",
+    "text": "absorvedor",
+    "start": 57.36,
+    "end": 58.16
+  },
+  {
+    "id": "w136",
+    "text": "se",
+    "start": 58.16,
+    "end": 58.32
+  },
+  {
+    "id": "w137",
+    "text": "abre",
+    "start": 58.32,
+    "end": 58.72
+  },
+  {
+    "id": "w138",
+    "text": "e",
+    "start": 58.72,
+    "end": 58.88
+  },
+  {
+    "id": "w139",
+    "text": "limita",
+    "start": 58.88,
+    "end": 59.44
+  },
+  {
+    "id": "w140",
+    "text": "a",
+    "start": 59.44,
+    "end": 59.52
+  },
+  {
+    "id": "w141",
+    "text": "força",
+    "start": 59.52,
+    "end": 59.84
+  },
+  {
+    "id": "w142",
+    "text": "no",
+    "start": 59.84,
+    "end": 60
+  },
+  {
+    "id": "w143",
+    "text": "seu",
+    "start": 60,
+    "end": 60.16
+  },
+  {
+    "id": "w144",
+    "text": "corpo",
+    "start": 60.16,
+    "end": 60.48
+  },
+  {
+    "id": "w145",
+    "text": "a",
+    "start": 60.48,
+    "end": 60.64
+  },
+  {
+    "id": "w146",
+    "text": "6",
+    "start": 60.64,
+    "end": 60.96
+  },
+  {
+    "id": "w147",
+    "text": "kN.",
+    "start": 60.96,
+    "end": 62.08
+  },
+  {
+    "id": "w148",
+    "text": "E",
+    "start": 62.08,
+    "end": 62.32
+  },
+  {
+    "id": "w149",
+    "text": "atenção!",
+    "start": 62.32,
+    "end": 63.04
+  },
+  {
+    "id": "w150",
+    "text": "Ancorou",
+    "start": 63.04,
+    "end": 63.68
+  },
+  {
+    "id": "w151",
+    "text": "no",
+    "start": 63.68,
+    "end": 63.76
+  },
+  {
+    "id": "w152",
+    "text": "pé?",
+    "start": 63.76,
+    "end": 64.16
+  },
+  {
+    "id": "w153",
+    "text": "A",
+    "start": 64.25,
+    "end": 64.41
+  },
+  {
+    "id": "w154",
+    "text": "queda",
+    "start": 64.41,
+    "end": 64.81
+  },
+  {
+    "id": "w155",
+    "text": "livre",
+    "start": 64.81,
+    "end": 65.21
+  },
+  {
+    "id": "w156",
+    "text": "pode",
+    "start": 65.21,
+    "end": 65.45
+  },
+  {
+    "id": "w157",
+    "text": "chegar",
+    "start": 65.45,
+    "end": 65.77
+  },
+  {
+    "id": "w158",
+    "text": "ao",
+    "start": 65.77,
+    "end": 65.93
+  },
+  {
+    "id": "w159",
+    "text": "dobro",
+    "start": 65.93,
+    "end": 66.25
+  },
+  {
+    "id": "w160",
+    "text": "do",
+    "start": 66.25,
+    "end": 66.41
+  },
+  {
+    "id": "w161",
+    "text": "comprimento",
+    "start": 66.41,
+    "end": 66.81
+  },
+  {
+    "id": "w162",
+    "text": "do",
+    "start": 66.89,
+    "end": 67.05
+  },
+  {
+    "id": "w163",
+    "text": "talabarte.",
+    "start": 67.05,
+    "end": 68.17
+  },
+  {
+    "id": "w164",
+    "text": "Sempre",
+    "start": 68.17,
+    "end": 68.57
+  },
+  {
+    "id": "w165",
+    "text": "que",
+    "start": 68.57,
+    "end": 68.81
+  },
+  {
+    "id": "w166",
+    "text": "possível,",
+    "start": 68.81,
+    "end": 69.37
+  },
+  {
+    "id": "w167",
+    "text": "a",
+    "start": 69.37,
+    "end": 69.53
+  },
+  {
+    "id": "w168",
+    "text": "ancoragem",
+    "start": 69.53,
+    "end": 70.25
+  },
+  {
+    "id": "w169",
+    "text": "fica",
+    "start": 70.25,
+    "end": 70.57
+  },
+  {
+    "id": "w170",
+    "text": "acima",
+    "start": 70.57,
+    "end": 71.05
+  },
+  {
+    "id": "w171",
+    "text": "da",
+    "start": 71.05,
+    "end": 71.21
+  },
+  {
+    "id": "w172",
+    "text": "cabeça.",
+    "start": 71.21,
+    "end": 72.01
+  },
+  {
+    "id": "w173",
+    "text": "Antes",
+    "start": 72.01,
+    "end": 72.33
+  },
+  {
+    "id": "w174",
+    "text": "de",
+    "start": 72.33,
+    "end": 72.49
+  },
+  {
+    "id": "w175",
+    "text": "subir,",
+    "start": 72.49,
+    "end": 73.05
+  },
+  {
+    "id": "w176",
+    "text": "a",
+    "start": 73.05,
+    "end": 73.29
+  },
+  {
+    "id": "w177",
+    "text": "NR35",
+    "start": 73.29,
+    "end": 74.65
+  },
+  {
+    "id": "w178",
+    "text": "exige",
+    "start": 74.73,
+    "end": 75.37
+  },
+  {
+    "id": "w179",
+    "text": "análise",
+    "start": 75.37,
+    "end": 75.85
+  },
+  {
+    "id": "w180",
+    "text": "de",
+    "start": 75.85,
+    "end": 76.01
+  },
+  {
+    "id": "w181",
+    "text": "risco,",
+    "start": 76.01,
+    "end": 76.49
+  },
+  {
+    "id": "w182",
+    "text": "plano",
+    "start": 76.49,
+    "end": 76.89
+  },
+  {
+    "id": "w183",
+    "text": "de",
+    "start": 76.89,
+    "end": 76.97
+  },
+  {
+    "id": "w184",
+    "text": "resgate",
+    "start": 76.97,
+    "end": 77.69
+  },
+  {
+    "id": "w185",
+    "text": "e",
+    "start": 77.69,
+    "end": 77.93
+  },
+  {
+    "id": "w186",
+    "text": "treinamento",
+    "start": 77.93,
+    "end": 78.57
+  },
+  {
+    "id": "w187",
+    "text": "de",
+    "start": 78.57,
+    "end": 78.73
+  },
+  {
+    "id": "w188",
+    "text": "8",
+    "start": 78.73,
+    "end": 79.13
+  },
+  {
+    "id": "w189",
+    "text": "horas,",
+    "start": 79.13,
+    "end": 79.61
+  },
+  {
+    "id": "w190",
+    "text": "com",
+    "start": 79.61,
+    "end": 79.85
+  },
+  {
+    "id": "w191",
+    "text": "reciclagem",
+    "start": 79.85,
+    "end": 80.57
+  },
+  {
+    "id": "w192",
+    "text": "a",
+    "start": 80.57,
+    "end": 80.73
+  },
+  {
+    "id": "w193",
+    "text": "cada",
+    "start": 80.73,
+    "end": 81.05
+  },
+  {
+    "id": "w194",
+    "text": "dois",
+    "start": 81.05,
+    "end": 81.21
+  },
+  {
+    "id": "w195",
+    "text": "anos.",
+    "start": 81.37,
+    "end": 81.93
+  },
+  {
+    "id": "w196",
+    "text": "Sua",
+    "start": 81.93,
+    "end": 82.25
+  },
+  {
+    "id": "w197",
+    "text": "equipe",
+    "start": 82.25,
+    "end": 82.65
+  },
+  {
+    "id": "w198",
+    "text": "está",
+    "start": 82.65,
+    "end": 82.81
+  },
+  {
+    "id": "w199",
+    "text": "em",
+    "start": 82.81,
+    "end": 82.97
+  },
+  {
+    "id": "w200",
+    "text": "dia?",
+    "start": 82.97,
+    "end": 83.45
+  },
+  {
+    "id": "w201",
+    "text": "Fale",
+    "start": 83.45,
+    "end": 83.85
+  },
+  {
+    "id": "w202",
+    "text": "com",
+    "start": 83.85,
+    "end": 84.01
+  },
+  {
+    "id": "w203",
+    "text": "o",
+    "start": 84.01,
+    "end": 84.09
+  },
+  {
+    "id": "w204",
+    "text": "Grupo",
+    "start": 84.09,
+    "end": 84.41
+  },
+  {
+    "id": "w205",
+    "text": "Ecasi.",
+    "start": 84.41,
+    "end": 85.21
+  },
+  {
+    "id": "w206",
+    "text": "Vai",
+    "start": 85.21,
+    "end": 85.45
+  },
+  {
+    "id": "w207",
+    "text": "trabalhar",
+    "start": 85.45,
+    "end": 85.85
+  },
+  {
+    "id": "w208",
+    "text": "em",
+    "start": 85.85,
+    "end": 86.01
+  },
+  {
+    "id": "w209",
+    "text": "altura?",
+    "start": 86.01,
+    "end": 86.65
+  },
+  {
+    "id": "w210",
+    "text": "Confira",
+    "start": 86.65,
+    "end": 87.29
+  },
+  {
+    "id": "w211",
+    "text": "as",
+    "start": 87.29,
+    "end": 87.45
+  },
+  {
+    "id": "w212",
+    "text": "três",
+    "start": 87.45,
+    "end": 87.69
+  },
+  {
+    "id": "w213",
+    "text": "camadas.",
+    "start": 87.69,
+    "end": 88.65
+  },
+  {
+    "id": "w214",
+    "text": "Antes",
+    "start": 88.65,
+    "end": 89.05
+  },
+  {
+    "id": "w215",
+    "text": "de",
+    "start": 89.05,
+    "end": 89.21
+  },
+  {
+    "id": "w216",
+    "text": "subir.",
+    "start": 89.21,
+    "end": 89.69
+  }
+]

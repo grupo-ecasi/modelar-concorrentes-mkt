@@ -1,0 +1,491 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      font-family: Poppins, sans-serif;
+      color: #0b1d3f;
+      pointer-events: none;
+    }
+    .hud-abs {
+      position: absolute;
+      opacity: 0;
+    }
+    /* Barra de progresso 1-2-3 */
+    #hud-chips {
+      position: absolute;
+      left: 54px;
+      right: 54px;
+      top: 196px;
+      display: flex;
+      gap: 14px;
+    }
+    .hud-chip {
+      flex: 1;
+      height: 88px;
+      border-radius: 12px;
+      background: #ffffff;
+      border: 2px solid #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      font-size: 30px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #6b7280;
+      box-shadow: 0 12px 28px -18px rgba(11, 29, 63, 0.45);
+      opacity: 0;
+    }
+    .hud-chip b {
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 500;
+    }
+    /* Card de dado */
+    .hud-card {
+      left: 64px;
+      top: 330px;
+      padding: 22px 32px 24px;
+      border-radius: 16px;
+      background: #ffffff;
+      border: 2px solid #e5e7eb;
+      box-shadow: 0 18px 40px -18px rgba(11, 29, 63, 0.4);
+      max-width: 860px;
+    }
+    .hud-card .v {
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 500;
+      font-size: 92px;
+      line-height: 1;
+      letter-spacing: -0.02em;
+      color: #0b1d3f;
+      white-space: nowrap;
+    }
+    .hud-card .v em {
+      font-style: normal;
+      color: #c2410c;
+    }
+    .hud-card .l {
+      margin-top: 10px;
+      font-size: 30px;
+      font-weight: 500;
+      line-height: 1.25;
+      color: #4b5563;
+    }
+    .hud-card.is-red {
+      background: #fdecec;
+      border-color: rgba(211, 47, 47, 0.35);
+    }
+    .hud-card.is-red .v {
+      color: #b3261e;
+    }
+    .hud-card.is-green {
+      background: #ecf8f2;
+      border-color: rgba(59, 178, 115, 0.45);
+    }
+    .hud-card.is-green .v {
+      color: #1f7a4c;
+    }
+    .hud-quote {
+      font-size: 52px;
+      font-weight: 600;
+      line-height: 1.15;
+      color: #0b1d3f;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .hud-quote svg {
+      width: 64px;
+      height: 64px;
+      flex: none;
+      color: #3bb273;
+    }
+    /* Títulos */
+    .hud-title {
+      left: 72px;
+      right: 72px;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 0.98;
+    }
+    .hud-title .w {
+      display: inline-block;
+    }
+    .hud-orange {
+      color: #c2410c;
+    }
+    /* Número gigante de seção */
+    .hud-section {
+      left: 72px;
+      top: 330px;
+    }
+    .hud-section .n {
+      font-size: 300px;
+      font-weight: 700;
+      line-height: 0.82;
+      letter-spacing: -0.06em;
+      color: #f97316;
+      display: inline-block;
+    }
+    .hud-section .t {
+      margin-top: 14px;
+      font-size: 92px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      text-transform: uppercase;
+      display: inline-block;
+      color: #0b1d3f;
+    }
+    .hud-section .s {
+      margin-top: 12px;
+      font-size: 46px;
+      font-weight: 500;
+      color: #0b1d3f;
+      display: inline-block;
+    }
+    .hud-section .pad {
+      display: inline-block;
+      padding: 6px 18px 10px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.86);
+    }
+    /* Alerta */
+    #hud-alert {
+      left: 64px;
+      top: 330px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 28px;
+      border-radius: 9999px;
+      background: #fdecec;
+      border: 2px solid rgba(211, 47, 47, 0.35);
+      color: #b3261e;
+      font-size: 40px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    #hud-alert svg {
+      width: 48px;
+      height: 48px;
+    }
+    /* Norma */
+    #hud-norma-head {
+      left: 64px;
+      top: 330px;
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 500;
+      font-size: 44px;
+      color: #c2410c;
+      padding: 10px 22px;
+      border-radius: 8px;
+      background: #fff1e6;
+    }
+    .hud-item {
+      left: 64px;
+      width: 720px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      padding: 24px 28px;
+      border-radius: 16px;
+      background: #ffffff;
+      border: 2px solid #e5e7eb;
+      box-shadow: 0 18px 40px -20px rgba(11, 29, 63, 0.4);
+    }
+    .hud-item .ic {
+      width: 88px;
+      height: 88px;
+      flex: none;
+      border-radius: 12px;
+      background: #fff1e6;
+      color: #f97316;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .hud-item .ic svg {
+      width: 52px;
+      height: 52px;
+    }
+    .hud-item .tx {
+      font-size: 46px;
+      font-weight: 600;
+      line-height: 1.1;
+    }
+    .hud-item .sub {
+      display: block;
+      margin-top: 6px;
+      font-size: 32px;
+      font-weight: 500;
+      color: #c2410c;
+    }
+  </style>
+  <div data-hf-id="hf-nhps" id="root" data-composition-id="hud" data-width="1080" data-height="1920">
+    <!-- Abertura -->
+    <div data-hf-id="hf-463r" id="hud-hook" class="hud-abs hud-title" style="top: 236px; font-size: 132px">
+      <span data-hf-id="hf-b02u" class="w">Só</span> <span data-hf-id="hf-bzw5" class="w">o</span> <span data-hf-id="hf-wpvb" class="w">cinto</span><br data-hf-id="hf-x5px" />
+      <span data-hf-id="hf-h8mx" class="w hud-orange" id="hud-basta">basta?</span>
+    </div>
+    <div data-hf-id="hf-xuha" id="hud-nao" class="hud-abs hud-title hud-orange" style="top: 220px; font-size: 300px">Não.</div>
+    <div data-hf-id="hf-qm9l" id="hud-nr" class="hud-abs" style="left: 72px; top: 250px">
+      <div data-hf-id="hf-6i33" style="font-family: 'JetBrains Mono', monospace; font-weight: 500; font-size: 150px; line-height: 1; letter-spacing: -0.03em">NR-35</div>
+      <div data-hf-id="hf-d4do" style="margin-top: 14px; font-size: 48px; font-weight: 500">Trabalho em altura</div>
+    </div>
+
+    <!-- Barra 1-2-3 -->
+    <div data-hf-id="hf-japm" id="hud-chips">
+      <div data-hf-id="hf-93yq" class="hud-chip" id="hud-chip1"><b data-hf-id="hf-t4n0">1</b>Evitar</div>
+      <div data-hf-id="hf-fbgb" class="hud-chip" id="hud-chip2"><b data-hf-id="hf-rxpx">2</b>Eliminar</div>
+      <div data-hf-id="hf-bvms" class="hud-chip" id="hud-chip3"><b data-hf-id="hf-sc0y">3</b>Reduzir</div>
+    </div>
+
+    <!-- Problema -->
+    <div data-hf-id="hf-m5gw" id="hud-c2m" class="hud-abs hud-card">
+      <div data-hf-id="hf-i9m7" class="v">&gt; <em data-hf-id="hf-heup">2,00</em> m</div>
+      <div data-hf-id="hf-0bnu" class="l">acima do nível inferior, com risco de queda</div>
+    </div>
+    <div data-hf-id="hf-7kgc" id="hud-ctime" class="hud-abs hud-card">
+      <div data-hf-id="hf-ujz3" class="v"><span data-hf-id="hf-d1td" id="hud-time">0,00</span> s</div>
+      <div data-hf-id="hf-xmur" class="l">duração de uma queda de 2 m</div>
+    </div>
+    <div data-hf-id="hf-3w00" id="hud-cspeed" class="hud-abs hud-card">
+      <div data-hf-id="hf-1y9d" class="v"><em data-hf-id="hf-sogv" id="hud-speed">0</em> km/h</div>
+      <div data-hf-id="hf-6nyz" class="l">velocidade ao chegar embaixo</div>
+    </div>
+
+    <!-- Seções -->
+    <div data-hf-id="hf-dzgn" id="hud-s1" class="hud-abs hud-section">
+      <div data-hf-id="hf-mfcd" class="n">1</div><br data-hf-id="hf-rsrt" />
+      <div data-hf-id="hf-z5dy" class="t pad">Evitar</div><br data-hf-id="hf-szow" />
+      <div data-hf-id="hf-93xn" class="s pad">o trabalho em altura</div>
+    </div>
+    <div data-hf-id="hf-m0pi" id="hud-q1" class="hud-abs hud-card">
+      <div data-hf-id="hf-hc8o" class="hud-quote">
+        <svg data-hf-id="hf-12oc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-2q26" d="M20 6 9 17l-5-5" /></svg>
+        Não precisa subir?<br data-hf-id="hf-sldv" />Não sobe.
+      </div>
+    </div>
+    <div data-hf-id="hf-33z0" id="hud-s2" class="hud-abs hud-section">
+      <div data-hf-id="hf-nm9g" class="n">2</div><br data-hf-id="hf-qluq" />
+      <div data-hf-id="hf-261o" class="t pad">Eliminar</div><br data-hf-id="hf-q7jp" />
+      <div data-hf-id="hf-mt7a" class="s pad">o risco de queda</div>
+    </div>
+    <div data-hf-id="hf-w6xm" id="hud-c120" class="hud-abs hud-card">
+      <div data-hf-id="hf-lt8h" class="v"><em data-hf-id="hf-q9y0">1,20</em> m</div>
+      <div data-hf-id="hf-s15r" class="l">travessão superior do guarda-corpo · NR-18</div>
+    </div>
+    <div data-hf-id="hf-3vmt" id="hud-s3" class="hud-abs hud-section">
+      <div data-hf-id="hf-n7yf" class="n">3</div><br data-hf-id="hf-regs" />
+      <div data-hf-id="hf-ms5m" class="t pad">Reduzir</div><br data-hf-id="hf-r05r" />
+      <div data-hf-id="hf-6tfn" class="s pad">as consequências da queda</div>
+    </div>
+    <div data-hf-id="hf-22is" id="hud-ckn" class="hud-abs hud-card">
+      <div data-hf-id="hf-fpy3" class="v">≤ <em data-hf-id="hf-m377">6</em> kN</div>
+      <div data-hf-id="hf-1lo5" class="l">força máxima no corpo com absorvedor · NBR 14629</div>
+    </div>
+
+    <!-- Atenção -->
+    <div data-hf-id="hf-cfvt" id="hud-alert" class="hud-abs">
+      <svg data-hf-id="hf-8nvo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-fn22" d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" /><path data-hf-id="hf-mlkx" d="M12 9v4" /><path data-hf-id="hf-c2s1" d="M12 17h.01" /></svg>
+      Atenção
+    </div>
+    <div data-hf-id="hf-ecuc" id="hud-cf2" class="hud-abs hud-card is-red" style="top: 460px">
+      <div data-hf-id="hf-hfey" class="v">fator 2</div>
+      <div data-hf-id="hf-ardl" class="l">queda livre = 2× o talabarte</div>
+    </div>
+    <div data-hf-id="hf-cbe5" id="hud-cf1" class="hud-abs hud-card is-green" style="top: 460px">
+      <div data-hf-id="hf-wnmz" class="v">fator ≤ 1</div>
+      <div data-hf-id="hf-ljdi" class="l">ancoragem acima da cabeça</div>
+    </div>
+
+    <!-- Norma -->
+    <div data-hf-id="hf-at1s" id="hud-norma-head" class="hud-abs">A NR-35 exige</div>
+    <div data-hf-id="hf-lp9v" id="hud-k1" class="hud-abs hud-item" style="top: 450px">
+      <div data-hf-id="hf-w92w" class="ic"><svg data-hf-id="hf-h0hq" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect data-hf-id="hf-q8ar" width="8" height="4" x="8" y="2" rx="1" ry="1" /><path data-hf-id="hf-34fh" d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" /><path data-hf-id="hf-v5qo" d="m9 14 2 2 4-4" /></svg></div>
+      <div data-hf-id="hf-hjds" class="tx">Análise de risco</div>
+    </div>
+    <div data-hf-id="hf-no2s" id="hud-k2" class="hud-abs hud-item" style="top: 610px">
+      <div data-hf-id="hf-yz80" class="ic"><svg data-hf-id="hf-pmle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle data-hf-id="hf-m1lh" cx="12" cy="12" r="10" /><path data-hf-id="hf-k9wx" d="m4.93 4.93 4.24 4.24" /><path data-hf-id="hf-1eg7" d="m14.83 9.17 4.24-4.24" /><path data-hf-id="hf-p1dt" d="m14.83 14.83 4.24 4.24" /><path data-hf-id="hf-zfp1" d="m9.17 14.83-4.24 4.24" /><circle data-hf-id="hf-kysq" cx="12" cy="12" r="4" /></svg></div>
+      <div data-hf-id="hf-bqju" class="tx">Plano de resgate</div>
+    </div>
+    <div data-hf-id="hf-can8" id="hud-k3" class="hud-abs hud-item" style="top: 770px">
+      <div data-hf-id="hf-xsax" class="ic"><svg data-hf-id="hf-q0wf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-y4ds" d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z" /><path data-hf-id="hf-dt4i" d="M22 10v6" /><path data-hf-id="hf-qvia" d="M6 12.5V16a6 3 0 0 0 12 0v-3.5" /></svg></div>
+      <div data-hf-id="hf-9ont" class="tx">Treinamento de 8 h<span data-hf-id="hf-orgo" class="sub" id="hud-k3sub">reciclagem a cada 2 anos</span></div>
+    </div>
+
+    <!-- Fecho em loop -->
+    <div data-hf-id="hf-oiil" id="hud-end" class="hud-abs hud-title" style="top: 330px; font-size: 92px">
+      <span data-hf-id="hf-mw7i" class="w" id="hud-end1">Confira as</span><br data-hf-id="hf-p0mm" />
+      <span data-hf-id="hf-z51a" class="w hud-orange" id="hud-end2">3 camadas</span><br data-hf-id="hf-ombl" />
+      <span data-hf-id="hf-6ikh" class="w" id="hud-end3">antes de subir.</span>
+    </div>
+  </div>
+  <script>
+    /*CUES*/
+    const C = {
+      "hook": 0,
+      "basta": 3.76,
+      "nao": 4.88,
+      "nr35": 5.6,
+      "camadas": 8.96,
+      "problema": 10.32,
+      "acima2m": 13.68,
+      "queda2m": 18,
+      "menosSeg": 20.08,
+      "chega": 21.52,
+      "km": 23.2,
+      "c1": 25.12,
+      "evitar": 26.32,
+      "chao": 27.2,
+      "montar": 28.64,
+      "icar": 30.16,
+      "cabo": 30.8,
+      "naoSobe": 33.2,
+      "c2": 36,
+      "eliminar": 37.28,
+      "coletiva": 38.8,
+      "plataforma": 40.32,
+      "guarda": 41.68,
+      "travessao": 42.88,
+      "m120": 44,
+      "c3": 45.84,
+      "reduzir": 47.2,
+      "cinto": 49.12,
+      "ancoragem": 50.96,
+      "talabarte": 52.24,
+      "absorvedor": 53.2,
+      "cinturao": 54.72,
+      "naQueda": 56.48,
+      "abre": 57.36,
+      "forca": 59.52,
+      "kn": 60.64,
+      "atencao": 62.08,
+      "pe": 63.04,
+      "quedaLivre": 64.25,
+      "dobro": 65.93,
+      "sempre": 68.17,
+      "cabeca": 70.57,
+      "norma": 72.01,
+      "analise": 75.37,
+      "resgate": 76.49,
+      "treino": 77.93,
+      "reciclagem": 79.85,
+      "cta": 81.93,
+      "fale": 83.45,
+      "loop": 85.21,
+      "confira": 86.65,
+      "antes": 88.65,
+      "end": 90
+    };
+    /*END-CUES*/
+
+    const tl = gsap.timeline({ paused: true });
+    const $ = (s) => document.querySelector(s);
+    const ENTER = "expo.out";
+
+    // Entrada da marca: 0,7 s, opacidade + 24 px. Saída 40% mais curta, com desfoque.
+    function show(sel, a, b, opts = {}) {
+      const el = $(sel);
+      const dy = opts.dy ?? 24;
+      tl.set(el, { visibility: "visible" }, 0);
+      tl.fromTo(el, { opacity: 0, y: dy, filter: "blur(6px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: opts.dur ?? 0.7, ease: ENTER }, a);
+      if (b != null) {
+        tl.to(el, { opacity: 0, y: -10, filter: "blur(6px)", duration: 0.25, ease: "power2.in" }, b - 0.25);
+        tl.set(el, { visibility: "hidden" }, b);
+      }
+    }
+    function words(sel, a, gap = 0.08) {
+      document.querySelectorAll(sel + " .w").forEach((w, i) => {
+        tl.fromTo(w, { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.16, ease: "power4.out" }, a + i * gap);
+      });
+    }
+    // Número de seção: escala com desfoque, depois palavra e subtítulo
+    function section(sel, a, b) {
+      const el = $(sel);
+      tl.fromTo(el, { opacity: 0 }, { opacity: 1, duration: 0.01 }, a);
+      tl.fromTo(el.querySelector(".n"), { scale: 0.55, opacity: 0, filter: "blur(14px)", transformOrigin: "0% 80%" }, { scale: 1, opacity: 1, filter: "blur(0px)", duration: 0.55, ease: "expo.out" }, a);
+      tl.fromTo(el.querySelector(".t"), { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.6, ease: ENTER }, a + 0.22);
+      tl.fromTo(el.querySelector(".s"), { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.6, ease: ENTER }, a + 0.36);
+      tl.to(el, { opacity: 0, y: -16, filter: "blur(8px)", duration: 0.25, ease: "power2.in" }, b - 0.25);
+      tl.set(el, { visibility: "hidden" }, b);
+    }
+    // Estados da barra: inativo, ativo, concluído
+    const CHIP = {
+      off: { backgroundColor: "#ffffff", borderColor: "#e5e7eb", color: "#6b7280" },
+      on: { backgroundColor: "#c2410c", borderColor: "#c2410c", color: "#ffffff" },
+      done: { backgroundColor: "#fff1e6", borderColor: "#fed7b5", color: "#c2410c" },
+    };
+    function chip(n, state, at) {
+      tl.to("#hud-chip" + n, { ...CHIP[state], duration: 0.3, ease: "power2.inOut" }, at);
+    }
+
+    // Abertura
+    tl.set("#hud-hook", { opacity: 1 }, 0);
+    document.querySelectorAll("#hud-hook .w").forEach((w, i) => tl.set(w, { opacity: 1 }, 0));
+    tl.to("#hud-hook", { opacity: 0, filter: "blur(10px)", duration: 0.2, ease: "power2.in" }, C.nao - 0.12);
+    tl.set("#hud-hook", { visibility: "hidden" }, C.nao + 0.1);
+    tl.fromTo("#hud-nao", { opacity: 0, scale: 1.25, filter: "blur(12px)", transformOrigin: "0% 50%" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.3, ease: "expo.out" }, C.nao);
+    tl.to("#hud-nao", { opacity: 0, filter: "blur(8px)", duration: 0.2, ease: "power2.in" }, C.nr35 + 0.05);
+    tl.set("#hud-nao", { visibility: "hidden" }, C.nr35 + 0.25);
+    show("#hud-nr", C.nr35 + 0.24, C.camadas);
+
+    // Barra 1-2-3: entra em "três camadas"
+    [1, 2, 3].forEach((n, i) => {
+      tl.fromTo("#hud-chip" + n, { opacity: 0, y: -20 }, { opacity: 1, y: 0, duration: 0.6, ease: ENTER }, C.camadas + i * 0.12);
+    });
+    chip(1, "on", C.c1);
+    chip(1, "done", C.c2);
+    chip(2, "on", C.c2);
+    chip(2, "done", C.c3);
+    chip(3, "on", C.c3);
+    chip(3, "done", C.atencao);
+    // Some durante a chamada final e volta para o fecho
+    tl.to("#hud-chips", { opacity: 0, y: -20, duration: 0.3, ease: "power2.in" }, C.cta - 0.1);
+    tl.fromTo("#hud-chips", { opacity: 0, y: -20 }, { opacity: 1, y: 0, duration: 0.6, ease: ENTER, immediateRender: false }, C.loop + 0.1);
+    chip(1, "on", C.confira + 0.64);
+    chip(2, "on", C.confira + 0.8);
+    chip(3, "on", C.confira + 1.04);
+
+    // Problema
+    show("#hud-c2m", C.acima2m + 0.1, C.queda2m);
+    show("#hud-ctime", C.menosSeg - 0.3, C.km - 0.05);
+    const timeP = { v: 0 };
+    tl.fromTo(timeP, { v: 0 }, { v: 0.64, duration: 1.4, ease: "none", onUpdate: () => ($("#hud-time").textContent = timeP.v.toFixed(2).replace(".", ",")) }, C.menosSeg);
+    show("#hud-cspeed", C.km, C.c1);
+    const speedP = { v: 0 };
+    tl.fromTo(speedP, { v: 0 }, { v: 22, duration: 0.8, ease: "power2.out", onUpdate: () => ($("#hud-speed").textContent = String(Math.round(speedP.v))) }, C.km + 0.05);
+
+    // Camadas
+    section("#hud-s1", C.c1, C.chao + 0.6);
+    show("#hud-q1", C.naoSobe, C.c2);
+    section("#hud-s2", C.c2, C.coletiva + 0.4);
+    show("#hud-c120", C.travessao + 0.15, C.c3);
+    section("#hud-s3", C.c3, C.cinto - 0.1);
+    show("#hud-ckn", C.forca, C.atencao);
+
+    // Atenção
+    show("#hud-alert", C.atencao, C.norma, { dur: 0.45 });
+    show("#hud-cf2", C.dobro, C.sempre);
+    show("#hud-cf1", C.cabeca, C.norma);
+
+    // Norma
+    show("#hud-norma-head", C.norma + 1.3, C.cta);
+    show("#hud-k1", C.analise, C.cta);
+    show("#hud-k2", C.resgate, C.cta);
+    show("#hud-k3", C.treino, C.cta);
+    tl.fromTo("#hud-k3sub", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.5, ease: ENTER }, C.reciclagem);
+
+    // Fecho
+    tl.set("#hud-end", { opacity: 1, visibility: "visible" }, C.confira - 0.05);
+    tl.fromTo("#hud-end1", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" }, C.confira);
+    tl.fromTo("#hud-end2", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" }, C.confira + 0.64);
+    tl.fromTo("#hud-end3", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" }, C.antes);
+
+    window.__timelines["hud"] = tl;
+  </script>
+</template>

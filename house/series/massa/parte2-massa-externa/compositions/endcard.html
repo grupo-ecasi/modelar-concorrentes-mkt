@@ -1,0 +1,142 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Barlow Condensed";
+      font-weight: 800;
+      src: url("assets/fonts/BarlowCondensed-800.woff2") format("woff2");
+    }
+    @font-face {
+      font-family: "Barlow Condensed";
+      font-weight: 900;
+      src: url("assets/fonts/BarlowCondensed-900.woff2") format("woff2");
+    }
+    @font-face {
+      font-family: "Bricolage Grotesque";
+      font-weight: 500;
+      src: url("assets/fonts/BricolageGrotesque-500.woff2") format("woff2");
+    }
+    @font-face {
+      font-family: "Bricolage Grotesque";
+      font-weight: 700;
+      src: url("assets/fonts/BricolageGrotesque-700.woff2") format("woff2");
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      color: #ffffff;
+    }
+    #ec-bg {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      background: radial-gradient(120% 70% at 50% 35%, #1a2438 0%, #0b1220 62%);
+    }
+    #ec-wrap {
+      position: absolute;
+      left: 72px;
+      right: 72px;
+      top: 250px;
+      text-align: center;
+    }
+    #ec-logo {
+      display: block;
+      width: 200px;
+      height: 200px;
+      margin: 0 auto;
+      border-radius: 34px;
+      box-shadow: 0 0 0 4px rgba(90, 152, 239, 0.35), 0 30px 60px -20px rgba(36, 87, 214, 0.6);
+      opacity: 0;
+    }
+    #ec-name {
+      margin-top: 28px;
+      font-family: "Barlow Condensed", sans-serif;
+      font-weight: 800;
+      font-size: 54px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      opacity: 0;
+    }
+    #ec-head {
+      margin-top: 52px;
+      font-family: "Barlow Condensed", sans-serif;
+      font-weight: 900;
+      font-size: 120px;
+      line-height: 0.92;
+      text-transform: uppercase;
+      opacity: 0;
+    }
+    #ec-head span {
+      color: #5a98ef;
+    }
+    #ec-sub {
+      margin: 26px auto 0;
+      max-width: 820px;
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-weight: 500;
+      font-size: 40px;
+      line-height: 1.25;
+      color: #b4bccb;
+      opacity: 0;
+    }
+    #ec-btn {
+      margin: 48px auto 0;
+      width: 880px;
+      height: 120px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      background: #1a9e4b;
+      box-shadow: 0 18px 40px -14px rgba(26, 158, 75, 0.7);
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-weight: 700;
+      font-size: 44px;
+      opacity: 0;
+    }
+    #ec-btn svg {
+      width: 54px;
+      height: 54px;
+    }
+    #ec-links {
+      margin-top: 30px;
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-weight: 500;
+      font-size: 34px;
+      color: #8db4f6;
+      opacity: 0;
+    }
+  </style>
+  <div data-hf-id="hf-00mi" id="root" data-composition-id="endcard" data-width="1080" data-height="1920">
+    <div data-hf-id="hf-6v8j" id="ec-bg"></div>
+    <div data-hf-id="hf-bkc6" id="ec-wrap">
+      <img data-hf-id="hf-vaf6" id="ec-logo" src="assets/site/logo-house.jpg" alt="House Pinturas e Decorações" />
+      <div data-hf-id="hf-xgfa" id="ec-name">House Pinturas e Decorações</div>
+      <div data-hf-id="hf-koss" id="ec-head">Pintura que<br data-hf-id="hf-x5px" /><span data-hf-id="hf-o3cn">aguenta chuva.</span></div>
+      <div data-hf-id="hf-vc9v" id="ec-sub">O produto certo para cada parede.</div>
+      <div data-hf-id="hf-04uz" id="ec-btn">
+        <svg data-hf-id="hf-h0hq" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-2fyj" d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" /></svg>
+        Orçamento grátis no WhatsApp
+      </div>
+      <div data-hf-id="hf-std6" id="ec-links">@house_pintura10 · Atibaia - SP</div>
+    </div>
+  </div>
+  <script>
+    // A cena começa em 16,9 s, na pausa antes de "House Pinturas". Deixas em tempo GLOBAL; para ressincronizar, mude só aqui.
+    const START = 16.9;
+    const CUE = { house: 17.12, orcamento: 18.96 };
+    const at = (t) => t - START;
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#ec-bg", { opacity: 0 }, { opacity: 1, duration: 0.45, ease: "power2.inOut" }, 0);
+    tl.fromTo("#ec-logo", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.8)" }, at(CUE.house) - 0.05);
+    tl.fromTo("#ec-name", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.45, ease: "expo.out" }, at(CUE.house) + 0.15);
+    tl.fromTo("#ec-head", { opacity: 0, scale: 1.15 }, { opacity: 1, scale: 1, duration: 0.4, ease: "expo.out" }, at(CUE.house) + 0.55);
+    tl.fromTo("#ec-sub", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.45, ease: "expo.out" }, at(CUE.house) + 0.8);
+    tl.fromTo("#ec-btn", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.45, ease: "expo.out" }, at(CUE.orcamento));
+    tl.fromTo("#ec-links", { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power2.out" }, at(CUE.orcamento) + 0.25);
+    tl.to("#ec-btn", { scale: 1.05, duration: 0.2, ease: "power2.out" }, at(CUE.orcamento) + 0.95);
+    tl.to("#ec-btn", { scale: 1, duration: 0.35, ease: "power2.inOut" }, at(CUE.orcamento) + 1.15);
+    window.__timelines["endcard"] = tl;
+  </script>
+</template>

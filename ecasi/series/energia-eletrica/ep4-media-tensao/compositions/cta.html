@@ -1,0 +1,223 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      font-family: Poppins, sans-serif;
+      color: #0b1d3f;
+      pointer-events: none;
+    }
+    #cta-card {
+      position: absolute;
+      left: 72px;
+      right: 72px;
+      top: 230px;
+      padding: 40px 48px 44px;
+      border-radius: 32px;
+      background: #ffffff;
+      border: 2px solid #e5e7eb;
+      box-shadow: 0 40px 80px -30px rgba(11, 29, 63, 0.45);
+      opacity: 0;
+    }
+    #cta-logo {
+      display: block;
+      width: 380px;
+      height: auto;
+    }
+    #cta-q {
+      margin-top: 26px;
+      font-size: 64px;
+      font-weight: 700;
+      line-height: 1.04;
+      letter-spacing: -0.04em;
+    }
+    #cta-q span {
+      color: #c2410c;
+    }
+    #cta-btn {
+      margin-top: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      height: 104px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #c2410c, #f97316);
+      box-shadow: 0 8px 24px -8px rgba(249, 115, 22, 0.5);
+      color: #ffffff;
+      font-size: 42px;
+      font-weight: 600;
+      opacity: 0;
+    }
+    #cta-btn svg {
+      width: 48px;
+      height: 48px;
+    }
+    #cta-next {
+      margin-top: 26px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      padding: 20px 24px;
+      border-radius: 16px;
+      background: #eef1f6;
+      opacity: 0;
+    }
+    #cta-next .ep {
+      flex: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      background: #0b1d3f;
+      color: #ffffff;
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 500;
+      font-size: 28px;
+    }
+    #cta-next .tx {
+      font-size: 32px;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+    #cta-tags {
+      margin-top: 30px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+    .cta-tag {
+      padding: 10px 22px;
+      border-radius: 9999px;
+      font-size: 30px;
+      font-weight: 600;
+      background: #fff1e6;
+      color: #c2410c;
+    }
+    .cta-tag.is-tech {
+      border-radius: 8px;
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 500;
+      background: #eef1f6;
+      color: #4b5563;
+    }
+    #cta-contact {
+      margin-top: 22px;
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 500;
+      font-size: 34px;
+      color: #4b5563;
+      text-align: center;
+      opacity: 0;
+    }
+  </style>
+  <div id="root" data-composition-id="cta" data-width="1080" data-height="1920">
+    <div id="cta-card">
+      <img id="cta-logo" src="assets/brand/logo-fundo-claro.png" alt="Grupo ECASI" />
+      <div id="cta-q">Cabine segura começa no <span>treinamento.</span></div>
+      <div id="cta-tags">
+        <div class="cta-tag">Treinamento NR-10 SEP</div>
+        <div class="cta-tag is-tech">40 h · curso complementar</div>
+      </div>
+      <div id="cta-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" /></svg>
+        Falar no WhatsApp
+      </div>
+      <div id="cta-contact">(11) 95618-8608 · @grupoecasi</div>
+      <div id="cta-next">
+        <div class="ep">EP 4/4</div>
+        <div class="tx">Fim da série: reveja os 4 episódios no perfil</div>
+      </div>
+    </div>
+  </div>
+  <script>
+    /*CUES*/
+    const C = {
+      "hook": 0.0,
+      "secc": 0.56,
+      "cabine": 1.44,
+      "pode": 2.4,
+      "encostar": 2.72,
+      "nao": 4.16,
+      "chave": 4.8,
+      "aberta": 5.28,
+      "camadas": 8.08,
+      "problema": 11.04,
+      "v13800": 12.48,
+      "nr10": 15.04,
+      "alta": 16,
+      "mil": 17.76,
+      "nem": 19.44,
+      "chegar": 20.96,
+      "arco": 23.28,
+      "zonas": 25.92,
+      "r38": 26.88,
+      "risco": 29.68,
+      "r138": 30.56,
+      "controlada": 32.72,
+      "c1": 33.76,
+      "autorizar": 34.88,
+      "ordem": 35.92,
+      "equipe": 37.2,
+      "duas": 38.4,
+      "sep": 39.76,
+      "plano": 40.72,
+      "c2": 42.16,
+      "bloquear": 43.44,
+      "testar": 44.4,
+      "seccionadora2": 45.12,
+      "gerador": 46.16,
+      "travados": 46.72,
+      "detector": 47.76,
+      "bastao": 49.28,
+      "testado": 49.92,
+      "usar": 50.96,
+      "c3": 51.68,
+      "aterrar": 52.96,
+      "aterramento": 53.92,
+      "dois": 55.52,
+      "lados": 55.84,
+      "sinal": 58,
+      "chao": 58.88,
+      "mito": 59.63,
+      "semEnergia": 61.31,
+      "naoMito": 62.35,
+      "gerador2": 63.23,
+      "ligar": 64.35,
+      "voltar": 65.87,
+      "transformador": 66.59,
+      "entram": 67.63,
+      "v380": 68.19,
+      "saem": 70.03,
+      "x36": 72.43,
+      "terra": 74.75,
+      "lados2": 76.19,
+      "norma": 76.91,
+      "complementar": 78.99,
+      "nbr": 80.91,
+      "mediaTensao": 84.43,
+      "cta": 85.55,
+      "treinamento": 86.11,
+      "ecasi": 88.43,
+      "proximo": 90.43,
+      "reveja": 92.03,
+      "loop": 94.19,
+      "confira": 95.79,
+      "antes": 97.71,
+      "end": 99.81
+    };
+    /*END-CUES*/
+    // Tempos locais à cena (a cena começa em "Faça o treinamento")
+    const TREIN = C.treinamento - C.cta;
+    const GRUPO = C.ecasi - C.cta;
+    const NEXT = C.proximo - C.cta;
+    const OUT = C.loop + 0.39 - C.cta;
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo("#cta-card", { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: 0.7, ease: "expo.out" }, 0.05);
+    tl.fromTo("#cta-tags", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.5, ease: "expo.out" }, TREIN);
+    tl.fromTo("#cta-btn", { opacity: 0, y: 24, scale: 0.96 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "expo.out" }, GRUPO - 0.2);
+    tl.fromTo("#cta-contact", { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power2.out" }, GRUPO + 0.1);
+    tl.fromTo("#cta-next", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6, ease: "expo.out" }, NEXT - 0.2);
+    tl.to("#cta-next", { backgroundColor: "#fff1e6", duration: 0.3, ease: "power2.out" }, NEXT + 0.3);
+    tl.to("#cta-card", { opacity: 0, y: -30, filter: "blur(8px)", duration: 0.35, ease: "power3.in" }, OUT - 0.35);
+    window.__timelines["cta"] = tl;
+  </script>
+</template>

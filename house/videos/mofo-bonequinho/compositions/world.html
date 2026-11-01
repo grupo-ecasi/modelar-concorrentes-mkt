@@ -1,0 +1,945 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Bricolage Grotesque";
+      font-weight: 700;
+      src: url("assets/fonts/BricolageGrotesque-700.woff2") format("woff2");
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: #eef2f8;
+    }
+    #world-canvas {
+      position: absolute;
+      inset: 0;
+      width: 1080px;
+      height: 1920px;
+    }
+    #world-lines {
+      position: absolute;
+      inset: 0;
+      width: 1080px;
+      height: 1920px;
+      pointer-events: none;
+    }
+    .world-callout {
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      padding: 12px 22px;
+      border-radius: 12px;
+      background: #ffffff;
+      border: 2px solid #dfe6f1;
+      box-shadow: 0 10px 24px -12px rgba(11, 18, 32, 0.35);
+      color: #0b1220;
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-weight: 700;
+      font-size: 32px;
+      line-height: 1.15;
+      white-space: nowrap;
+    }
+    .world-callout.is-blue {
+      background: #2457d6;
+      border-color: #2457d6;
+      color: #ffffff;
+    }
+    .world-callout.is-red {
+      background: #fdecec;
+      border-color: rgba(211, 47, 47, 0.45);
+      color: #b3261e;
+    }
+    .world-callout.is-green {
+      background: #ecf8f2;
+      border-color: rgba(26, 158, 75, 0.5);
+      color: #13733a;
+    }
+  </style>
+  <div data-hf-id="hf-2fmg" id="root" data-composition-id="world" data-width="1080" data-height="1920" data-layout-allow-overflow>
+    <canvas data-hf-id="hf-kh1v" id="world-canvas" width="1080" height="1920"></canvas>
+    <svg data-hf-id="hf-64bb" id="world-lines" viewBox="0 0 1080 1920" data-layout-ignore></svg>
+    <div data-hf-id="hf-hphi" id="co-tinta" class="world-callout">tinta nova</div>
+    <div data-hf-id="hf-cwg1" id="co-vivo" class="world-callout is-red">fungo vivo</div>
+    <div data-hf-id="hf-sp15" id="co-raiz" class="world-callout is-red">raízes no reboco</div>
+    <div data-hf-id="hf-m0l3" id="co-poros" class="world-callout">poros do reboco</div>
+    <div data-hf-id="hf-hhdv" id="co-steam" class="world-callout is-red">vapor sem ventilação</div>
+    <div data-hf-id="hf-uvcj" id="co-luva" class="world-callout is-blue">luva</div>
+    <div data-hf-id="hf-zvgg" id="co-janela" class="world-callout is-green">janela aberta ✓</div>
+    <div data-hf-id="hf-49hu" id="co-limpo" class="world-callout is-green">fungo morto ✓</div>
+    <div data-hf-id="hf-zncj" id="co-base" class="world-callout">base certa</div>
+    <div data-hf-id="hf-mivk" id="co-anti" class="world-callout is-green">tinta com antimofo</div>
+    <div data-hf-id="hf-ilur" id="co-umida" class="world-callout is-red">parede ainda úmida</div>
+    <div data-hf-id="hf-dera" id="co-volta" class="world-callout is-red">o fungo volta</div>
+    <div data-hf-id="hf-mrjn" id="co-pintor" class="world-callout is-blue">pintor House</div>
+  </div>
+  <script type="module">
+    import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js";
+
+    // Tempos ancorados na narração (assets/transcript.json). Fonte única: tools/cues.json
+    /*CUES*/
+    const C = {
+      "hook": 0.0,
+      "volta": 2.48,
+      "mancha": 3.6,
+      "mas": 4.72,
+      "vivo": 5.92,
+      "embaixo": 6.32,
+      "camadas": 8.4,
+      "problema": 11.04,
+      "fungo2": 12.48,
+      "umidade1": 13.92,
+      "p70": 15.36,
+      "tempo": 16.8,
+      "cria": 17.76,
+      "raizes": 18.16,
+      "poros": 19.12,
+      "esconde": 21.28,
+      "c1": 22.64,
+      "achar": 23.84,
+      "infiltracao": 25.6,
+      "vazamento": 26.72,
+      "vapor": 28,
+      "ventilacao": 29.12,
+      "resolver": 30.48,
+      "c2": 33.2,
+      "matar": 34.48,
+      "agua": 35.84,
+      "rotulo": 38.16,
+      "luva": 39.04,
+      "janela": 39.6,
+      "agir": 41.12,
+      "enxagua": 41.92,
+      "secar": 44,
+      "nunca": 45.12,
+      "c3": 47.84,
+      "certa": 50,
+      "base": 50.88,
+      "antimofo1": 53.28,
+      "banheiro": 54.48,
+      "lavavel": 56.48,
+      "mito": 57.76,
+      "naoMito": 60.4,
+      "protege": 61.53,
+      "umida": 64.49,
+      "voltaBaixo": 66.17,
+      "norma": 66.73,
+      "limpa": 72.65,
+      "seca": 73.29,
+      "semMofo": 74.25,
+      "cta": 76.01,
+      "house": 77.21,
+      "causa2": 79.29,
+      "orcamento": 80.81,
+      "loop": 83.05,
+      "dessas": 84.73,
+      "faltando": 85.85,
+      "end": 87.31
+    };
+    /*END-CUES*/
+
+    const W = 1080;
+    const H = 1920;
+    const canvas = document.getElementById("world-canvas");
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
+    renderer.setPixelRatio(1);
+    renderer.setSize(W, H, false);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFShadowMap;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color("#eef2f8");
+    scene.fog = new THREE.Fog("#eef2f8", 14, 34);
+    const camera = new THREE.PerspectiveCamera(34, W / H, 0.05, 100);
+
+    // ---------- Luz ----------
+    scene.add(new THREE.HemisphereLight("#ffffff", "#c9c3b8", 1.35));
+    const key = new THREE.DirectionalLight("#fff4e6", 2.0);
+    key.position.set(4, 7, 6);
+    key.castShadow = true;
+    key.shadow.mapSize.set(2048, 2048);
+    key.shadow.camera.left = -6;
+    key.shadow.camera.right = 6;
+    key.shadow.camera.top = 6;
+    key.shadow.camera.bottom = -6;
+    key.shadow.bias = -0.0006;
+    scene.add(key);
+    const rim = new THREE.DirectionalLight("#dbe8ff", 0.6);
+    rim.position.set(-5, 4, 3);
+    scene.add(rim);
+
+    // ---------- Gerador determinístico ----------
+    let seed = 20261031;
+    const rnd = () => {
+      seed = (seed + 0x6d2b79f5) | 0;
+      let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+
+    // ---------- Materiais (paleta House) ----------
+    const mat = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, flatShading: true, roughness: 0.85, metalness: 0, ...extra });
+    function tileTex(base, line, repX, repY) {
+      const cv = document.createElement("canvas");
+      cv.width = cv.height = 256;
+      const g = cv.getContext("2d");
+      g.fillStyle = base;
+      g.fillRect(0, 0, 256, 256);
+      g.strokeStyle = line;
+      g.lineWidth = 5;
+      for (let i = 0; i <= 4; i++) {
+        const p = i * 64;
+        g.beginPath();
+        g.moveTo(p, 0);
+        g.lineTo(p, 256);
+        g.moveTo(0, p);
+        g.lineTo(256, p);
+        g.stroke();
+      }
+      const tx = new THREE.CanvasTexture(cv);
+      tx.wrapS = tx.wrapT = THREE.RepeatWrapping;
+      tx.repeat.set(repX, repY);
+      tx.colorSpace = THREE.SRGBColorSpace;
+      return tx;
+    }
+    // Mancha de mofo: pontos escuros agrupados, desenhados num canvas com semente fixa
+    function moldTex(dark, light, n, ghost = false) {
+      const cv = document.createElement("canvas");
+      cv.width = 512;
+      cv.height = 320;
+      const g = cv.getContext("2d");
+      const centers = [
+        [70, 60, 90],
+        [190, 50, 80],
+        [120, 150, 70],
+        [300, 70, 60],
+        [40, 200, 60],
+      ];
+      for (let i = 0; i < n; i++) {
+        const [cx, cy, r] = centers[i % centers.length];
+        const a = rnd() * Math.PI * 2;
+        const d = Math.pow(rnd(), 0.7) * r;
+        const x = cx + Math.cos(a) * d;
+        const y = cy + Math.sin(a) * d * 0.8;
+        const s = 1.5 + rnd() * (ghost ? 7 : 6) * (1 - d / r);
+        const grd = g.createRadialGradient(x, y, 0, x, y, s);
+        grd.addColorStop(0, rnd() < 0.7 ? dark : light);
+        grd.addColorStop(1, "rgba(0,0,0,0)");
+        g.fillStyle = grd;
+        g.beginPath();
+        g.arc(x, y, s, 0, Math.PI * 2);
+        g.fill();
+      }
+      const tx = new THREE.CanvasTexture(cv);
+      tx.colorSpace = THREE.SRGBColorSpace;
+      return tx;
+    }
+    const M = {
+      wallTile: mat("#ffffff", { map: tileTex("#e8eef3", "#d0dae3", 3.6, 1.2) }),
+      floorTile: mat("#ffffff", { map: tileTex("#dcd7ce", "#c9c2b6", 10, 10) }),
+      paint: mat("#f1f2ef"),
+      ceiling: mat("#f7f7f4"),
+      white: mat("#f8f8f6"),
+      steelLight: mat("#c9ced6", { roughness: 0.6 }),
+      steel: mat("#5b6474", { roughness: 0.55 }),
+      skin: mat("#d9a074"),
+      blue: mat("#2457d6"),
+      blueDark: mat("#163c85"),
+      paintPants: mat("#eceff3"),
+      boot: mat("#2a2f38"),
+      teal: mat("#2a9d8f"),
+      khaki: mat("#b8a27c"),
+      hair: mat("#3b2a20"),
+      flip: mat("#1a9e4b"),
+      glove: mat("#f59e0b"),
+      glass: new THREE.MeshStandardMaterial({ color: "#cfe8f3", transparent: true, opacity: 0.35, roughness: 0.1, depthWrite: false }),
+      frame: mat("#ffffff"),
+      roller: mat("#f3f4f6"),
+      pole: mat("#94a3b8"),
+      brush: mat("#facc15"),
+      reboco: mat("#d8c8ad"),
+      rebocoDark: mat("#bfae90"),
+      pore: mat("#8c7a5e"),
+      hypha: mat("#1f2a1f"),
+      colony: mat("#1b2318"),
+      base: mat("#9fb4d9"),
+      topPaint: new THREE.MeshStandardMaterial({ color: "#f4f6fb", flatShading: true, roughness: 0.6, transparent: true, opacity: 1 }),
+      water: new THREE.MeshStandardMaterial({ color: "#5aa5e6", transparent: true, opacity: 0.75, roughness: 0.2, emissive: "#2b6fd1", emissiveIntensity: 0.25 }),
+      drop: new THREE.MeshStandardMaterial({ color: "#7cc3e6", transparent: true, opacity: 0.7, depthWrite: false }),
+      steam: new THREE.MeshStandardMaterial({ color: "#ffffff", transparent: true, opacity: 0.35, depthWrite: false, roughness: 1 }),
+    };
+    const box = (w, h, d, m) => {
+      const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      return mesh;
+    };
+    const cyl = (r, h, m, seg = 10) => {
+      const mesh = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, seg), m);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      return mesh;
+    };
+
+    // ---------- Banheiro ----------
+    const WALL_Z = -1.4; // face da parede do fundo
+    const SIDE_X = -1.9; // face da parede lateral (janela)
+    const CEIL_Y = 2.7;
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(16, 16), M.floorTile);
+    floor.rotation.x = -Math.PI / 2;
+    floor.receiveShadow = true;
+    scene.add(floor);
+    const wallLow = box(4.6, 1.2, 0.2, M.wallTile);
+    wallLow.position.set(0.4, 0.6, WALL_Z - 0.1);
+    const wallHigh = box(4.6, CEIL_Y - 1.2, 0.2, M.paint);
+    wallHigh.position.set(0.4, 1.2 + (CEIL_Y - 1.2) / 2, WALL_Z - 0.1);
+    const side = box(0.2, CEIL_Y, 3.4, M.paint);
+    side.position.set(SIDE_X - 0.1, CEIL_Y / 2, WALL_Z + 1.7);
+    const ceil = box(4.8, 0.12, 3.6, M.ceiling);
+    ceil.position.set(0.4, CEIL_Y + 0.06, WALL_Z + 1.7);
+    ceil.castShadow = false;
+    scene.add(wallLow, wallHigh, side, ceil);
+    // Janela na parede lateral: caixilho fixo e folha que abre
+    const WIN = new THREE.Vector3(SIDE_X + 0.01, 1.85, WALL_Z + 1.05);
+    const winFrame = box(0.05, 0.72, 0.84, M.frame);
+    winFrame.position.copy(WIN);
+    const winGlassBack = box(0.02, 0.62, 0.74, mat("#bfe0f5", { emissive: "#bfe0f5", emissiveIntensity: 0.25 }));
+    winGlassBack.position.set(WIN.x - 0.01, WIN.y, WIN.z);
+    scene.add(winFrame, winGlassBack);
+    const sashPivot = new THREE.Group();
+    sashPivot.position.set(WIN.x + 0.04, WIN.y, WIN.z - 0.37);
+    const sash = box(0.03, 0.62, 0.74, M.glass);
+    sash.position.set(0, 0, 0.37);
+    const sashFrame = box(0.035, 0.64, 0.04, M.frame);
+    sashFrame.position.set(0, 0, 0.74);
+    sashPivot.add(sash, sashFrame);
+    scene.add(sashPivot);
+    // Chuveiro e box
+    const SH = new THREE.Vector3(1.55, 2.15, WALL_Z + 0.32);
+    const arm = cyl(0.02, 0.32, M.steelLight, 8);
+    arm.rotation.x = Math.PI / 2;
+    arm.position.set(SH.x, SH.y + 0.06, WALL_Z + 0.16);
+    const head = cyl(0.11, 0.05, M.steelLight, 14);
+    head.position.copy(SH);
+    const glassPanel = box(0.03, 2.0, 1.0, M.glass);
+    glassPanel.castShadow = false;
+    glassPanel.position.set(0.95, 1.0, WALL_Z + 0.5);
+    scene.add(arm, head, glassPanel);
+    // Pia e espelho
+    const pedestal = cyl(0.07, 0.72, M.white, 10);
+    pedestal.position.set(0.15, 0.36, WALL_Z + 0.2);
+    const basin = box(0.46, 0.14, 0.36, M.white);
+    basin.position.set(0.15, 0.79, WALL_Z + 0.2);
+    const mirror = box(0.42, 0.56, 0.02, mat("#bcd7e6", { roughness: 0.15, metalness: 0.2 }));
+    mirror.position.set(0.15, 1.5, WALL_Z + 0.012);
+    scene.add(pedestal, basin, mirror);
+
+    // ---------- Mofo no canto do teto ----------
+    const MOLD_W = 1.15;
+    const MOLD_H = 0.72;
+    const MOLD = new THREE.Vector3(SIDE_X + MOLD_W / 2 + 0.01, CEIL_Y - MOLD_H / 2 - 0.02, WALL_Z + 0.004);
+    const moldMat = new THREE.MeshBasicMaterial({ map: moldTex("rgba(28,34,26,0.95)", "rgba(70,80,60,0.8)", 900), transparent: true, depthWrite: false });
+    const mold = new THREE.Mesh(new THREE.PlaneGeometry(MOLD_W, MOLD_H), moldMat);
+    mold.position.copy(MOLD);
+    scene.add(mold);
+    // Tinta nova por cima: cresce da esquerda para a direita, atrás do rolo
+    const patchGeo = new THREE.PlaneGeometry(MOLD_W + 0.1, MOLD_H + 0.06);
+    patchGeo.translate((MOLD_W + 0.1) / 2, 0, 0);
+    const patchMat = new THREE.MeshStandardMaterial({ color: "#f6f7f4", roughness: 0.7 });
+    const patch = new THREE.Mesh(patchGeo, patchMat);
+    patch.position.set(SIDE_X + 0.005, MOLD.y, WALL_Z + 0.007);
+    scene.add(patch);
+    // O mofo "respira" de volta por baixo da tinta
+    const ghostMat = new THREE.MeshBasicMaterial({ map: moldTex("rgba(60,70,58,0.75)", "rgba(110,120,100,0.6)", 520, true), transparent: true, opacity: 0, depthWrite: false });
+    const ghost = new THREE.Mesh(new THREE.PlaneGeometry(MOLD_W, MOLD_H), ghostMat);
+    ghost.position.set(MOLD.x, MOLD.y, WALL_Z + 0.01);
+    scene.add(ghost);
+
+    // ---------- Causas da umidade ----------
+    // Infiltração: mancha no teto e gotas caindo
+    const LEAK = new THREE.Vector3(-1.2, CEIL_Y - 0.001, WALL_Z + 0.75);
+    const stainMat = new THREE.MeshBasicMaterial({ color: "#7b8794", transparent: true, opacity: 0, depthWrite: false });
+    const stain = new THREE.Mesh(new THREE.CircleGeometry(0.32, 20), stainMat);
+    stain.rotation.x = Math.PI / 2;
+    stain.position.copy(LEAK);
+    scene.add(stain);
+    const leakDrops = [];
+    for (let i = 0; i < 6; i++) {
+      const d = new THREE.Mesh(new THREE.SphereGeometry(0.025, 8, 6), M.drop);
+      d.userData.off = i / 6;
+      scene.add(d);
+      leakDrops.push(d);
+    }
+    // Vazamento: mancha molhada crescendo na parede, perto do cano da pia
+    const wetMat = new THREE.MeshBasicMaterial({ color: "#8a97a6", transparent: true, opacity: 0, depthWrite: false });
+    const wet = new THREE.Mesh(new THREE.CircleGeometry(0.34, 22), wetMat);
+    wet.position.set(-0.55, 1.55, WALL_Z + 0.006);
+    wet.scale.set(1, 1.35, 1);
+    scene.add(wet);
+    // Vapor do banho
+    const steam = [];
+    for (let i = 0; i < 26; i++) {
+      const s = new THREE.Mesh(new THREE.IcosahedronGeometry(0.05 + rnd() * 0.05, 1), M.steam);
+      s.userData = { x: SH.x + (rnd() - 0.5) * 0.7, z: SH.z + 0.2 + (rnd() - 0.5) * 0.6, off: rnd(), sp: 0.25 + rnd() * 0.2 };
+      scene.add(s);
+      steam.push(s);
+    }
+
+    // ---------- Rolo de pintura (cabo extensor) e escova ----------
+    const rollerHead = new THREE.Group();
+    const rollCyl = cyl(0.05, 0.26, M.roller, 12);
+    rollCyl.rotation.z = Math.PI / 2;
+    const rollFrame = box(0.02, 0.12, 0.02, M.steel);
+    rollFrame.position.set(0.13, -0.06, 0);
+    rollerHead.add(rollCyl, rollFrame);
+    scene.add(rollerHead);
+    const pole = cyl(0.015, 1, M.pole, 6);
+    scene.add(pole);
+    function placeBetween(mesh, a, b) {
+      const d = new THREE.Vector3().subVectors(b, a);
+      mesh.position.copy(a).addScaledVector(d, 0.5);
+      mesh.scale.set(1, d.length(), 1);
+      mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.normalize());
+    }
+
+    // ---------- Corte da parede (raio-x), longe do banheiro ----------
+    const D = new THREE.Group();
+    D.position.set(14, 0.9, 0);
+    scene.add(D);
+    const DW = 1.05;
+    const DH = 1.3;
+    const DD = 0.5;
+    const reb = box(DW, DH, DD, M.reboco);
+    reb.position.y = DH / 2;
+    D.add(reb);
+    const pores = [];
+    for (let i = 0; i < 110; i++) {
+      const p = new THREE.Mesh(new THREE.SphereGeometry(0.012 + rnd() * 0.022, 6, 4), M.pore);
+      p.position.set((rnd() - 0.5) * (DW - 0.06), 0.04 + rnd() * (DH - 0.08), DD / 2 + 0.002);
+      p.scale.z = 0.25;
+      D.add(p);
+      pores.push(p);
+    }
+    // Umidade dentro do reboco
+    const moist = [];
+    for (let i = 0; i < 40; i++) {
+      const m = new THREE.Mesh(new THREE.SphereGeometry(0.018 + rnd() * 0.016, 8, 6), M.water);
+      m.position.set((rnd() - 0.5) * (DW - 0.1), 0.06 + rnd() * (DH - 0.2), DD / 2 + 0.006);
+      m.scale.z = 0.3;
+      D.add(m);
+      moist.push(m);
+    }
+    // Colônia de fungo na superfície e raízes (hifas) entrando no reboco
+    const colony = new THREE.Group();
+    D.add(colony);
+    const colonyMat = M.colony.clone();
+    const colonyBits = [];
+    for (let i = 0; i < 70; i++) {
+      const b = new THREE.Mesh(new THREE.IcosahedronGeometry(0.018 + rnd() * 0.03, 0), colonyMat);
+      const cx = [-0.3, 0.05, 0.33][i % 3];
+      b.position.set(cx + (rnd() - 0.5) * 0.26, DH + 0.005, (rnd() - 0.5) * (DD - 0.06));
+      b.scale.y = 0.55;
+      colony.add(b);
+      colonyBits.push(b);
+    }
+    const hyphaMat = M.hypha.clone();
+    const hyphae = [];
+    for (let i = 0; i < 16; i++) {
+      const cx = [-0.3, 0.05, 0.33][i % 3] + (rnd() - 0.5) * 0.22;
+      const pts = [];
+      let x = cx;
+      let y = DH;
+      const depth = 0.4 + rnd() * 0.55;
+      for (let k = 0; k <= 10; k++) {
+        pts.push(new THREE.Vector3(x, y, DD / 2 + 0.008));
+        x += (rnd() - 0.5) * 0.06;
+        y -= depth / 10;
+      }
+      const geo = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 40, 0.006 + rnd() * 0.004, 5, false);
+      const mesh = new THREE.Mesh(geo, hyphaMat);
+      mesh.userData.count = geo.index.count;
+      D.add(mesh);
+      hyphae.push(mesh);
+    }
+    // Camadas por cima: tinta que só cobre (gancho/problema/mito), base e tinta com antimofo (camada 3)
+    const coverPaint = box(DW, 0.04, DD, M.topPaint);
+    coverPaint.position.y = DH + 0.02;
+    D.add(coverPaint);
+    const baseLayer = box(DW, 0.025, DD, M.base);
+    baseLayer.position.y = DH + 0.0125;
+    D.add(baseLayer);
+    const antiMat = new THREE.MeshStandardMaterial({ color: "#ffffff", flatShading: true, roughness: 0.5, emissive: "#2457d6", emissiveIntensity: 0 });
+    const antiLayer = box(DW, 0.035, DD, antiMat);
+    antiLayer.position.y = DH + 0.025 + 0.0175;
+    D.add(antiLayer);
+    // Manchas que voltam por cima da tinta (mito)
+    const regrow = [];
+    for (let i = 0; i < 26; i++) {
+      const b = new THREE.Mesh(new THREE.IcosahedronGeometry(0.016 + rnd() * 0.02, 0), M.colony);
+      b.position.set([-0.3, 0.05, 0.33][i % 3] + (rnd() - 0.5) * 0.26, DH + 0.065, (rnd() - 0.5) * (DD - 0.08));
+      b.scale.y = 0.4;
+      D.add(b);
+      regrow.push(b);
+    }
+
+    // ---------- Pessoas low-poly ----------
+    // "morador": camiseta, bermuda e chinelo. "pintor": camiseta azul House com logo nas costas, calça branca, boné.
+    function makePerson(kind, logoTex) {
+      const pro = kind === "pintor";
+      const g = new THREE.Group();
+      const hips = new THREE.Group();
+      hips.position.y = 0.9;
+      g.add(hips);
+      const legs = [];
+      for (const s of [-1, 1]) {
+        const leg = new THREE.Group();
+        leg.position.set(s * 0.13, 0, 0);
+        if (pro) {
+          const thigh = box(0.22, 0.82, 0.26, M.paintPants);
+          thigh.position.y = -0.41;
+          const boot = box(0.24, 0.13, 0.36, M.boot);
+          boot.position.set(0, -0.84, 0.05);
+          // respingos de tinta azul na calça
+          const sp1 = box(0.06, 0.04, 0.005, M.blue);
+          sp1.position.set(0.04, -0.3, 0.132);
+          leg.add(thigh, boot, sp1);
+        } else {
+          const shorts = box(0.24, 0.38, 0.28, M.khaki);
+          shorts.position.y = -0.19;
+          const shin = box(0.17, 0.48, 0.19, M.skin);
+          shin.position.y = -0.6;
+          const sole = box(0.22, 0.035, 0.34, M.flip);
+          sole.position.set(0, -0.88, 0.05);
+          leg.add(shorts, shin, sole);
+        }
+        hips.add(leg);
+        legs.push(leg);
+      }
+      const torso = box(0.56, 0.68, 0.32, pro ? M.blue : M.teal);
+      torso.position.y = 0.34;
+      hips.add(torso);
+      if (pro) {
+        const collar = box(0.3, 0.05, 0.33, M.blueDark);
+        collar.position.y = 0.66;
+        hips.add(collar);
+        // Logo da House nas costas e no peito
+        const patch = box(0.36, 0.36, 0.012, M.white);
+        patch.position.set(0, 0.4, -0.166);
+        const logo = new THREE.Mesh(new THREE.PlaneGeometry(0.32, 0.32), new THREE.MeshBasicMaterial({ map: logoTex }));
+        logo.position.set(0, 0.4, -0.174);
+        logo.rotation.y = Math.PI;
+        const chest = new THREE.Mesh(new THREE.PlaneGeometry(0.12, 0.12), new THREE.MeshBasicMaterial({ map: logoTex }));
+        chest.position.set(-0.15, 0.5, 0.162);
+        hips.add(patch, logo, chest);
+      }
+      const arms = [];
+      const hands = [];
+      for (const s of [-1, 1]) {
+        const armG = new THREE.Group();
+        armG.position.set(s * 0.36, 0.64, 0);
+        const sleeve = box(0.18, 0.24, 0.2, pro ? M.blue : M.teal);
+        sleeve.position.y = -0.12;
+        const fore = box(0.14, 0.42, 0.15, M.skin);
+        fore.position.y = -0.4;
+        armG.add(sleeve, fore);
+        const hand = box(0.15, 0.15, 0.15, M.skin);
+        hand.position.y = -0.66;
+        armG.add(hand);
+        hips.add(armG);
+        arms.push(armG);
+        hands.push(hand);
+      }
+      const headM = new THREE.Mesh(new THREE.IcosahedronGeometry(0.19, 0), M.skin);
+      headM.position.y = 0.9;
+      headM.castShadow = true;
+      hips.add(headM);
+      if (pro) {
+        const cap = new THREE.Mesh(new THREE.SphereGeometry(0.205, 8, 4, 0, Math.PI * 2, 0, Math.PI / 2), M.blue);
+        cap.position.y = 0.95;
+        const brim = box(0.22, 0.025, 0.16, M.blue);
+        brim.position.set(0, 0.96, 0.2);
+        hips.add(cap, brim);
+      } else {
+        const hair = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 4, 0, Math.PI * 2, 0, Math.PI / 2), M.hair);
+        hair.position.set(0, 0.94, -0.02);
+        hair.scale.set(1, 0.7, 1);
+        hips.add(hair);
+      }
+      g.userData = { hips, arms, hands, legs };
+      return g;
+    }
+
+    // ---------- Utilidades de tempo ----------
+    const clamp01 = (x) => Math.min(1, Math.max(0, x));
+    const prog = (t, a, b) => clamp01((t - a) / (b - a));
+    const easeInOut = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+    const easeOut = (x) => 1 - Math.pow(1 - x, 3);
+    const easeOutExpo = (x) => (x >= 1 ? 1 : 1 - Math.pow(2, -10 * x));
+    const lerp = (a, b, x) => a + (b - a) * x;
+    const lerp3 = (a, b, x) => [lerp(a[0], b[0], x), lerp(a[1], b[1], x), lerp(a[2], b[2], x)];
+    function track(t, keys) {
+      if (t <= keys[0][0]) return keys[0][1];
+      for (let i = 0; i < keys.length - 1; i++) {
+        const [ta, va] = keys[i];
+        const [tb, vb] = keys[i + 1];
+        if (t <= tb) return tb === ta ? vb : lerp(va, vb, easeInOut((t - ta) / (tb - ta)));
+      }
+      return keys[keys.length - 1][1];
+    }
+    // Trechos no corte da parede (raio-x): [início, fim)
+    const XRAY = [
+      [C.mas - 0.15, C.camadas - 0.35],
+      [C.cria - 0.2, C.c1 - 0.1],
+      [C.c3 + 1.0, C.banheiro - 0.1],
+      [C.mito + 0.6, C.norma - 0.05],
+    ];
+    const inX = (t) => XRAY.some(([a, b]) => t >= a && t < b);
+
+    function build(logoTex) {
+      const morador = makePerson("morador");
+      const MPOS = [-0.95, 0, WALL_Z + 0.95];
+      morador.position.set(...MPOS);
+      morador.rotation.y = Math.PI + 0.55; // de costas, virado para o canto, em três quartos
+      scene.add(morador);
+      const pintor = makePerson("pintor", logoTex);
+      scene.add(pintor);
+      const brush = new THREE.Group();
+      const bHandle = box(0.04, 0.22, 0.04, M.brush);
+      const bHead = box(0.14, 0.05, 0.06, mat("#334155"));
+      bHead.position.y = 0.12;
+      brush.add(bHandle, bHead);
+      brush.position.set(0, -0.8, 0.04);
+      pintor.userData.arms[1].add(brush);
+
+      // ---------- Câmera: plano-sequência por quadros-chave (cut = corte seco) ----------
+      const DP = (x, y, z) => [D.position.x + x, D.position.y + y, D.position.z + z];
+      const CAM_OPEN = { p: [0.9, 1.75, 2.6], q: [-1.15, 2.2, -1.3], z: 1.7 };
+      const CORNER = { p: [0.4, 1.95, 1.6], q: [-1.3, 2.3, -1.35], z: 1.35 };
+      const XR_TOP = { p: DP(0.12, DH + 1.0, 3.0), q: DP(0, DH + 0.12, 0) };
+      const ROLL_CAM = { p: [1.2, 1.3, 2.6], q: [-1.2, 2.55, -1.3], z: 1.6 };
+      const XR_CUT = { p: DP(0.3, DH * 0.55 + 0.6, 3.1), q: DP(0, DH * 0.5, 0) };
+      const ROOM_WIDE = { p: [2.0, 1.75, 3.6], q: [-0.4, 1.7, -1.2], z: 1.7 };
+      const SHOWER = { p: [2.4, 1.7, 2.4], q: [1.0, 1.85, -1.0], z: 1.5 };
+      const CEIL_V = { p: [0.6, 1.5, 2.0], q: [-1.1, 2.4, -0.7], z: 1.5 };
+      const SCRUB = { p: [1.0, 1.75, 2.4], q: [-1.1, 1.95, -1.0], z: 1.6 };
+      const WINDOW = { p: [0.9, 1.7, 2.3], q: [-1.7, 1.85, -0.35], z: 1.4 };
+      const CTA_CAM = { p: [1.0, 2.9, 6.2], q: [-0.3, 2.35, -0.6], z: 1.0 };
+      const K = [
+        { t: 0, ...CAM_OPEN },
+        { t: C.volta + 0.2, ...CAM_OPEN },
+        { t: C.mancha + 0.9, ...CORNER },
+        { t: C.mas - 0.15, cut: true, ...XR_TOP },
+        { t: C.camadas - 0.4, ...XR_CUT },
+        { t: C.camadas - 0.35, cut: true, ...ROOM_WIDE },
+        { t: C.problema + 0.3, ...ROOM_WIDE },
+        { t: C.umidade1 + 0.3, ...SHOWER },
+        { t: C.tempo + 0.6, ...SHOWER },
+        { t: C.cria - 0.2, cut: true, ...XR_TOP },
+        { t: C.poros + 0.2, ...XR_CUT },
+        { t: C.c1 - 0.15, ...XR_CUT },
+        { t: C.c1 - 0.1, cut: true, ...ROOM_WIDE },
+        { t: C.infiltracao - 0.3, ...ROOM_WIDE },
+        { t: C.infiltracao + 0.4, ...CEIL_V },
+        { t: C.vazamento + 0.5, ...CEIL_V },
+        { t: C.vapor + 0.3, ...SHOWER },
+        { t: C.c2 - 0.1, ...SHOWER },
+        { t: C.c2, cut: true, ...SCRUB },
+        { t: C.luva + 0.2, ...SCRUB },
+        { t: C.janela + 0.4, ...WINDOW },
+        { t: C.agir + 0.5, ...WINDOW },
+        { t: C.secar + 0.2, ...SCRUB },
+        { t: C.c3 + 0.95, ...SCRUB },
+        { t: C.c3 + 1.0, cut: true, ...XR_TOP },
+        { t: C.banheiro - 0.15, ...XR_TOP },
+        { t: C.banheiro - 0.1, cut: true, ...ROLL_CAM },
+        { t: C.mito + 0.55, ...ROLL_CAM },
+        { t: C.mito + 0.6, cut: true, ...XR_TOP },
+        { t: C.norma - 0.1, ...XR_TOP },
+        { t: C.norma - 0.05, cut: true, ...ROOM_WIDE },
+        { t: C.semMofo + 0.4, ...ROOM_WIDE },
+        { t: C.cta + 0.8, ...CTA_CAM },
+        { t: C.loop - 0.05, ...CTA_CAM },
+        { t: C.loop, cut: true, ...CAM_OPEN },
+        { t: C.end, ...CAM_OPEN },
+      ].map((k) => {
+        const z = k.z ?? 1.0;
+        return { t: k.t, cut: !!k.cut, q: k.q, p: k.q.map((q, i) => q + (k.p[i] - q) * z) };
+      });
+      function cameraAt(t) {
+        if (t <= K[0].t) return K[0];
+        for (let i = 0; i < K.length - 1; i++) {
+          const a = K[i];
+          const b = K[i + 1];
+          if (t < b.t) {
+            if (b.cut) return a;
+            const x = easeInOut((t - a.t) / (b.t - a.t));
+            return { p: lerp3(a.p, b.p, x), q: lerp3(a.q, b.q, x) };
+          }
+        }
+        return K[K.length - 1];
+      }
+
+      // ---------- Callouts presos a pontos 3D ----------
+      const svg = document.getElementById("world-lines");
+      const SVGNS = "http://www.w3.org/2000/svg";
+      const worldOf = (obj, x, y, z) => {
+        obj.updateMatrixWorld(true);
+        return obj.localToWorld(new THREE.Vector3(x, y, z)).toArray();
+      };
+      const CALLOUTS = [
+        { id: "co-tinta", a: C.mas + 0.2, b: C.camadas - 0.4, at: () => worldOf(coverPaint, -0.5, 0.02, 0.2), dx: -80, dy: -170 },
+        { id: "co-vivo", a: C.vivo - 0.1, b: C.camadas - 0.4, at: () => worldOf(D, 0.5, DH - 0.05, DD / 2), dx: 90, dy: 170 },
+        { id: "co-raiz", a: C.raizes, b: C.c1 - 0.15, at: () => worldOf(D, 0.05, DH - 0.3, DD / 2), dx: 110, dy: 220 },
+        { id: "co-poros", a: C.poros, b: C.esconde, at: () => worldOf(pores[3], 0, 0, 0), dx: -110, dy: 190 },
+        { id: "co-steam", a: C.vapor + 0.2, b: C.resolver, at: () => [SH.x, SH.y - 0.5, SH.z + 0.3], dx: -100, dy: 170, top: 880 },
+        { id: "co-luva", a: C.luva - 0.05, b: C.agir, at: () => worldOf(pintor.userData.hands[1], 0, 0, 0), dx: 120, dy: 160, top: 860 },
+        { id: "co-janela", a: C.janela + 0.2, b: C.secar, at: () => [WIN.x + 0.05, WIN.y - 0.2, WIN.z], dx: 90, dy: 200, top: 860 },
+        { id: "co-limpo", a: C.secar + 0.3, b: C.c3, at: () => [MOLD.x, MOLD.y - 0.15, MOLD.z], dx: 120, dy: 230, top: 860 },
+        { id: "co-base", top: 900, a: C.base, b: C.banheiro - 0.1, at: () => worldOf(baseLayer, -0.55, 0, DD / 2), dx: -80, dy: 190 },
+        { id: "co-anti", top: 900, a: C.antimofo1 - 0.35, b: C.banheiro - 0.1, at: () => worldOf(antiLayer, 0.45, 0.02, DD / 2), dx: 70, dy: -190 },
+        { id: "co-umida", a: C.umida - 0.1, b: C.norma - 0.05, at: () => worldOf(moist[5], 0, 0, 0), dx: 100, dy: 220 },
+        { id: "co-volta", a: C.voltaBaixo - 0.9, b: C.norma - 0.05, at: () => worldOf(regrow[2], 0, 0, 0), dx: -80, dy: -170 },
+        { id: "co-pintor", a: C.house, b: C.loop - 0.05, at: () => worldOf(pintor.userData.hips, 0, 1.05, 0), dx: 130, dy: 60, top: 1320, bottom: 1500 },
+      ];
+      for (const c of CALLOUTS) {
+        c.el = document.getElementById(c.id);
+        c.bw = c.el.offsetWidth;
+        c.bh = c.el.offsetHeight;
+        c.line = document.createElementNS(SVGNS, "line");
+        c.line.setAttribute("stroke", "#0b1220");
+        c.line.setAttribute("stroke-width", "3");
+        c.dot = document.createElementNS(SVGNS, "circle");
+        c.dot.setAttribute("r", "8");
+        c.dot.setAttribute("fill", "#2457d6");
+        c.dot.setAttribute("stroke", "#ffffff");
+        c.dot.setAttribute("stroke-width", "3");
+        svg.append(c.line, c.dot);
+      }
+      const proj = new THREE.Vector3();
+      function placeCallouts(t) {
+        for (const c of CALLOUTS) {
+          const fadeIn = prog(t, c.a, c.a + 0.25);
+          const fadeOut = 1 - prog(t, c.b - 0.2, c.b);
+          const o = Math.min(fadeIn, fadeOut);
+          if (o <= 0.001) {
+            c.el.style.opacity = "0";
+            c.line.setAttribute("opacity", "0");
+            c.dot.setAttribute("opacity", "0");
+            continue;
+          }
+          proj.fromArray(c.at()).project(camera);
+          const px = (proj.x * 0.5 + 0.5) * W;
+          const py = (-proj.y * 0.5 + 0.5) * H;
+          let bx = px + c.dx - (c.dx < 0 ? c.bw : 0);
+          let by = py + c.dy - c.bh / 2;
+          bx = Math.min(W - 54 - c.bw, Math.max(54, bx));
+          by = Math.min((c.bottom ?? 1160) - c.bh, Math.max(c.top ?? 700, by));
+          const lift = 14 * (1 - easeOutExpo(fadeIn));
+          c.el.style.opacity = String(o);
+          c.el.style.transform = `translate(${bx}px, ${by + lift}px)`;
+          const lx = bx + (c.dx < 0 ? c.bw : 0);
+          const ly = by + c.bh / 2;
+          const grow = easeOut(fadeIn);
+          c.line.setAttribute("x1", String(px));
+          c.line.setAttribute("y1", String(py));
+          c.line.setAttribute("x2", String(lerp(px, lx, grow)));
+          c.line.setAttribute("y2", String(lerp(py, ly, grow)));
+          c.line.setAttribute("opacity", String(o));
+          c.dot.setAttribute("cx", String(px));
+          c.dot.setAttribute("cy", String(py));
+          c.dot.setAttribute("opacity", String(o));
+        }
+      }
+
+      // Rolo: percorre o mofo da esquerda para a direita (gancho e loop) e de novo na camada 3, com o pintor
+      const ROLL_Y = MOLD.y + 0.05;
+      const ROLL_X0 = SIDE_X + 0.1;
+      const ROLL_X1 = SIDE_X + MOLD_W + 0.08;
+      const rollPass = (t, a, b) => {
+        const k = prog(t, a, b);
+        const zig = Math.sin(k * Math.PI * 5) * 0.16;
+        return [lerp(ROLL_X0, ROLL_X1, k), ROLL_Y + zig, WALL_Z + 0.06];
+      };
+      const tmp = new THREE.Vector3();
+
+      return function render(t) {
+        const cam = cameraAt(t);
+        camera.position.fromArray(cam.p);
+        camera.lookAt(cam.q[0], cam.q[1], cam.q[2]);
+        camera.updateMatrixWorld(true);
+        const loopReset = t >= C.loop; // no fecho tudo volta ao estado do começo, para emendar
+
+        // ----- Estado do canto: mofo, tinta por cima, mofo voltando, limpeza -----
+        const paintK = loopReset ? prog(t, C.end - 1.4, C.end + 2) : t < C.c2 ? prog(t, 0.15, 1.35) : 0;
+        const repaintK = !loopReset && t >= C.banheiro - 0.1 ? 1 : 0;
+        patch.scale.x = Math.max(0.001, Math.max(paintK, repaintK));
+        patch.visible = patch.scale.x > 0.002;
+        const cleaned = !loopReset && t >= C.c2 ? prog(t, C.agua, C.secar + 0.3) : 0;
+        moldMat.opacity = 1 - cleaned;
+        mold.visible = moldMat.opacity > 0.01;
+        ghostMat.opacity = loopReset || t >= C.c2 ? 0 : track(t, [[C.volta - 0.2, 0], [C.volta + 0.4, 0.75], [C.camadas - 0.4, 0.75], [C.camadas - 0.35, 0.35]]);
+        ghost.visible = ghostMat.opacity > 0.01;
+
+        // ----- Causas da umidade -----
+        const leakOn = t >= C.infiltracao - 0.2 && t < C.c2;
+        stainMat.opacity = leakOn ? 0.55 * prog(t, C.infiltracao - 0.2, C.infiltracao + 0.5) : 0;
+        stain.visible = stainMat.opacity > 0.01;
+        for (const d of leakDrops) {
+          d.visible = leakOn;
+          if (leakOn) {
+            const f = (d.userData.off + t * 0.9) % 1;
+            d.position.set(LEAK.x, CEIL_Y - 0.03 - f * f * (CEIL_Y - 0.05), LEAK.z);
+          }
+        }
+        wetMat.opacity = t >= C.vazamento - 0.1 && t < C.c2 ? 0.5 * prog(t, C.vazamento - 0.1, C.vazamento + 0.9) : 0;
+        wet.visible = wetMat.opacity > 0.01;
+        wet.scale.set(0.6 + 0.4 * prog(t, C.vazamento, C.vazamento + 1.2), 0.8 + 0.55 * prog(t, C.vazamento, C.vazamento + 1.2), 1);
+        const steamOn = (t >= C.umidade1 - 0.4 && t < C.cria - 0.2) || (t >= C.vapor - 0.4 && t < C.c2);
+        const steamFade = steamOn ? Math.min(prog(t, C.umidade1 - 0.4, C.umidade1 + 0.4) + (t >= C.vapor - 0.4 ? 1 : 0), 1) : 0;
+        M.steam.opacity = 0.32 * steamFade;
+        for (const s of steam) {
+          s.visible = steamOn;
+          if (steamOn) {
+            const f = (s.userData.off + t * s.userData.sp) % 1;
+            s.position.set(s.userData.x - f * 0.6, SH.y - 0.8 + f * 1.4, s.userData.z);
+            s.scale.setScalar(0.6 + f * 1.4);
+          }
+        }
+        // Janela abre em "janela aberta" e fica aberta até o fecho
+        sashPivot.rotation.y = !loopReset && t >= C.janela - 0.1 ? -1.1 * easeOut(prog(t, C.janela - 0.1, C.janela + 0.7)) : 0;
+
+        // ----- Corte da parede -----
+        const xr = inX(t);
+        D.visible = xr;
+        if (xr) {
+          // Raízes crescem em "cria raízes"; na camada 3 já estão mortas (sumiram); no mito voltam
+          const grow = t < C.c1 ? (t < C.cria ? 1 : prog(t, C.raizes - 0.3, C.poros + 0.4)) : t < C.mito ? 0 : 1;
+          for (const h of hyphae) {
+            h.visible = grow > 0.01;
+            h.geometry.setDrawRange(0, Math.floor(h.userData.count * grow / 3) * 3);
+          }
+          const colonyOn = t < C.c1 || t >= C.mito;
+          colony.visible = colonyOn;
+          const cover = t < C.c1 ? (t < C.cria ? 1 : prog(t, C.esconde - 0.1, C.esconde + 0.5)) : t >= C.mito ? 1 : 0;
+          coverPaint.visible = cover > 0.01;
+          coverPaint.scale.set(Math.max(0.001, cover), 1, 1);
+          coverPaint.position.x = -DW / 2 + (DW * cover) / 2;
+          M.topPaint.opacity = t < C.c1 ? 0.92 : 0.97;
+          baseLayer.visible = t >= C.c3 && t < C.mito;
+          baseLayer.scale.x = Math.max(0.001, prog(t, C.base - 0.1, C.base + 0.6));
+          baseLayer.position.x = -DW / 2 + (DW * baseLayer.scale.x) / 2;
+          antiLayer.visible = t >= C.c3 && t < C.mito && t >= C.antimofo1 - 0.15;
+          antiLayer.scale.x = Math.max(0.001, prog(t, C.antimofo1 - 0.15, C.antimofo1 + 0.6));
+          antiLayer.position.x = -DW / 2 + (DW * antiLayer.scale.x) / 2;
+          antiMat.emissiveIntensity = 0.25 * Math.max(0, Math.sin((t - C.antimofo1) * 4)) * (t < C.lavavel ? 1 : 0);
+          // Umidade: aparece no problema e no mito; some na camada 3 (parede seca)
+          const wetIn = t < C.c1 ? prog(t, C.cria - 0.2, C.cria + 0.4) * 0.35 : t >= C.mito ? 0.35 + 0.65 * prog(t, C.umida - 0.3, C.umida + 0.3) : 0;
+          for (const m of moist) {
+            m.visible = wetIn > 0.01;
+            m.scale.set(wetIn, wetIn, wetIn * 0.3);
+          }
+          M.water.emissiveIntensity = 0.25 + 0.35 * (t >= C.umida ? Math.abs(Math.sin(t * 5)) : 0);
+          // Manchas voltando por cima da tinta (mito)
+          const back = t >= C.mito ? prog(t, C.voltaBaixo - 0.6, C.voltaBaixo + 0.5) : 0;
+          regrow.forEach((b, i) => {
+            const k = clamp01(back * 1.6 - (i % 5) * 0.12);
+            b.visible = k > 0.01;
+            b.scale.set(k, k * 0.4, k);
+          });
+        }
+
+        // ----- Morador (gancho e fecho) -----
+        const mOn = t < C.c1 - 0.1 || loopReset;
+        morador.visible = mOn;
+        let rollerOn = false;
+        let rollPos = null;
+        let holder = null;
+        if (mOn) {
+          const [aL, aR] = morador.userData.arms;
+          // braços erguidos só enquanto pinta; depois ele baixa o rolo e fica olhando a mancha voltar
+          const up = loopReset ? 1 : 1 - prog(t, 2.0, 2.6);
+          aL.rotation.set(lerp(-0.2, -2.7, up), 0, -0.15 * up);
+          aR.rotation.set(lerp(-0.2, -2.6, up), 0, 0.15 * up);
+          const roll = loopReset ? rollPass(t, C.end - 1.4, C.end + 2) : rollPass(t, 0.15, 1.35);
+          // depois de pintar, o rolo desce um pouco e ele olha o resultado
+          const settle = loopReset ? 0 : prog(t, 1.4, 2.2);
+          rollPos = [roll[0] - 0.1 * settle, roll[1] - 0.45 * settle, roll[2] + 0.25 * settle];
+          rollerOn = loopReset || t < 2.4;
+          holder = morador;
+          const shake = t >= C.volta && t < C.volta + 1.1 ? 0.22 * Math.sin((t - C.volta) * 14) * (1 - prog(t, C.volta, C.volta + 1.1)) : 0;
+          morador.rotation.y = Math.PI + 0.55 + shake;
+          if (loopReset) rollPos = rollPass(t, C.end - 1.4, C.end + 2);
+        }
+
+        // ----- Pintor da House -----
+        const pOn = t >= C.c2 && !loopReset;
+        pintor.visible = pOn;
+        if (pOn) {
+          const [pA, pB] = pintor.userData.arms;
+          const SCRUB_POS = [-1.05, 0, WALL_Z + 0.85];
+          const CTA_POS = [-0.15, 0, WALL_Z + 1.6];
+          const walk = prog(t, C.cta + 0.1, C.cta + 1.3);
+          pintor.position.fromArray(lerp3(SCRUB_POS, CTA_POS, easeInOut(walk)));
+          const facing = lerp(Math.PI + 0.45, 0.25, easeInOut(prog(t, C.cta + 0.8, C.house + 0.4)));
+          pintor.rotation.y = t < C.cta ? Math.PI + 0.45 : facing;
+          const ph = Math.sin(t * 7.5) * (walk > 0 && walk < 1 ? 1 : 0);
+          pintor.userData.legs[0].rotation.x = 0.45 * ph;
+          pintor.userData.legs[1].rotation.x = -0.45 * ph;
+          // Luvas na limpeza
+          const gloves = t >= C.luva - 0.1 && t < C.c3;
+          for (const h of pintor.userData.hands) h.material = gloves ? M.glove : M.skin;
+          // Escova esfregando o canto (água sanitária) até "enxágua"
+          const scrub = t >= C.agua - 0.2 && t < C.secar;
+          brush.visible = scrub;
+          const rolling = t >= C.banheiro - 0.1 && t < C.mito;
+          if (scrub) {
+            pB.rotation.set(-2.65 + 0.18 * Math.sin(t * 16), 0, 0.25 * Math.sin(t * 8));
+            pA.rotation.set(-0.3, 0, -0.1);
+          } else if (rolling) {
+            pA.rotation.set(-2.7, 0, -0.15);
+            pB.rotation.set(-2.6, 0, 0.15);
+            rollerOn = true;
+            holder = pintor;
+            rollPos = rollPass(t, C.banheiro - 0.1, C.lavavel + 0.8);
+          } else if (t >= C.cta) {
+            // aponta para o canto limpo e depois acena
+            const point = prog(t, C.house, C.house + 0.5);
+            pA.rotation.set(-1.4 * point, 0, 0.5 * point);
+            pB.rotation.set(-0.2, 0, 0);
+          } else {
+            pA.rotation.set(-0.2, 0, -0.05);
+            pB.rotation.set(-0.2, 0, 0.05);
+          }
+        }
+
+        // ----- Rolo com cabo extensor, entre as mãos e a cabeça do rolo -----
+        rollerHead.visible = pole.visible = rollerOn;
+        if (rollerOn) {
+          rollerHead.position.fromArray(rollPos);
+          const hA = new THREE.Vector3(...worldOf(holder.userData.hands[0], 0, 0, 0));
+          const hB = new THREE.Vector3(...worldOf(holder.userData.hands[1], 0, 0, 0));
+          const grip = hA.add(hB).multiplyScalar(0.5);
+          placeBetween(pole, grip, new THREE.Vector3(rollPos[0] + 0.13, rollPos[1] - 0.12, rollPos[2]));
+        }
+
+        renderer.render(scene, camera);
+        placeCallouts(t);
+      };
+    }
+
+    // Relógio: um tween do GSAP alimenta render(t). A linha do tempo só é registrada depois que as fontes e o
+    // logo da House carregaram, para a camiseta nunca aparecer sem o logo.
+    const logoTex = new THREE.TextureLoader().loadAsync("assets/brand-house/logo-house.jpg");
+    Promise.all([document.fonts.ready, logoTex]).then(([, tex]) => {
+      tex.colorSpace = THREE.SRGBColorSpace;
+      const render = build(tex);
+      const state = { t: 0 };
+      const tl = gsap.timeline({ paused: true });
+      tl.to(state, { t: C.end, duration: C.end, ease: "none", onUpdate: () => render(state.t) }, 0);
+      render(0);
+      window.__timelines["world"] = tl;
+    });
+  </script>
+</template>

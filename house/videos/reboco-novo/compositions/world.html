@@ -1,0 +1,1405 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Bricolage Grotesque";
+      font-weight: 700;
+      src: url("assets/fonts/BricolageGrotesque-700.woff2") format("woff2");
+    }
+    @font-face {
+      font-family: "Barlow Condensed";
+      font-weight: 800;
+      src: url("assets/fonts/BarlowCondensed-800.woff2") format("woff2");
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: #cfe6f7;
+    }
+    #world-canvas {
+      position: absolute;
+      inset: 0;
+      width: 1080px;
+      height: 1920px;
+    }
+    #world-lines {
+      position: absolute;
+      inset: 0;
+      width: 1080px;
+      height: 1920px;
+      pointer-events: none;
+    }
+    .world-callout {
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      padding: 12px 22px;
+      border-radius: 12px;
+      background: #ffffff;
+      border: 2px solid #dfe6f1;
+      box-shadow: 0 10px 24px -12px rgba(11, 18, 32, 0.35);
+      color: #0b1220;
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-weight: 700;
+      font-size: 32px;
+      line-height: 1.15;
+      white-space: nowrap;
+    }
+    .world-callout.is-blue {
+      background: #2457d6;
+      border-color: #2457d6;
+      color: #ffffff;
+    }
+    .world-callout.is-red {
+      background: #fdecec;
+      border-color: rgba(211, 47, 47, 0.45);
+      color: #b3261e;
+    }
+    .world-callout.is-green {
+      background: #ecf8f2;
+      border-color: rgba(26, 158, 75, 0.5);
+      color: #13733a;
+    }
+  </style>
+  <div id="root" data-composition-id="world" data-width="1080" data-height="1920" data-layout-allow-overflow>
+    <canvas id="world-canvas" width="1080" height="1920"></canvas>
+    <svg id="world-lines" viewBox="0 0 1080 1920" data-layout-ignore></svg>
+    <div id="co-umido" class="world-callout is-red">reboco de ontem</div>
+    <div id="co-agua" class="world-callout is-blue">água</div>
+    <div id="co-cal" class="world-callout">cal</div>
+    <div id="co-bolha" class="world-callout is-red">bolhas</div>
+    <div id="co-mancha" class="world-callout is-red">manchas brancas</div>
+    <div id="co-desc" class="world-callout is-red">tinta descascando</div>
+    <div id="co-seco" class="world-callout is-green">parede secando por dentro</div>
+    <div id="co-po" class="world-callout">pó e grãos soltos</div>
+    <div id="co-fundo" class="world-callout is-blue">fundo preparador</div>
+    <div id="co-selador" class="world-callout is-green">selador acrílico</div>
+    <div id="co-fora" class="world-callout is-green">seco por fora ✓</div>
+    <div id="co-dentro" class="world-callout is-red">por dentro: pH 13</div>
+    <div id="co-pintor" class="world-callout is-blue">pintor House</div>
+  </div>
+  <script type="module">
+    import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js";
+
+    // Tempos ancorados na narração (assets/transcript.json). Fonte única: tools/cues.json
+    /*CUES*/
+    const C = {
+      "hook": 0.0,
+      "ontem": 0.88,
+      "pode": 1.68,
+      "pintar": 1.92,
+      "ainda": 2.8,
+      "nao": 3.36,
+      "seco": 3.92,
+      "pronta": 5.76,
+      "camadas": 6.8,
+      "problema": 9.76,
+      "reboco": 10.4,
+      "agua": 11.76,
+      "cal": 12.16,
+      "agora": 13.76,
+      "empurrando": 14.96,
+      "bolhas": 16.96,
+      "manchas": 17.6,
+      "descascando": 19.2,
+      "c1": 20.4,
+      "esperar": 21.68,
+      "cura": 23.92,
+      "secar": 25.52,
+      "c2": 26.72,
+      "limpar": 28,
+      "escova": 29.6,
+      "esfarela": 32.24,
+      "fundo": 33.6,
+      "c3": 35.2,
+      "selar": 36.32,
+      "selador": 37.12,
+      "iguala": 40.24,
+      "rende": 42.4,
+      "mito": 43.36,
+      "seco2": 44.4,
+      "basta": 45.36,
+      "ph": 47.52,
+      "alcalino": 50.56,
+      "mancha": 52.64,
+      "solta": 53.36,
+      "norma": 54.56,
+      "pede": 57.04,
+      "cta": 60.43,
+      "house": 61.55,
+      "whatsapp": 63.87,
+      "loop": 64.75,
+      "espera": 66.27,
+      "prepara": 67.15,
+      "sela": 68.19,
+      "antes": 69.07,
+      "end": 71.09
+    };
+    /*END-CUES*/
+
+    const W = 1080;
+    const H = 1920;
+    const canvas = document.getElementById("world-canvas");
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
+    renderer.setPixelRatio(1);
+    renderer.setSize(W, H, false);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.05;
+
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.Fog("#dcecf8", 22, 60);
+    const camera = new THREE.PerspectiveCamera(34, W / H, 0.05, 200);
+
+    // ---------- Utilidades determinísticas ----------
+    const hash = (n) => {
+      const s = Math.sin(n * 127.1 + 311.7) * 43758.5453;
+      return s - Math.floor(s);
+    };
+    const clamp01 = (x) => Math.min(1, Math.max(0, x));
+    const prog = (t, a, b) => clamp01((t - a) / (b - a));
+    const easeInOut = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+    const easeOut = (x) => 1 - Math.pow(1 - x, 3);
+    const easeOutExpo = (x) => (x >= 1 ? 1 : 1 - Math.pow(2, -10 * x));
+    const lerp = (a, b, x) => a + (b - a) * x;
+    const lerp3 = (a, b, x) => [lerp(a[0], b[0], x), lerp(a[1], b[1], x), lerp(a[2], b[2], x)];
+    const spring = (x) => (x <= 0 ? 0 : 1 - Math.exp(-6 * x) * Math.cos(9 * x));
+    function track(t, keys) {
+      if (t <= keys[0][0]) return keys[0][1];
+      for (let i = 0; i < keys.length - 1; i++) {
+        const [ta, va] = keys[i];
+        const [tb, vb] = keys[i + 1];
+        if (t <= tb) return tb === ta ? vb : lerp(va, vb, easeInOut((t - ta) / (tb - ta)));
+      }
+      return keys[keys.length - 1][1];
+    }
+    function track3(t, keys) {
+      if (t <= keys[0][0]) return keys[0][1];
+      for (let i = 0; i < keys.length - 1; i++) {
+        const [ta, va] = keys[i];
+        const [tb, vb] = keys[i + 1];
+        if (t <= tb) return tb === ta ? vb : lerp3(va, vb, easeInOut((t - ta) / (tb - ta)));
+      }
+      return keys[keys.length - 1][1];
+    }
+
+    // ---------- Materiais e texturas ----------
+    const mat = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, flatShading: true, roughness: 0.85, metalness: 0, ...extra });
+    const smooth = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.62, metalness: 0, ...extra });
+    function canvasTex(w, h, draw, rep = [1, 1]) {
+      const cv = document.createElement("canvas");
+      cv.width = w;
+      cv.height = h;
+      draw(cv.getContext("2d"), w, h);
+      const tx = new THREE.CanvasTexture(cv);
+      tx.colorSpace = THREE.SRGBColorSpace;
+      tx.wrapS = tx.wrapT = THREE.RepeatWrapping;
+      tx.repeat.set(rep[0], rep[1]);
+      tx.anisotropy = 4;
+      return tx;
+    }
+    function textTex(lines, { bg = "#ffffff", fg = "#0b1220", w = 256, h = 128, size = 48, font = '"Barlow Condensed", sans-serif', weight = 800 } = {}) {
+      return canvasTex(w, h, (g) => {
+        g.fillStyle = bg;
+        g.fillRect(0, 0, w, h);
+        g.fillStyle = fg;
+        g.textAlign = "center";
+        g.textBaseline = "middle";
+        g.font = `${weight} ${size}px ${font}`;
+        lines.forEach((ln, i) => g.fillText(ln, w / 2, h / 2 + (i - (lines.length - 1) / 2) * size * 1.05));
+      });
+    }
+    // Reboco: textura clara e rugosa; a cor do material dá o tom (molhado = escuro, seco = claro)
+    const rebocoTex = canvasTex(512, 256, (g, w, h) => {
+      g.fillStyle = "#e9e6df";
+      g.fillRect(0, 0, w, h);
+      for (let i = 0; i < 2600; i++) {
+        const v = 200 + Math.floor(hash(i) * 55);
+        g.fillStyle = `rgb(${v},${v - 2},${v - 6})`;
+        g.fillRect(hash(i + 0.3) * w, hash(i + 0.7) * h, 1 + hash(i + 0.9) * 3, 1 + hash(i + 0.1) * 3);
+      }
+      g.strokeStyle = "rgba(120,115,105,0.18)";
+      g.lineWidth = 2;
+      for (let i = 0; i < 26; i++) {
+        g.beginPath();
+        const y = hash(i + 50) * h;
+        g.moveTo(0, y);
+        g.bezierCurveTo(w * 0.3, y + 10, w * 0.6, y - 8, w, y + 4);
+        g.stroke();
+      }
+    });
+    // Manchas de umidade (alfa), que somem com a secagem
+    const wetTex = canvasTex(512, 256, (g, w, h) => {
+      g.clearRect(0, 0, w, h);
+      for (let i = 0; i < 46; i++) {
+        const x = hash(i + 7) * w;
+        const y = hash(i + 13) * h;
+        const r = 20 + hash(i + 19) * 70;
+        const grd = g.createRadialGradient(x, y, 0, x, y, r);
+        grd.addColorStop(0, "rgba(40,44,50,0.75)");
+        grd.addColorStop(1, "rgba(40,44,50,0)");
+        g.fillStyle = grd;
+        g.beginPath();
+        g.arc(x, y, r, 0, Math.PI * 2);
+        g.fill();
+      }
+    });
+    const brickTex = canvasTex(256, 256, (g, w, h) => {
+      g.fillStyle = "#d9c9b0";
+      g.fillRect(0, 0, w, h);
+      const bh = 32;
+      for (let r = 0; r < h / bh; r++) {
+        const off = r % 2 ? 0 : 32;
+        for (let c = -1; c < w / 64 + 1; c++) {
+          const v = hash(r * 31 + c);
+          g.fillStyle = `rgb(${190 + v * 30},${92 + v * 25},${58 + v * 15})`;
+          g.fillRect(c * 64 + off + 3, r * bh + 3, 58, bh - 6);
+          g.fillStyle = "rgba(60,30,20,0.35)";
+          g.fillRect(c * 64 + off + 18, r * bh + 11, 8, 10);
+          g.fillRect(c * 64 + off + 38, r * bh + 11, 8, 10);
+        }
+      }
+    }, [4, 3]);
+    const tileTex = canvasTex(256, 256, (g, w, h) => {
+      g.fillStyle = "#b5532f";
+      g.fillRect(0, 0, w, h);
+      for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+          const v = hash(r * 9 + c * 3);
+          g.fillStyle = `rgb(${190 + v * 30},${88 + v * 20},${50 + v * 12})`;
+          g.beginPath();
+          g.ellipse(c * 32 + 16, r * 32 + 18, 15, 16, 0, 0, Math.PI * 2);
+          g.fill();
+          g.fillStyle = "rgba(80,25,10,0.35)";
+          g.fillRect(c * 32, r * 32 + 28, 32, 4);
+        }
+      }
+    }, [8, 3]);
+    const grassTex = canvasTex(256, 256, (g, w, h) => {
+      g.fillStyle = "#86b85a";
+      g.fillRect(0, 0, w, h);
+      for (let i = 0; i < 1800; i++) {
+        const v = hash(i * 1.7);
+        g.fillStyle = v > 0.5 ? "rgba(110,160,70,0.6)" : "rgba(150,195,95,0.55)";
+        g.fillRect(hash(i + 0.2) * w, hash(i + 0.5) * h, 2, 4 + v * 5);
+      }
+    }, [14, 14]);
+    const concreteTex = canvasTex(256, 256, (g, w, h) => {
+      g.fillStyle = "#cfcac0";
+      g.fillRect(0, 0, w, h);
+      g.strokeStyle = "rgba(90,85,75,0.35)";
+      g.lineWidth = 3;
+      for (let i = 0; i <= 4; i++) {
+        g.beginPath();
+        g.moveTo(i * 64, 0);
+        g.lineTo(i * 64, h);
+        g.stroke();
+      }
+    }, [10, 1]);
+    const M = {
+      grass: mat("#ffffff", { map: grassTex }),
+      concrete: mat("#ffffff", { map: concreteTex }),
+      asphalt: mat("#4b5058"),
+      curb: mat("#bdb8ae"),
+      brick: mat("#ffffff", { map: brickTex }),
+      chapisco: mat("#8d8a84"),
+      tile: mat("#ffffff", { map: tileTex }),
+      ridge: mat("#9c4426"),
+      fascia: mat("#f4efe6"),
+      paintFinal: mat("#f2e6cf"),
+      trim: mat("#2457d6"),
+      wood: mat("#8b5a34"),
+      woodDark: mat("#6b4226"),
+      glass: new THREE.MeshStandardMaterial({ color: "#a9d3ee", roughness: 0.1, metalness: 0.1, transparent: true, opacity: 0.75 }),
+      frame: mat("#f7f7f5"),
+      steel: mat("#8a939f", { roughness: 0.5 }),
+      steelDark: mat("#5b6474", { roughness: 0.5 }),
+      orange: mat("#f97316"),
+      plank: mat("#c8a46a"),
+      tarp: mat("#2f6fd6"),
+      bag: mat("#d8d2c4"),
+      trunk: mat("#7a5232"),
+      leaf: mat("#5f9e4a"),
+      leaf2: mat("#78b35a"),
+      bush: mat("#4f8a3e"),
+      dark: mat("#2b2f36"),
+      white: mat("#f8f8f6"),
+      yellow: mat("#facc15"),
+      blue: mat("#2457d6"),
+      cloud: new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: 1, flatShading: true }),
+    };
+    const box = (w, h, d, m) => {
+      const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      return mesh;
+    };
+    const cyl = (r, h, m, seg = 12, r2 = r) => {
+      const mesh = new THREE.Mesh(new THREE.CylinderGeometry(r, r2, h, seg), m);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      return mesh;
+    };
+    const sph = (r, m, seg = 16) => {
+      const mesh = new THREE.Mesh(new THREE.SphereGeometry(r, seg, Math.max(6, seg * 0.75)), m);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      return mesh;
+    };
+    const plane = (w, h, mt) => new THREE.Mesh(new THREE.PlaneGeometry(w, h), mt);
+
+    // ---------- Céu (gradiente com cores animáveis), sol e luzes ----------
+    const skyUni = { top: { value: new THREE.Color("#5fa8e8") }, bottom: { value: new THREE.Color("#e8f3fb") } };
+    const sky = new THREE.Mesh(
+      new THREE.SphereGeometry(90, 32, 16),
+      new THREE.ShaderMaterial({
+        side: THREE.BackSide,
+        depthWrite: false,
+        fog: false,
+        uniforms: skyUni,
+        vertexShader: "varying vec3 vP; void main(){ vP = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }",
+        fragmentShader: "uniform vec3 top; uniform vec3 bottom; varying vec3 vP; void main(){ float h = clamp(vP.y*1.4+0.12,0.0,1.0); gl_FragColor = vec4(mix(bottom, top, pow(h,0.8)),1.0); }",
+      }),
+    );
+    scene.add(sky);
+    const hemi = new THREE.HemisphereLight("#dbeeff", "#8aa36a", 1.25);
+    scene.add(hemi);
+    const sun = new THREE.DirectionalLight("#fff1dc", 2.6);
+    sun.castShadow = true;
+    sun.shadow.mapSize.set(2048, 2048);
+    sun.shadow.camera.left = -8;
+    sun.shadow.camera.right = 8;
+    sun.shadow.camera.top = 8;
+    sun.shadow.camera.bottom = -8;
+    sun.shadow.camera.near = 1;
+    sun.shadow.camera.far = 40;
+    sun.shadow.bias = -0.0005;
+    sun.shadow.radius = 4;
+    scene.add(sun, sun.target);
+    const sunDisc = new THREE.Mesh(new THREE.SphereGeometry(2.2, 16, 12), new THREE.MeshBasicMaterial({ color: "#fff3c4", fog: false }));
+    scene.add(sunDisc);
+    const moon = new THREE.Mesh(new THREE.SphereGeometry(1.4, 16, 12), new THREE.MeshBasicMaterial({ color: "#eef2ff", fog: false }));
+    scene.add(moon);
+    const clouds = [];
+    for (let k = 0; k < 6; k++) {
+      const g = new THREE.Group();
+      for (let j = 0; j < 4; j++) {
+        const s = new THREE.Mesh(new THREE.IcosahedronGeometry(0.9 + hash(k * 4 + j) * 0.7, 1), M.cloud);
+        s.position.set(j * 1.0 - 1.5, hash(k + j * 0.3) * 0.4, hash(k * 2 + j) * 0.6);
+        g.add(s);
+      }
+      g.userData = { x0: -30 + k * 11, y: 14 + hash(k + 9) * 6, z: -28 - hash(k + 3) * 10, sp: 0.35 + hash(k + 5) * 0.25 };
+      scene.add(g);
+      clouds.push(g);
+    }
+
+    // ---------- Chão: grama, calçada, meio-fio e rua ----------
+    const grass = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), M.grass);
+    grass.rotation.x = -Math.PI / 2;
+    grass.receiveShadow = true;
+    scene.add(grass);
+    const walk = box(14, 0.06, 1.3, M.concrete);
+    walk.position.set(0, 0.03, 2.85);
+    const curb = box(14, 0.12, 0.16, M.curb);
+    curb.position.set(0, 0.06, 3.58);
+    const street = box(30, 0.02, 6, M.asphalt);
+    street.position.set(0, 0.01, 6.6);
+    scene.add(walk, curb, street);
+    for (let i = 0; i < 4; i++) {
+      const p = box(0.55, 0.04, 0.42, M.concrete);
+      p.position.set(-0.9, 0.02, 0.55 + i * 0.52);
+      scene.add(p);
+    }
+
+    // ---------- A casa ----------
+    const HW = 5.4;
+    const HD = 3.6;
+    const WALL_H = 2.8;
+    const FZ = 0;
+    // Fachada: reboco novo (cor animada de molhado para seco)
+    const rebocoMat = new THREE.MeshStandardMaterial({ color: "#6a6e72", map: rebocoTex, roughness: 0.95 });
+    const facade = box(HW, WALL_H, 0.22, rebocoMat);
+    facade.position.set(0, WALL_H / 2, FZ - 0.11);
+    scene.add(facade);
+    const wetMat = new THREE.MeshBasicMaterial({ map: wetTex, transparent: true, opacity: 1, depthWrite: false });
+    const wetLayer = plane(HW, WALL_H, wetMat);
+    wetLayer.position.set(0, WALL_H / 2, FZ + 0.004);
+    scene.add(wetLayer);
+    // Selador (passado pelo pintor na camada 3) e pintura final (chamada final)
+    const seladorMat = new THREE.MeshStandardMaterial({ color: "#f5f3ee", roughness: 0.6, transparent: true, opacity: 0.55, depthWrite: false });
+    const seladorLayer = plane(1, WALL_H - 0.12, seladorMat);
+    seladorLayer.position.set(0, WALL_H / 2, FZ + 0.008);
+    scene.add(seladorLayer);
+    const paintLayer = new THREE.Group();
+    const paintMain = plane(HW, WALL_H, new THREE.MeshStandardMaterial({ color: "#f2e6cf", roughness: 0.8 }));
+    paintMain.position.set(0, WALL_H / 2, 0);
+    const paintBar = plane(HW, 0.55, new THREE.MeshStandardMaterial({ color: "#2457d6", roughness: 0.7 }));
+    paintBar.position.set(0, 0.275, 0.001);
+    paintLayer.add(paintMain, paintBar);
+    paintLayer.position.set(0, 0, FZ + 0.012);
+    scene.add(paintLayer);
+    // Lateral direita: ainda no tijolo, com chapisco na parte de baixo (a próxima etapa da obra)
+    const sideR = box(0.22, WALL_H, HD, M.brick);
+    sideR.position.set(HW / 2 - 0.11, WALL_H / 2, -HD / 2);
+    scene.add(sideR);
+    const chap = box(0.01, 1.1, HD - 0.4, M.chapisco);
+    chap.position.set(HW / 2 + 0.006, 0.55, -HD / 2 - 0.1);
+    scene.add(chap);
+    const sideL = box(0.22, WALL_H, HD, M.paintFinal);
+    sideL.position.set(-HW / 2 + 0.11, WALL_H / 2, -HD / 2);
+    const back = box(HW, WALL_H, 0.22, M.paintFinal);
+    back.position.set(0, WALL_H / 2, -HD + 0.11);
+    scene.add(sideL, back);
+    // Empenas triangulares e telhado de duas águas
+    const RISE = 1.25;
+    const gable = new THREE.Shape();
+    gable.moveTo(-HD / 2, 0);
+    gable.lineTo(HD / 2, 0);
+    gable.lineTo(0, RISE);
+    gable.closePath();
+    for (const [x, m] of [[HW / 2 - 0.11, M.brick], [-HW / 2 + 0.11, M.paintFinal]]) {
+      const gm = new THREE.Mesh(new THREE.ExtrudeGeometry(gable, { depth: 0.2, bevelEnabled: false }), m);
+      gm.rotation.y = Math.PI / 2;
+      gm.position.set(x - 0.1, WALL_H, -HD / 2);
+      gm.castShadow = true;
+      scene.add(gm);
+    }
+    const slopeLen = Math.hypot(HD / 2, RISE) + 0.55;
+    const ang = Math.atan2(RISE, HD / 2);
+    for (const s of [1, -1]) {
+      const r = box(HW + 0.7, 0.09, slopeLen, M.tile);
+      r.rotation.x = s * ang;
+      r.position.set(0, WALL_H + RISE / 2 - 0.02, -HD / 2 + s * (HD / 4 + 0.2));
+      scene.add(r);
+    }
+    const ridge = cyl(0.09, HW + 0.75, M.ridge, 8);
+    ridge.rotation.z = Math.PI / 2;
+    ridge.position.set(0, WALL_H + RISE + 0.02, -HD / 2);
+    const fascia = box(HW + 0.7, 0.14, 0.04, M.fascia);
+    fascia.position.set(0, WALL_H - 0.12, 0.47);
+    scene.add(ridge, fascia);
+    // Porta e janela
+    const DOOR_X = -0.9;
+    const doorFrame = box(1.02, 2.18, 0.06, M.frame);
+    doorFrame.position.set(DOOR_X, 1.09, FZ + 0.02);
+    const door = box(0.88, 2.08, 0.06, M.wood);
+    door.position.set(DOOR_X, 1.04, FZ + 0.045);
+    scene.add(doorFrame, door);
+    for (let i = 0; i < 3; i++) {
+      const panel = box(0.7, 0.5, 0.02, M.woodDark);
+      panel.position.set(DOOR_X, 0.45 + i * 0.62, FZ + 0.085);
+      scene.add(panel);
+    }
+    const knob = sph(0.035, M.yellow, 10);
+    knob.position.set(DOOR_X + 0.32, 1.02, FZ + 0.1);
+    scene.add(knob);
+    const WIN_X = 1.25;
+    const winFrame = box(1.36, 1.16, 0.07, M.frame);
+    winFrame.position.set(WIN_X, 1.6, FZ + 0.025);
+    const glass = box(1.2, 1.0, 0.03, M.glass);
+    glass.position.set(WIN_X, 1.6, FZ + 0.055);
+    const mullion = box(0.05, 1.0, 0.05, M.frame);
+    mullion.position.set(WIN_X, 1.6, FZ + 0.07);
+    const sill = box(1.5, 0.06, 0.18, M.frame);
+    sill.position.set(WIN_X, 1.0, FZ + 0.08);
+    scene.add(winFrame, glass, mullion, sill);
+
+    // ---------- Obra: andaime, lona, betoneira, sacos, carrinho, balde ----------
+    const tarp = box(2.2, 0.015, 1.3, M.tarp);
+    tarp.position.set(-1.8, 0.01, 0.75);
+    tarp.receiveShadow = true;
+    scene.add(tarp);
+    const scaf = new THREE.Group();
+    for (const [x, z] of [[-2.55, 0.18], [-1.75, 0.18], [-2.55, 0.85], [-1.75, 0.85]]) {
+      const p = cyl(0.025, 2.3, M.steel, 8);
+      p.position.set(x, 1.15, z);
+      scaf.add(p);
+    }
+    for (const y of [0.05, 1.15, 2.25]) {
+      for (const z of [0.18, 0.85]) {
+        const r = cyl(0.02, 0.8, M.steel, 8);
+        r.rotation.z = Math.PI / 2;
+        r.position.set(-2.15, y, z);
+        scaf.add(r);
+      }
+    }
+    const plank = box(0.9, 0.05, 0.6, M.plank);
+    plank.position.set(-2.15, 1.18, 0.52);
+    const bucketUp = cyl(0.12, 0.2, M.orange, 12, 0.1);
+    bucketUp.position.set(-2.35, 1.31, 0.5);
+    scaf.add(plank, bucketUp);
+    scene.add(scaf);
+    // Betoneira
+    const MIX = new THREE.Vector3(3.35, 0, 1.15);
+    const mixer = new THREE.Group();
+    mixer.position.copy(MIX);
+    const drum = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.42, 0.7, 14, 1, true), M.orange);
+    drum.material.side = THREE.DoubleSide;
+    drum.castShadow = true;
+    drum.rotation.z = 0.9;
+    drum.position.set(0, 0.95, 0);
+    const drumBase = sph(0.42, M.orange, 14);
+    drumBase.scale.set(1, 0.5, 1);
+    drumBase.rotation.z = 0.9;
+    drumBase.position.set(0.24, 0.78, 0);
+    const frameA = box(0.08, 0.8, 0.08, M.steelDark);
+    frameA.position.set(0.2, 0.4, 0.3);
+    const frameB = frameA.clone();
+    frameB.position.z = -0.3;
+    const axle = cyl(0.03, 0.75, M.steelDark, 8);
+    axle.rotation.x = Math.PI / 2;
+    axle.position.set(0.3, 0.2, 0);
+    mixer.add(drum, drumBase, frameA, frameB, axle);
+    for (const z of [0.38, -0.38]) {
+      const wh = cyl(0.18, 0.08, M.dark, 14);
+      wh.rotation.x = Math.PI / 2;
+      wh.position.set(0.3, 0.18, z);
+      mixer.add(wh);
+    }
+    mixer.rotation.y = -0.6;
+    scene.add(mixer);
+    // Sacos de cimento e cal
+    const bagLab = (txt) => new THREE.MeshStandardMaterial({ map: textTex([txt], { bg: "#d8d2c4", fg: "#5b4b35", w: 256, h: 128, size: 56 }), roughness: 0.9 });
+    const bags = [
+      [2.45, 0.1, 2.0, "CIMENTO"],
+      [2.95, 0.1, 2.05, "CIMENTO"],
+      [2.7, 0.3, 2.02, "CAL"],
+    ];
+    for (const [x, y, z, txt] of bags) {
+      const b = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.2, 0.34), [M.bag, M.bag, M.bag, M.bag, bagLab(txt), M.bag]);
+      b.position.set(x, y, z);
+      b.rotation.y = hash(x) * 0.3 - 0.15;
+      b.castShadow = true;
+      b.receiveShadow = true;
+      scene.add(b);
+    }
+    // Carrinho de mão
+    const barrow = new THREE.Group();
+    const tray = cyl(0.36, 0.22, M.steelDark, 10, 0.22);
+    tray.scale.set(1, 1, 0.7);
+    tray.position.set(0, 0.42, 0);
+    const wheel = cyl(0.15, 0.06, M.dark, 14);
+    wheel.rotation.x = Math.PI / 2;
+    wheel.position.set(0.45, 0.15, 0);
+    barrow.add(tray, wheel);
+    for (const z of [0.18, -0.18]) {
+      const h = cyl(0.02, 1.1, M.steel, 6);
+      h.rotation.z = Math.PI / 2 + 0.25;
+      h.position.set(-0.1, 0.35, z);
+      barrow.add(h);
+    }
+    barrow.position.set(-3.6, 0, 1.6);
+    barrow.rotation.y = 0.5;
+    scene.add(barrow);
+    // Balde de massa com colher de pedreiro e a lata de tinta do morador
+    const bucket = cyl(0.16, 0.26, M.dark, 14, 0.13);
+    bucket.position.set(0.15, 0.13, 0.95);
+    const mortar = cyl(0.15, 0.02, M.chapisco, 14);
+    mortar.position.set(0.15, 0.255, 0.95);
+    const trowel = box(0.16, 0.01, 0.1, M.steel);
+    trowel.position.set(0.2, 0.27, 0.95);
+    trowel.rotation.z = 0.2;
+    scene.add(bucket, mortar, trowel);
+    const can = new THREE.Group();
+    const canBody = cyl(0.13, 0.26, M.steel, 16);
+    canBody.position.y = 0.13;
+    const canLabel = new THREE.Mesh(new THREE.CylinderGeometry(0.132, 0.132, 0.16, 16, 1, true), new THREE.MeshStandardMaterial({ map: textTex(["TINTA"], { bg: "#f2e6cf", fg: "#2457d6", w: 512, h: 128, size: 70 }), roughness: 0.7 }));
+    canLabel.position.y = 0.13;
+    can.add(canBody, canLabel);
+    can.position.set(1.0, 0, 1.15);
+    scene.add(can);
+    // Lata de fundo preparador (aparece na camada 2)
+    const fundoCan = new THREE.Group();
+    const fBody = cyl(0.14, 0.3, M.white, 16);
+    fBody.position.y = 0.15;
+    const fLabel = new THREE.Mesh(new THREE.CylinderGeometry(0.142, 0.142, 0.2, 16, 1, true), new THREE.MeshStandardMaterial({ map: textTex(["FUNDO", "PREPARADOR"], { bg: "#2457d6", fg: "#ffffff", w: 512, h: 160, size: 58 }), roughness: 0.7 }));
+    fLabel.position.y = 0.15;
+    fundoCan.add(fBody, fLabel);
+    fundoCan.position.set(0.95, 0, 0.75);
+    scene.add(fundoCan);
+
+    // ---------- Árvores e arbustos ----------
+    function tree(x, z, s) {
+      const g = new THREE.Group();
+      const tr = cyl(0.12 * s, 1.6 * s, M.trunk, 8, 0.16 * s);
+      tr.position.y = 0.8 * s;
+      g.add(tr);
+      for (let i = 0; i < 4; i++) {
+        const l = new THREE.Mesh(new THREE.IcosahedronGeometry((0.75 - i * 0.08) * s, 1), i % 2 ? M.leaf2 : M.leaf);
+        l.position.set((hash(x + i) - 0.5) * 0.7 * s, (1.7 + i * 0.42) * s, (hash(z + i) - 0.5) * 0.7 * s);
+        l.castShadow = true;
+        g.add(l);
+      }
+      g.position.set(x, 0, z);
+      scene.add(g);
+      return g;
+    }
+    tree(-4.6, -1.0, 1.15);
+    tree(5.0, -2.8, 1.3);
+    tree(-6.5, -4.5, 1.4);
+    for (const [x, z, s] of [[-2.9, 0.35, 0.45], [2.95, 0.3, 0.4], [-0.25, 0.3, 0.32], [4.4, 1.0, 0.5]]) {
+      const b = new THREE.Mesh(new THREE.IcosahedronGeometry(s, 1), M.bush);
+      b.position.set(x, s * 0.75, z);
+      b.scale.y = 0.8;
+      b.castShadow = true;
+      scene.add(b);
+    }
+
+    // ---------- Corte da parede em "lupa": tijolo, chapisco, reboco (com água e cal), e as camadas de acabamento ----------
+    const CUT = new THREE.Vector3(1.75, 1.55, 1.05);
+    const SPOT = new THREE.Vector3(0.25, 1.35, FZ + 0.02); // ponto da fachada que a lupa amplia
+    const cut = new THREE.Group();
+    cut.position.copy(CUT);
+    cut.rotation.y = -0.8;
+    const CW = 0.8;
+    const CH = 0.8;
+    const L = { brick: 0.32, chap: 0.05, reb: 0.3 };
+    const zBrick = -0.33;
+    const cBrick = box(CW, CH, L.brick, M.brick);
+    cBrick.position.z = zBrick;
+    for (let i = 0; i < 4; i++) {
+      const hole = box(0.012, 0.12, 0.12, M.woodDark);
+      hole.position.set(CW / 2 + 0.002, -0.24 + i * 0.16, zBrick);
+      cut.add(hole);
+    }
+    const cChap = box(CW, CH, L.chap, M.chapisco);
+    cChap.position.z = zBrick + L.brick / 2 + L.chap / 2;
+    const rebCutMat = new THREE.MeshStandardMaterial({ color: "#7b7f84", map: rebocoTex, roughness: 0.95, emissive: "#7c3aed", emissiveIntensity: 0 });
+    const zReb = zBrick + L.brick / 2 + L.chap + L.reb / 2;
+    const cReb = box(CW, CH, L.reb, rebCutMat);
+    cReb.position.z = zReb;
+    cut.add(cBrick, cChap, cReb);
+    const OUT_Z = zReb + L.reb / 2; // face externa
+    // Gotas de água e grãos de cal dentro do reboco
+    const drops = [];
+    for (let k = 0; k < 16; k++) {
+      const d = new THREE.Mesh(new THREE.SphereGeometry(0.026, 10, 8), new THREE.MeshStandardMaterial({ color: "#3b82f6", roughness: 0.15, emissive: "#1d4ed8", emissiveIntensity: 0.35 }));
+      d.userData = { x: (hash(k * 3.1) - 0.5) * (CW - 0.1), y: (hash(k * 5.7) - 0.5) * (CH - 0.1), z: zReb + (hash(k * 2.3) - 0.5) * (L.reb - 0.08) };
+      d.position.set(CW / 2 + 0.03, d.userData.y, d.userData.z);
+      cut.add(d);
+      drops.push(d);
+    }
+    const grains = [];
+    for (let k = 0; k < 14; k++) {
+      const g = box(0.022, 0.022, 0.022, M.white);
+      g.userData = { y: (hash(k * 7.7) - 0.5) * (CH - 0.1), z: zReb + (hash(k * 1.9) - 0.5) * (L.reb - 0.06) };
+      g.position.set(CW / 2 + 0.02, g.userData.y, g.userData.z);
+      g.rotation.set(hash(k), hash(k + 1), 0);
+      cut.add(g);
+      grains.push(g);
+    }
+    // Película de tinta da simulação "e se pintar agora": bolhas, manchas brancas e uma lasca descascando
+    const film = new THREE.Group();
+    const filmMat = new THREE.MeshStandardMaterial({ color: "#f2e6cf", roughness: 0.7 });
+    const filmBase = box(CW, CH, 0.025, filmMat);
+    film.add(filmBase);
+    const blisters = [];
+    for (let k = 0; k < 5; k++) {
+      const b = new THREE.Mesh(new THREE.SphereGeometry(0.06, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2), filmMat);
+      b.rotation.x = Math.PI / 2;
+      b.position.set((hash(k * 9.1) - 0.5) * 0.55, (hash(k * 4.3) - 0.5) * 0.55, 0.012);
+      film.add(b);
+      blisters.push(b);
+    }
+    const stains = [];
+    for (let k = 0; k < 6; k++) {
+      const s = new THREE.Mesh(new THREE.CircleGeometry(0.05 + hash(k + 40) * 0.04, 12), new THREE.MeshBasicMaterial({ color: "#ffffff", transparent: true }));
+      s.position.set((hash(k * 6.1 + 2) - 0.5) * 0.6, (hash(k * 2.9 + 1) - 0.5) * 0.6, 0.014);
+      film.add(s);
+      stains.push(s);
+    }
+    const peelPivot = new THREE.Group();
+    peelPivot.position.set(0.05, 0.38, 0.016);
+    const peel = box(0.3, 0.28, 0.012, filmMat);
+    peel.position.set(0.14, -0.14, 0);
+    peelPivot.add(peel);
+    film.add(peelPivot);
+    film.position.z = OUT_Z + 0.013;
+    cut.add(film);
+    // Camadas de acabamento (camada 3): selador, massa e tinta
+    const layers = [
+      ["selador", new THREE.MeshStandardMaterial({ color: "#eef6ff", roughness: 0.5, transparent: true, opacity: 0.75 }), 0.018],
+      ["massa", mat("#f7f5ef"), 0.03],
+      ["tinta", mat("#f2e6cf"), 0.018],
+    ].map(([name, m, th], i) => {
+      const l = box(CW, CH, th, m);
+      l.userData = { th };
+      cut.add(l);
+      return l;
+    });
+    // Moldura da lupa e o feixe até a fachada
+    const ringMat = new THREE.MeshBasicMaterial({ color: "#2457d6" });
+    const spotRing = new THREE.Mesh(new THREE.RingGeometry(0.16, 0.2, 32), ringMat);
+    spotRing.position.copy(SPOT);
+    scene.add(spotRing);
+    scene.add(cut);
+    const beamMat = new THREE.MeshBasicMaterial({ color: "#2457d6", transparent: true, opacity: 0.18, depthWrite: false, side: THREE.DoubleSide });
+    const beamGeo = new THREE.BufferGeometry();
+    beamGeo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(18 * 3), 3));
+    const beam = new THREE.Mesh(beamGeo, beamMat);
+    scene.add(beam);
+
+    // Partículas: pó da escova e areia que esfarela
+    const dust = [];
+    for (let k = 0; k < 26; k++) {
+      const d = box(0.016, 0.016, 0.016, mat("#b9b3a7"));
+      d.userData = { off: hash(k * 3.3), dx: (hash(k * 1.3) - 0.5) * 0.3, dz: hash(k * 2.1) * 0.15 };
+      scene.add(d);
+      dust.push(d);
+    }
+
+    // ---------- Bonequinho melhorado: rosto, cotovelos, joelhos, mãos e roupa ----------
+    const SKIN = smooth("#e0a882");
+    function makePerson(kind, logoTex) {
+      const isP = kind === "pintor";
+      const shirt = smooth(isP ? "#2457d6" : "#e76f51");
+      const pants = smooth(isP ? "#f4f4f2" : "#3a5a8c");
+      const shoes = smooth(isP ? "#ffffff" : "#2b2f36");
+      const g = new THREE.Group();
+      const hips = new THREE.Group();
+      hips.position.y = 0.92;
+      g.add(hips);
+      const cap = (r, len, m) => {
+        const mesh = new THREE.Mesh(new THREE.CapsuleGeometry(r, len, 6, 12), m);
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        return mesh;
+      };
+      // Pernas com joelho
+      const legs = [];
+      for (const s of [-1, 1]) {
+        const thigh = new THREE.Group();
+        thigh.position.set(s * 0.1, 0, 0);
+        const th = cap(0.07, 0.3, pants);
+        th.position.y = -0.22;
+        thigh.add(th);
+        const knee = new THREE.Group();
+        knee.position.y = -0.45;
+        const shinM = isP ? pants : SKIN;
+        const sh = cap(0.058, 0.3, shinM);
+        sh.position.y = -0.2;
+        knee.add(sh);
+        if (!isP) {
+          const cuff = cyl(0.075, 0.08, pants, 12);
+          cuff.position.y = 0.0;
+          knee.add(cuff);
+        }
+        const foot = new THREE.Mesh(new THREE.CapsuleGeometry(0.055, 0.14, 4, 10), shoes);
+        foot.rotation.x = Math.PI / 2;
+        foot.position.set(0, -0.43, 0.05);
+        foot.castShadow = true;
+        knee.add(foot);
+        thigh.add(knee);
+        hips.add(thigh);
+        legs.push({ thigh, knee });
+      }
+      // Bermuda do morador cobre a coxa
+      // Tronco
+      const torso = cap(0.17, 0.3, shirt);
+      torso.scale.set(1.18, 1, 0.78);
+      torso.position.y = 0.32;
+      hips.add(torso);
+      const belt = cyl(0.19, 0.06, smooth(isP ? "#d9d9d6" : "#2f4d7a"), 16);
+      belt.scale.set(1.05, 1, 0.75);
+      belt.position.y = 0.06;
+      hips.add(belt);
+      if (logoTex && isP) {
+        const lp = (z, ry, s) => {
+          const patch = new THREE.Mesh(new THREE.CircleGeometry(0.1 * s, 24), smooth("#ffffff"));
+          patch.position.set(0, 0.38, z);
+          patch.rotation.y = ry;
+          const logo = new THREE.Mesh(new THREE.CircleGeometry(0.088 * s, 24), new THREE.MeshBasicMaterial({ map: logoTex }));
+          logo.position.set(0, 0.38, z + (z > 0 ? 0.002 : -0.002));
+          logo.rotation.y = ry;
+          hips.add(patch, logo);
+        };
+        lp(0.138, 0, 0.6);
+        lp(-0.138, Math.PI, 1.0);
+      }
+      // Pescoço e cabeça com rosto
+      const neck = cyl(0.05, 0.1, SKIN, 10);
+      neck.position.y = 0.63;
+      hips.add(neck);
+      const head = new THREE.Group();
+      head.position.y = 0.8;
+      hips.add(head);
+      const skull = sph(0.145, SKIN, 24);
+      skull.scale.set(1, 1.08, 0.98);
+      head.add(skull);
+      const eyeMat = smooth("#1b1b1f", { roughness: 0.3 });
+      const eyes = [];
+      for (const s of [-1, 1]) {
+        const e = sph(0.021, eyeMat, 12);
+        e.position.set(s * 0.052, 0.015, 0.128);
+        const hl = sph(0.007, new THREE.MeshBasicMaterial({ color: "#ffffff" }), 8);
+        hl.position.set(0.006, 0.007, 0.018);
+        e.add(hl);
+        head.add(e);
+        eyes.push(e);
+        const brow = box(0.05, 0.012, 0.012, smooth(isP ? "#3b2a1e" : "#5a3a22"));
+        brow.position.set(s * 0.053, 0.06, 0.132);
+        brow.rotation.z = -s * 0.12;
+        head.add(brow);
+        const ear = sph(0.03, SKIN, 10);
+        ear.scale.set(0.6, 1, 0.8);
+        ear.position.set(s * 0.145, 0, 0);
+        head.add(ear);
+      }
+      const nose = sph(0.02, SKIN, 10);
+      nose.position.set(0, -0.012, 0.145);
+      head.add(nose);
+      const mouth = new THREE.Mesh(new THREE.TorusGeometry(0.03, 0.006, 6, 16, Math.PI), smooth("#8a3b2e"));
+      mouth.rotation.z = Math.PI;
+      mouth.position.set(0, -0.055, 0.128);
+      head.add(mouth);
+      if (isP) {
+        // Boné azul da House
+        const capTop = new THREE.Mesh(new THREE.SphereGeometry(0.152, 20, 10, 0, Math.PI * 2, 0, Math.PI / 2), smooth("#2457d6"));
+        capTop.position.y = 0.035;
+        capTop.castShadow = true;
+        const brim = cyl(0.13, 0.015, smooth("#1c46b0"), 16);
+        brim.scale.set(1, 1, 0.75);
+        brim.position.set(0, 0.04, 0.12);
+        head.add(capTop, brim);
+      } else {
+        const hair = new THREE.Mesh(new THREE.SphereGeometry(0.152, 20, 10, 0, Math.PI * 2, 0, Math.PI / 2.2), smooth("#4a2f1c"));
+        hair.position.y = 0.02;
+        hair.rotation.x = -0.15;
+        hair.castShadow = true;
+        head.add(hair);
+      }
+      // Braços com cotovelo e mão
+      const arms = [];
+      for (const s of [-1, 1]) {
+        const shoulder = new THREE.Group();
+        shoulder.position.set(s * 0.235, 0.52, 0);
+        const sleeve = cap(0.062, 0.1, shirt);
+        sleeve.position.y = -0.06;
+        const upper = cap(0.05, 0.18, SKIN);
+        upper.position.y = -0.15;
+        shoulder.add(upper, sleeve);
+        const elbow = new THREE.Group();
+        elbow.position.y = -0.29;
+        const fore = cap(0.045, 0.17, SKIN);
+        fore.position.y = -0.12;
+        elbow.add(fore);
+        const hand = new THREE.Group();
+        hand.position.y = -0.27;
+        const palm = sph(0.05, SKIN, 12);
+        palm.scale.set(0.8, 1.05, 0.6);
+        const thumb = cap(0.016, 0.03, SKIN);
+        thumb.position.set(-s * 0.035, 0.0, 0.02);
+        thumb.rotation.z = s * 0.6;
+        hand.add(palm, thumb);
+        elbow.add(hand);
+        shoulder.add(elbow);
+        hips.add(shoulder);
+        arms.push({ shoulder, elbow, hand, side: s });
+      }
+      g.userData = { hips, torso, head, eyes, legs, arms };
+      return g;
+    }
+
+    // Rolo de pintura (o do morador com tinta; o do pintor com selador)
+    function makeRoller(color) {
+      const g = new THREE.Group();
+      const handle = cyl(0.015, 0.22, M.dark, 8);
+      handle.position.y = -0.08;
+      const rod = cyl(0.007, 0.16, M.steel, 6);
+      rod.position.set(0, -0.26, 0.02);
+      const roll = cyl(0.04, 0.22, smooth(color), 12);
+      roll.rotation.z = Math.PI / 2;
+      roll.position.set(0, -0.34, 0.05);
+      g.add(handle, rod, roll);
+      return g;
+    }
+    function makeBrush() {
+      const g = new THREE.Group();
+      const h = box(0.04, 0.12, 0.03, M.woodDark);
+      h.position.y = -0.04;
+      const b = box(0.14, 0.05, 0.05, M.wood);
+      b.position.y = -0.12;
+      const br = box(0.13, 0.05, 0.04, smooth("#efe4c8"));
+      br.position.y = -0.17;
+      g.add(h, b, br);
+      return g;
+    }
+
+    // ---------- IK de dois ossos (ombro e cotovelo) com polo ----------
+    const L1 = 0.29;
+    const L2 = 0.27;
+    const DOWN = new THREE.Vector3(0, -1, 0);
+    const IDQ = new THREE.Quaternion();
+    const qU = new THREE.Quaternion();
+    const qF = new THREE.Quaternion();
+    const tmpM = new THREE.Matrix4();
+    function reach(who, arm, targetW, k) {
+      const { shoulder, elbow, side } = arm;
+      if (k <= 0.001) {
+        shoulder.quaternion.identity();
+        elbow.quaternion.identity();
+        return;
+      }
+      who.updateMatrixWorld(true);
+      const hips = who.userData.hips;
+      const T = hips.worldToLocal(new THREE.Vector3(...targetW));
+      const S = shoulder.position.clone();
+      const v = T.clone().sub(S);
+      const d = Math.min(L1 + L2 - 0.002, Math.max(0.08, v.length()));
+      const dir = v.normalize();
+      const pole = new THREE.Vector3(side * 0.7, -1, -0.5).normalize();
+      let n = new THREE.Vector3().crossVectors(dir, pole);
+      if (n.lengthSq() < 1e-6) n.set(1, 0, 0);
+      n.normalize();
+      const a = Math.acos(Math.min(1, Math.max(-1, (L1 * L1 + d * d - L2 * L2) / (2 * L1 * d))));
+      const upperDir = dir.clone().applyAxisAngle(n, a);
+      qU.setFromUnitVectors(DOWN, upperDir);
+      const E = S.clone().addScaledVector(upperDir, L1);
+      const Td = S.clone().addScaledVector(dir, d);
+      const foreDir = Td.sub(E).normalize().applyQuaternion(qU.clone().invert());
+      qF.setFromUnitVectors(DOWN, foreDir);
+      shoulder.quaternion.slerpQuaternions(IDQ, qU, k);
+      elbow.quaternion.slerpQuaternions(IDQ, qF, k);
+    }
+    // Pose de caminhada e respiração
+    function animateBody(who, t, walk, seed) {
+      const u = who.userData;
+      const ph = t * 8.5 + seed;
+      const sw = Math.sin(ph) * walk;
+      u.legs.forEach((l, i) => {
+        const s = i === 0 ? sw : -sw;
+        l.thigh.rotation.x = 0.5 * s;
+        l.knee.rotation.x = walk * 0.75 * Math.max(0, Math.sin(ph + (i === 0 ? 0.9 : 0.9 + Math.PI)));
+      });
+      u.hips.position.y = 0.92 + 0.025 * Math.abs(Math.sin(ph)) * walk;
+      u.torso.scale.y = 1 + 0.012 * Math.sin(t * 2.1 + seed);
+      u.head.rotation.z = 0.03 * Math.sin(t * 0.9 + seed);
+      // Piscada determinística
+      const bl = (t + seed * 0.37) % 3.4 < 0.13 ? 0.12 : 1;
+      u.eyes.forEach((e) => (e.scale.y = bl));
+      return sw;
+    }
+    function swingArms(who, sw, bend = 0.25) {
+      who.userData.arms.forEach((a, i) => {
+        a.shoulder.quaternion.setFromEuler(new THREE.Euler((i === 0 ? -sw : sw) * 0.45, 0, a.side * 0.08));
+        a.elbow.quaternion.setFromEuler(new THREE.Euler(-bend - 0.2 * Math.abs(sw), 0, 0));
+      });
+    }
+
+    // ---------- Montagem (depois de carregar o logo da House) ----------
+    function build(logoTex) {
+      const morador = makePerson("morador", null);
+      const pintor = makePerson("pintor", logoTex);
+      scene.add(morador, pintor);
+      const rollerM = makeRoller("#f2e6cf");
+      morador.userData.arms[1].hand.add(rollerM);
+      const rollerP = makeRoller("#f5f3ee");
+      pintor.userData.arms[1].hand.add(rollerP);
+      const brush = makeBrush();
+      pintor.userData.arms[1].hand.add(brush);
+
+      // ---------- Posições ----------
+      const P_MH = [0.6, 0, 0.82];
+      const P_MS = [-0.35, 0, 2.05];
+      const P_MW = [-0.2, 0, 0.66];
+      const P_P0 = [2.25, 0, 0.95];
+      const P_PW = [0.25, 0, 0.66];
+      const P_PS = [2.3, 0, 0.9];
+      const P_PC = [0.45, 0, 1.35];
+      const MPOS = [
+        [0, P_MH], [C.nao + 0.7, P_MH], [C.pronta, P_MS],
+        [C.mito - 1.3, P_MS], [C.mito + 0.2, P_MW], [C.norma - 0.4, P_MW], [C.norma + 1.0, P_MS],
+        [C.loop + 0.2, P_MS], [C.loop + 1.9, P_MH],
+      ];
+      const PPOS = [
+        [0, P_P0], [C.c2 - 0.9, P_P0], [C.limpar + 0.3, P_PW],
+        [C.c3 - 0.2, P_PW], [C.selador, [-0.15, 0, 0.66]], [C.rende + 0.4, [0.5, 0, 0.66]],
+        [C.mito - 0.5, [0.5, 0, 0.66]], [C.mito + 0.8, P_PS],
+        [C.cta - 0.2, P_PS], [C.cta + 1.2, P_PC],
+        [C.loop + 0.2, P_PC], [C.loop + 1.7, P_P0],
+      ];
+      const mAt = (t) => track3(t, MPOS);
+      const pAt = (t) => track3(t, PPOS);
+      const yawTo = (p, q) => Math.atan2(q[0] - p[0], q[2] - p[2]);
+      const CAMYAW = 0.4;
+
+      // ---------- Câmera ----------
+      const DIR = [0.42, 0.14, 1];
+      const shot = (q, d, dir = DIR) => {
+        const n = Math.hypot(...dir);
+        return { q, p: q.map((v, i) => v + (dir[i] / n) * d) };
+      };
+      const OPEN = shot([1.25, 1.95, 0.6], 6.6);
+      const CUTS = (d = 3.6, dy = 0.45) => shot([CUT.x - 0.1, CUT.y + dy, CUT.z], d);
+      const K = [
+        { t: 0, ...OPEN },
+        { t: C.pode, ...shot([1.2, 1.9, 0.6], 6.2) },
+        { t: C.pronta + 0.4, ...shot([0.3, 2.7, -0.6], 11.5) },
+        { t: C.camadas + 0.6, ...shot([0.3, 2.7, -0.6], 11.0) },
+        { t: C.reboco, ...CUTS(3.9) },
+        { t: C.agora, ...CUTS(3.6) },
+        { t: C.descascando + 0.6, ...CUTS(3.4) },
+        { t: C.esperar, ...shot([0.2, 3.4, -0.8], 13.5) },
+        { t: C.secar + 0.8, ...shot([0.3, 3.2, -0.6], 12.5) },
+        { t: C.c2 + 0.4, ...shot([0.3, 1.65, 0.3], 4.2, [1.0, 0.2, 0.62]) },
+        { t: C.esfarela - 0.2, ...shot([0.3, 1.5, 0.3], 3.6, [1.0, 0.2, 0.62]) },
+        { t: C.fundo + 0.6, ...shot([0.5, 1.55, 0.5], 4.0, [1.0, 0.2, 0.7]) },
+        { t: C.c3 + 0.5, ...shot([0.5, 2.1, 0.5], 5.6) },
+        { t: C.selador + 0.6, ...CUTS(3.7, 0.4) },
+        { t: C.iguala + 0.4, ...shot([0.3, 2.0, 0.4], 5.2) },
+        { t: C.mito + 0.6, ...shot([-0.25, 1.6, 0.35], 3.8, [1.0, 0.2, 0.62]) },
+        { t: C.ph - 0.4, ...CUTS(3.6, 0.45) },
+        { t: C.solta + 0.4, ...CUTS(3.4, 0.4) },
+        { t: C.norma + 0.8, ...shot([0.4, 2.4, -0.2], 8.6) },
+        { t: C.cta + 0.8, ...shot([0.2, 3.6, -0.5], 12.8) },
+        { t: C.loop, ...shot([0.2, 3.55, -0.5], 12.2) },
+        { t: C.loop + 1.7, ...shot([1.23, 1.97, 0.6], 6.8) },
+        { t: C.end, ...OPEN },
+      ];
+      function cameraAt(t) {
+        if (t <= K[0].t) return K[0];
+        for (let i = 0; i < K.length - 1; i++) {
+          const a = K[i];
+          const b = K[i + 1];
+          if (t <= b.t) {
+            const x = easeInOut((t - a.t) / (b.t - a.t));
+            return { p: lerp3(a.p, b.p, x), q: lerp3(a.q, b.q, x) };
+          }
+        }
+        return K[K.length - 1];
+      }
+
+      // ---------- Callouts presos a pontos 3D ----------
+      const svg = document.getElementById("world-lines");
+      const SVGNS = "http://www.w3.org/2000/svg";
+      const wOf = (obj, x = 0, y = 0, z = 0) => {
+        obj.updateMatrixWorld(true);
+        return obj.localToWorld(new THREE.Vector3(x, y, z)).toArray();
+      };
+      const CTA_BOX = { top: 1320, bottom: 1600 };
+      const CALLOUTS = [
+        { id: "co-umido", a: C.seco + 0.2, b: C.problema, at: () => [0.2, 2.1, FZ + 0.02], dx: 120, dy: -60, top: 700 },
+        { id: "co-agua", a: C.agua - 0.1, b: C.agora, at: () => wOf(drops[3]), dx: 120, dy: -80, top: 700 },
+        { id: "co-cal", a: C.cal - 0.1, b: C.agora, at: () => wOf(grains[2]), dx: 120, dy: 70, top: 700 },
+        { id: "co-bolha", a: C.bolhas - 0.1, b: C.descascando - 0.1, at: () => wOf(blisters[1]), dx: 120, dy: -90, top: 700 },
+        { id: "co-mancha", a: C.manchas - 0.1, b: C.c1, at: () => wOf(stains[0]), dx: -100, dy: 60, top: 700 },
+        { id: "co-desc", a: C.descascando - 0.1, b: C.c1, at: () => wOf(peel), dx: 110, dy: 130, top: 700 },
+        { id: "co-seco", a: C.cura + 0.5, b: C.c2, at: () => [-0.4, 1.9, FZ + 0.02], dx: 110, dy: 120, top: 1000 },
+        { id: "co-po", a: C.escova + 0.3, b: C.esfarela - 0.2, at: () => [0.35, 1.2, FZ + 0.03], dx: 130, dy: 120, top: 960 },
+        { id: "co-fundo", a: C.fundo, b: C.c3, at: () => wOf(fundoCan, 0, 0.3, 0), dx: 120, dy: -90, top: 960 },
+        { id: "co-selador", a: C.selador + 0.3, b: C.mito, at: () => wOf(layers[0], CW / 2, 0.2, 0), dx: 110, dy: -90, top: 960 },
+        { id: "co-fora", a: C.seco2 - 0.2, b: C.ph - 0.4, at: () => wOf(morador.userData.arms[0].hand), dx: 120, dy: -90, top: 960 },
+        { id: "co-dentro", a: C.ph, b: C.norma, at: () => wOf(cReb, CW / 2, 0.1, 0), dx: 110, dy: 110, top: 960 },
+        { id: "co-pintor", ...CTA_BOX, a: C.house - 0.2, b: C.loop, at: () => wOf(pintor.userData.head, 0, 0.2, 0), dx: 110, dy: -60 },
+      ];
+      for (const c of CALLOUTS) {
+        c.el = document.getElementById(c.id);
+        c.bw = c.el.offsetWidth;
+        c.bh = c.el.offsetHeight;
+        c.line = document.createElementNS(SVGNS, "line");
+        c.line.setAttribute("stroke", "#0b1220");
+        c.line.setAttribute("stroke-width", "3");
+        c.dot = document.createElementNS(SVGNS, "circle");
+        c.dot.setAttribute("r", "8");
+        c.dot.setAttribute("fill", "#2457d6");
+        c.dot.setAttribute("stroke", "#ffffff");
+        c.dot.setAttribute("stroke-width", "3");
+        svg.append(c.line, c.dot);
+      }
+      const proj = new THREE.Vector3();
+      function placeCallouts(t) {
+        for (const c of CALLOUTS) {
+          const fadeIn = prog(t, c.a, c.a + 0.25);
+          const fadeOut = 1 - prog(t, c.b - 0.2, c.b);
+          const o = Math.min(fadeIn, fadeOut);
+          if (o <= 0.001) {
+            c.el.style.opacity = "0";
+            c.line.setAttribute("opacity", "0");
+            c.dot.setAttribute("opacity", "0");
+            continue;
+          }
+          proj.fromArray(c.at()).project(camera);
+          const px = (proj.x * 0.5 + 0.5) * W;
+          const py = (-proj.y * 0.5 + 0.5) * H;
+          let bx = px + c.dx - (c.dx < 0 ? c.bw : 0);
+          let by = py + c.dy - c.bh / 2;
+          bx = Math.min(W - 54 - c.bw, Math.max(54, bx));
+          by = Math.min((c.bottom ?? 1160) - c.bh, Math.max(c.top ?? 330, by));
+          const lift = 14 * (1 - easeOutExpo(fadeIn));
+          c.el.style.opacity = String(o);
+          c.el.style.transform = `translate(${bx}px, ${by + lift}px)`;
+          const lx = bx + (c.dx < 0 ? c.bw : 0);
+          const ly = by + c.bh / 2;
+          const grow = easeOut(fadeIn);
+          c.line.setAttribute("x1", String(px));
+          c.line.setAttribute("y1", String(py));
+          c.line.setAttribute("x2", String(lerp(px, lx, grow)));
+          c.line.setAttribute("y2", String(lerp(py, ly, grow)));
+          c.line.setAttribute("opacity", String(o));
+          c.dot.setAttribute("cx", String(px));
+          c.dot.setAttribute("cy", String(py));
+          c.dot.setAttribute("opacity", String(o));
+        }
+      }
+
+      // ---------- Estados ----------
+      // Umidade da fachada: molhada até "esperar", seca no time-lapse, volta molhada no loop
+      const WET = [[0, 1], [C.esperar + 0.2, 1], [C.secar + 1.2, 0], [C.loop + 0.3, 0], [C.loop + 1.3, 1]];
+      // Pintura final só na chamada final
+      const PAINT = [[0, 0], [C.cta + 0.3, 0], [C.cta + 1.8, 1], [C.loop + 0.1, 1], [C.loop + 0.9, 0]];
+      // Selador passado pelo pintor (largura da faixa)
+      const SEL = [[0, 0], [C.selador, 0], [C.rende + 0.4, 1], [C.loop + 0.1, 1], [C.loop + 0.6, 0]];
+      // Lupa visível: problema, secagem, camada 3 e mito
+      const CUTK = [[0, 0], [C.reboco - 0.6, 0], [C.reboco, 1], [C.c2 - 0.3, 1], [C.c2 + 0.2, 0], [C.selador - 0.6, 0], [C.selador, 1], [C.iguala + 0.4, 1], [C.iguala + 1.0, 0], [C.ph - 0.9, 0], [C.ph - 0.4, 1], [C.norma, 1], [C.norma + 0.5, 0]];
+      // Time-lapse dos 28 dias
+      const TL0 = C.esperar + 0.2;
+      const TL1 = C.secar + 1.0;
+      const DAYS = 5;
+      const SUN_DAY = new THREE.Vector3(6, 9, 7).normalize();
+      const cDay = { top: new THREE.Color("#5fa8e8"), bot: new THREE.Color("#e8f3fb") };
+      const cDusk = { top: new THREE.Color("#3a4f8f"), bot: new THREE.Color("#f6b27a") };
+      const cNight = { top: new THREE.Color("#0b1530"), bot: new THREE.Color("#24375e") };
+
+      const tmp = new THREE.Vector3();
+      return function render(t) {
+        const cam = cameraAt(t);
+        camera.position.fromArray(cam.p);
+        camera.lookAt(cam.q[0], cam.q[1], cam.q[2]);
+        camera.updateMatrixWorld(true);
+
+        // ----- Céu, sol e luz (time-lapse) -----
+        let sunDir = SUN_DAY.clone();
+        let light = 1;
+        let sky = cDay;
+        let skyMix = 0;
+        if (t > TL0 && t < TL1) {
+          const u = prog(t, TL0, TL1);
+          const a = u * DAYS * Math.PI * 2;
+          // Ângulo do sol: começa de manhã, faz DAYS voltas completas e termina na mesma posição
+          const base = Math.atan2(SUN_DAY.y, SUN_DAY.x);
+          const ang = base + a;
+          sunDir = new THREE.Vector3(Math.cos(ang), Math.sin(ang), 0.55).normalize();
+          const h = sunDir.y;
+          light = clamp01(h * 2.2 + 0.1);
+          // cor do céu pela altura do sol
+          if (h > 0.25) skyMix = 0;
+          else if (h > -0.05) skyMix = 1 - (h + 0.05) / 0.3;
+          else skyMix = 1 + clamp01((-h - 0.05) / 0.25);
+          const ease = Math.min(prog(t, TL0, TL0 + 0.4), 1 - prog(t, TL1 - 0.4, TL1));
+          skyMix *= ease;
+          light = lerp(1, light, ease);
+          sunDir.lerp(SUN_DAY, 1 - ease).normalize();
+        }
+        const top = new THREE.Color();
+        const bot = new THREE.Color();
+        if (skyMix <= 1) {
+          top.copy(cDay.top).lerp(cDusk.top, skyMix);
+          bot.copy(cDay.bot).lerp(cDusk.bot, skyMix);
+        } else {
+          top.copy(cDusk.top).lerp(cNight.top, skyMix - 1);
+          bot.copy(cDusk.bot).lerp(cNight.bot, skyMix - 1);
+        }
+        skyUni.top.value.copy(top);
+        skyUni.bottom.value.copy(bot);
+        scene.fog.color.copy(bot);
+        sun.position.copy(sunDir).multiplyScalar(18).add(new THREE.Vector3(0, 0, 0));
+        sun.target.position.set(0, 0, 0);
+        sun.intensity = 2.6 * light;
+        sun.color.set(skyMix > 0.3 && skyMix < 1.2 ? "#ffc58a" : "#fff1dc");
+        hemi.intensity = lerp(1.25, 0.35, clamp01(skyMix - 0.6));
+        sunDisc.position.copy(sunDir).multiplyScalar(70);
+        sunDisc.visible = sunDir.y > -0.05;
+        moon.position.copy(sunDir).multiplyScalar(-70);
+        moon.visible = t > TL0 && t < TL1 && -sunDir.y > 0.05;
+        clouds.forEach((c) => {
+          const sp = t > TL0 && t < TL1 ? 6 : 1;
+          const x = ((c.userData.x0 + (t + (t > TL0 ? (Math.min(t, TL1) - TL0) * (sp - 1) : 0)) * c.userData.sp + 40) % 80) - 40;
+          c.position.set(x, c.userData.y, c.userData.z);
+        });
+
+        // ----- Fachada: umidade, selador e pintura -----
+        const wet = track(t, WET);
+        rebocoMat.color.set("#cfcabf").lerp(new THREE.Color("#666a6e"), wet);
+        wetMat.opacity = 0.85 * Math.pow(wet, 0.7);
+        wetLayer.visible = wet > 0.01;
+        const sel = track(t, SEL);
+        seladorLayer.visible = sel > 0.005;
+        const SX0 = -0.42;
+        const SX1 = 0.58;
+        const sw = Math.max(0.001, (SX1 - SX0) * sel);
+        seladorLayer.scale.x = sw;
+        seladorLayer.position.x = SX0 + sw / 2;
+        const paint = track(t, PAINT);
+        paintLayer.visible = paint > 0.005;
+        paintLayer.scale.x = Math.max(0.001, paint);
+        paintLayer.position.x = -HW / 2 * (1 - paint);
+
+        // ----- Lupa (corte da parede) -----
+        const ck = track(t, CUTK);
+        cut.visible = ck > 0.01;
+        cut.scale.setScalar(Math.max(0.01, spring(ck)));
+        spotRing.visible = ck > 0.01;
+        spotRing.scale.setScalar(Math.max(0.01, ck));
+        beam.visible = ck > 0.05;
+        if (beam.visible) {
+          cut.updateMatrixWorld(true);
+          const c = [[-CW / 2, -CH / 2], [CW / 2, -CH / 2], [CW / 2, CH / 2], [-CW / 2, CH / 2]].map(([x, y]) => cut.localToWorld(new THREE.Vector3(x, y, OUT_Z)));
+          const s = SPOT;
+          const pos = beam.geometry.attributes.position.array;
+          let i = 0;
+          for (let k = 0; k < 4; k++) {
+            const a = c[k];
+            const b = c[(k + 1) % 4];
+            for (const p of [s, a, b]) {
+              pos[i++] = p.x;
+              pos[i++] = p.y;
+              pos[i++] = p.z;
+            }
+          }
+          for (let k = i; k < pos.length; k++) pos[k] = s.x;
+          beam.geometry.attributes.position.needsUpdate = true;
+          beam.geometry.computeBoundingSphere();
+          beamMat.opacity = 0.16 * ck;
+        }
+        // Água: sai empurrando a tinta (problema) e some com a secagem (camada 1)
+        const push = prog(t, C.agora, C.bolhas);
+        const dryCut = t < C.c2 ? track(t, [[0, 0], [TL0, 0], [TL1, 1]]) : 1;
+        drops.forEach((d, k) => {
+          const u = d.userData;
+          const z = lerp(u.z, OUT_Z - 0.03, push * (0.4 + 0.6 * hash(k + 2)));
+          d.position.set(CW / 2 + 0.03, u.y + 0.02 * Math.sin(t * 2 + k), z);
+          const sc = (1 - clamp01(dryCut * 1.4 - hash(k + 8) * 0.4));
+          d.visible = sc > 0.02 && t < C.c2 + 0.5 && !(t > C.ph - 1 && t < C.norma + 1);
+          d.scale.setScalar(Math.max(0.01, sc));
+        });
+        grains.forEach((g, k) => {
+          g.position.set(CW / 2 + 0.02, g.userData.y, g.userData.z);
+          g.visible = t < C.c2;
+        });
+        // Simulação "e se pintar agora" e, no mito, o ataque da alcalinidade
+        const simA = t >= C.agora - 0.3 && t < C.c1 + 0.3;
+        const simB = t >= C.ph && t < C.norma + 0.4;
+        const filmK = simA ? prog(t, C.agora - 0.3, C.agora + 0.3) * (1 - prog(t, C.c1, C.c1 + 0.3)) : simB ? prog(t, C.ph, C.ph + 0.4) * (1 - prog(t, C.norma, C.norma + 0.4)) : 0;
+        film.visible = filmK > 0.01;
+        film.scale.set(1, 1, Math.max(0.01, filmK));
+        const bl = simA ? prog(t, C.bolhas - 0.2, C.bolhas + 0.6) : simB ? prog(t, C.mancha - 0.3, C.mancha + 0.5) * 0.6 : 0;
+        blisters.forEach((b, k) => b.scale.setScalar(Math.max(0.01, spring(clamp01(bl * 1.4 - k * 0.1)))));
+        const st = simA ? prog(t, C.manchas - 0.2, C.manchas + 0.6) : simB ? prog(t, C.mancha - 0.2, C.mancha + 0.6) : 0;
+        stains.forEach((s, k) => {
+          s.material.opacity = clamp01(st * 1.5 - k * 0.12);
+          s.visible = s.material.opacity > 0.01;
+        });
+        const pl = simA ? prog(t, C.descascando - 0.2, C.descascando + 0.8) : simB ? prog(t, C.solta - 0.2, C.solta + 0.7) : 0;
+        peelPivot.rotation.x = -1.1 * easeOut(pl);
+        // Alcalinidade (mito): o reboco brilha violeta
+        rebCutMat.emissiveIntensity = simB ? 0.45 + 0.2 * Math.sin(t * 6) : 0;
+        rebCutMat.color.set("#cfcabf").lerp(new THREE.Color("#6f7378"), 1 - dryCut);
+        // Camadas de acabamento (camada 3)
+        let zz = OUT_Z;
+        const lt = [C.selador - 0.1, C.selador + 1.2, C.selador + 2.2];
+        layers.forEach((l, i) => {
+          const k = t >= C.selador - 0.6 && t < C.iguala + 1.2 ? spring(prog(t, lt[i], lt[i] + 0.6)) : 0;
+          l.visible = k > 0.01;
+          l.position.set(lerp(CW * 1.2, 0, Math.min(1, k)), 0, zz + l.userData.th / 2);
+          zz += l.userData.th;
+        });
+
+        // ----- Pó da escova e areia que esfarela -----
+        const dOn = (t >= C.escova - 0.1 && t < C.esfarela - 0.2) || (t >= C.esfarela - 0.1 && t < C.fundo + 0.4);
+        dust.forEach((d, k) => {
+          d.visible = dOn;
+          if (dOn) {
+            const f = (d.userData.off + t * 0.9) % 1;
+            const hx = pintor.position.x + 0.1;
+            d.position.set(hx + d.userData.dx, 1.45 - f * 1.35, FZ + 0.06 + d.userData.dz);
+          }
+        });
+        const fk = spring(prog(t, C.fundo - 0.1, C.fundo + 0.5));
+        fundoCan.visible = fk > 0.01 && t < C.c3 + 0.5;
+        fundoCan.scale.setScalar(Math.max(0.01, fk));
+
+        // ----- Morador -----
+        const mp = mAt(t);
+        const mp2 = mAt(t - 0.05);
+        const mMove = Math.hypot(mp[0] - mp2[0], mp[2] - mp2[2]);
+        const mWalk = Math.min(1, mMove / 0.03);
+        morador.position.fromArray(mp);
+        const mTarget = (() => {
+          if (t < C.nao + 0.4) return 0 + Math.PI; // de frente para a fachada
+          if (t < C.mito - 1.3) return CAMYAW;
+          if (t < C.norma) return Math.PI;
+          if (t < C.loop + 0.2) return CAMYAW;
+          return Math.PI;
+        })();
+        const mHead = mMove > 0.004 ? Math.atan2(mp[0] - mp2[0], mp[2] - mp2[2]) : mTarget;
+        morador.rotation.y = lerp(mTarget, mHead, mWalk * 0.9);
+        const msw = animateBody(morador, t, mWalk, 0.3);
+        swingArms(morador, msw);
+        const [mA, mB] = morador.userData.arms;
+        // Rolo na fachada (gancho e fim), mão na parede (mito), joinha (chamada final)
+        const rollK = track(t, [[0, 1], [C.nao - 0.1, 1], [C.nao + 0.5, 0], [C.end - 1.1, 0], [C.end - 0.35, 1]]);
+        if (rollK > 0.001) reach(morador, mB, [mp[0] + 0.15, 1.42, FZ + 0.42], rollK);
+        const touchK = track(t, [[C.mito, 0], [C.mito + 0.5, 1], [C.basta + 0.3, 1], [C.basta + 0.8, 0]]);
+        if (touchK > 0.001) reach(morador, mA, [mp[0] - 0.12, 1.3, FZ + 0.06], touchK);
+        const thumbK = track(t, [[C.house - 0.2, 0], [C.house + 0.3, 1], [C.whatsapp + 0.6, 1], [C.whatsapp + 1.1, 0]]);
+        if (thumbK > 0.001) reach(morador, mA, [mp[0] + 0.2 * Math.sin(morador.rotation.y) - 0.15, 1.55, mp[2] + 0.25 * Math.cos(morador.rotation.y)], thumbK);
+
+        // ----- Pintor da House -----
+        const pp = pAt(t);
+        const pp2 = pAt(t - 0.05);
+        const pMove = Math.hypot(pp[0] - pp2[0], pp[2] - pp2[2]);
+        const pWalk = Math.min(1, pMove / 0.03);
+        pintor.position.fromArray(pp);
+        const pTarget = (() => {
+          if (t < C.c2 - 0.9) return yawTo(pp, [mp[0], 0, mp[2]]);
+          if (t < C.mito - 0.5) return Math.PI;
+          if (t < C.cta - 0.2) return yawTo(pp, [-0.2, 0, 0.6]);
+          if (t < C.loop + 0.2) return Math.PI;
+          return yawTo(pp, [P_MH[0], 0, P_MH[2]]);
+        })();
+        const pHead = pMove > 0.004 ? Math.atan2(pp[0] - pp2[0], pp[2] - pp2[2]) : pTarget;
+        pintor.rotation.y = lerp(pTarget, pHead, pWalk * 0.9);
+        const psw = animateBody(pintor, t, pWalk, 1.7);
+        swingArms(pintor, psw);
+        const [pA, pB] = pintor.userData.arms;
+        // "Pare" com a mão no gancho
+        const stopK = track(t, [[C.nao - 0.4, 0], [C.nao, 1], [C.pronta - 0.6, 1], [C.pronta, 0]]);
+        if (stopK > 0.001) {
+          const f = [Math.sin(pintor.rotation.y), Math.cos(pintor.rotation.y)];
+          reach(pintor, pA, [pp[0] + f[0] * 0.42 - f[1] * 0.12, 1.5, pp[2] + f[1] * 0.42 + f[0] * 0.12], stopK);
+        }
+        // Escova (camada 2) e rolo de selador (camada 3)
+        const brushOn = t >= C.c2 && t < C.esfarela - 0.2;
+        brush.visible = brushOn;
+        const scrubK = track(t, [[C.escova - 0.5, 0], [C.escova - 0.1, 1], [C.esfarela - 0.5, 1], [C.esfarela - 0.2, 0]]);
+        if (scrubK > 0.001) reach(pintor, pB, [pp[0] + 0.12 + 0.12 * Math.sin(t * 7), 1.25 + 0.18 * Math.sin(t * 3.1), FZ + 0.28], scrubK);
+        const rubK = track(t, [[C.esfarela - 0.3, 0], [C.esfarela + 0.1, 1], [C.fundo, 1], [C.fundo + 0.4, 0]]);
+        if (rubK > 0.001) reach(pintor, pA, [pp[0] - 0.05 + 0.06 * Math.sin(t * 9), 1.2, FZ + 0.06], rubK);
+        const rollerOn = t >= C.c3 && t < C.mito - 0.3;
+        rollerP.visible = rollerOn;
+        const paintK = track(t, [[C.selador - 0.4, 0], [C.selador, 1], [C.rende + 0.4, 1], [C.rende + 0.8, 0]]);
+        if (paintK > 0.001) reach(pintor, pB, [pp[0] + 0.1, 1.0 + 0.45 * (0.5 + 0.5 * Math.sin(t * 3.2)), FZ + 0.42], paintK);
+        rollerM.visible = true;
+
+        renderer.render(scene, camera);
+        placeCallouts(t);
+      };
+    }
+
+    // Relógio: um tween do GSAP alimenta render(t). A linha do tempo só é registrada depois que as fontes e o
+    // logo da House carregaram, para a camiseta nunca aparecer sem o logo.
+    const logoTex = new THREE.TextureLoader().loadAsync("assets/brand-house/logo-house.jpg");
+    Promise.all([document.fonts.ready, logoTex]).then(([, tex]) => {
+      tex.colorSpace = THREE.SRGBColorSpace;
+      const render = build(tex);
+      const state = { t: 0 };
+      const tl = gsap.timeline({ paused: true });
+      tl.to(state, { t: C.end, duration: C.end, ease: "none", onUpdate: () => render(state.t) }, 0);
+      render(0);
+      window.__timelines["world"] = tl;
+    });
+  </script>
+</template>

@@ -1,0 +1,154 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Barlow Condensed";
+      font-weight: 800;
+      src: url("assets/fonts/BarlowCondensed-800.woff2") format("woff2");
+    }
+    @font-face {
+      font-family: "Barlow Condensed";
+      font-weight: 900;
+      src: url("assets/fonts/BarlowCondensed-900.woff2") format("woff2");
+    }
+    @font-face {
+      font-family: "Bricolage Grotesque";
+      font-weight: 500;
+      src: url("assets/fonts/BricolageGrotesque-500.woff2") format("woff2");
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+    .ov-abs {
+      position: absolute;
+      opacity: 0;
+    }
+    /* Selo de etapa: número azul + nome em caixa alta */
+    .ov-step {
+      left: 56px;
+      top: 210px;
+      display: flex;
+      align-items: stretch;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 18px 40px -16px rgba(5, 10, 25, 0.7);
+    }
+    .ov-step .n {
+      display: flex;
+      align-items: center;
+      padding: 0 26px;
+      background: #2457d6;
+      color: #ffffff;
+      font-family: "Barlow Condensed", sans-serif;
+      font-weight: 900;
+      font-size: 84px;
+      line-height: 1;
+    }
+    .ov-step .t {
+      padding: 14px 30px 16px;
+      background: rgba(11, 18, 32, 0.9);
+      color: #ffffff;
+    }
+    .ov-step .t b {
+      display: block;
+      font-family: "Barlow Condensed", sans-serif;
+      font-weight: 800;
+      font-size: 64px;
+      line-height: 1;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+    .ov-step .t span {
+      display: block;
+      margin-top: 6px;
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-weight: 500;
+      font-size: 32px;
+      color: #8db4f6;
+    }
+    /* Resposta ao gancho */
+    #ov-da {
+      left: 0;
+      right: 0;
+      top: 640px;
+      text-align: center;
+      font-family: "Barlow Condensed", sans-serif;
+      font-weight: 900;
+      font-size: 360px;
+      line-height: 0.85;
+      color: #ffffff;
+      text-shadow: 0 10px 50px rgba(5, 10, 25, 0.8);
+    }
+    #ov-da i {
+      display: block;
+      margin: 26px auto 0;
+      width: 300px;
+      height: 18px;
+      border-radius: 9px;
+      background: #2457d6;
+      box-shadow: 0 0 36px 4px rgba(90, 152, 239, 0.7);
+      transform-origin: 50% 50%;
+    }
+    #ov-local {
+      left: 56px;
+      top: 1170px;
+      padding: 16px 28px;
+      border-radius: 9999px;
+      background: rgba(11, 18, 32, 0.88);
+      color: #ffffff;
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-weight: 500;
+      font-size: 36px;
+    }
+    #ov-local b {
+      color: #8db4f6;
+      font-weight: 500;
+    }
+    #ov-handle {
+      right: 56px;
+      top: 220px;
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-weight: 500;
+      font-size: 30px;
+      color: rgba(255, 255, 255, 0.85);
+      text-shadow: 0 2px 10px rgba(5, 10, 25, 0.8);
+    }
+  </style>
+  <div id="root" data-composition-id="overlay" data-width="1080" data-height="1920">
+    <div id="ov-s1" class="ov-abs ov-step">
+      <div class="n">01</div>
+      <div class="t"><b>Guarda-corpo</b><span>pintura branca</span></div>
+    </div>
+    <div id="ov-s2" class="ov-abs ov-step">
+      <div class="n">02</div>
+      <div class="t"><b>Deck</b><span>verniz escuro</span></div>
+    </div>
+    <div id="ov-s3" class="ov-abs ov-step">
+      <div class="n">03</div>
+      <div class="t"><b>Resultado</b><span>a mesma sacada</span></div>
+    </div>
+    <div id="ov-da" class="ov-abs">DÁ.<i></i></div>
+    <div id="ov-local" class="ov-abs">Sacada de madeira · <b>Atibaia - SP</b></div>
+    <div id="ov-handle" class="ov-abs">@house_pintura10</div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    function step(sel, a, b) {
+      tl.fromTo(sel, { opacity: 0, x: -60 }, { opacity: 1, x: 0, duration: 0.45, ease: "expo.out" }, a);
+      tl.to(sel, { opacity: 0, x: -30, duration: 0.2, ease: "power2.in" }, b - 0.2);
+    }
+    step("#ov-s1", 2.5, 5.75);
+    step("#ov-s2", 5.9, 8.95);
+    step("#ov-s3", 9.1, 10.4);
+    // "DÁ." quando a transformação termina no clipe da revelação (~1,5 s depois do corte)
+    tl.fromTo("#ov-da", { opacity: 0, scale: 1.35 }, { opacity: 1, scale: 1, duration: 0.35, ease: "expo.out", transformOrigin: "50% 40%" }, 10.5);
+    tl.fromTo("#ov-da i", { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: "expo.out" }, 10.65);
+    tl.to("#ov-da", { opacity: 0, y: -40, duration: 0.3, ease: "power2.in" }, 12.4);
+    tl.fromTo("#ov-local", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.6, ease: "expo.out" }, 12.8);
+    tl.to("#ov-local", { opacity: 0, duration: 0.3, ease: "power2.in" }, 16.3);
+    tl.fromTo("#ov-handle", { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power2.out" }, 2.5);
+    tl.to("#ov-handle", { opacity: 0, duration: 0.3, ease: "power2.in" }, 16.3);
+    window.__timelines["overlay"] = tl;
+  </script>
+</template>

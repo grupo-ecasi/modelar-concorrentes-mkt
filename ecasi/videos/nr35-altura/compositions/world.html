@@ -1,0 +1,862 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: #eef1f6;
+    }
+    #world-canvas {
+      position: absolute;
+      inset: 0;
+      width: 1080px;
+      height: 1920px;
+    }
+    #world-lines {
+      position: absolute;
+      inset: 0;
+      width: 1080px;
+      height: 1920px;
+      pointer-events: none;
+    }
+    .world-callout {
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      padding: 12px 20px;
+      border-radius: 12px;
+      background: #ffffff;
+      border: 2px solid #e5e7eb;
+      box-shadow: 0 10px 24px -12px rgba(11, 29, 63, 0.35);
+      color: #0b1d3f;
+      font-family: Poppins, sans-serif;
+      font-weight: 600;
+      font-size: 30px;
+      line-height: 1.15;
+      white-space: nowrap;
+    }
+    .world-callout.is-tech {
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 500;
+    }
+    .world-callout.is-orange {
+      background: #c2410c;
+      border-color: #c2410c;
+      color: #ffffff;
+    }
+    .world-callout.is-red {
+      background: #fdecec;
+      border-color: rgba(211, 47, 47, 0.45);
+      color: #b3261e;
+    }
+    .world-callout.is-green {
+      background: #ecf8f2;
+      border-color: rgba(59, 178, 115, 0.5);
+      color: #1f7a4c;
+    }
+  </style>
+  <div data-hf-id="hf-2fmg" id="root" data-composition-id="world" data-width="1080" data-height="1920" data-layout-allow-overflow>
+    <canvas data-hf-id="hf-kh1v" id="world-canvas" width="1080" height="1920"></canvas>
+    <svg data-hf-id="hf-64bb" id="world-lines" viewBox="0 0 1080 1920" data-layout-ignore></svg>
+    <div data-hf-id="hf-i3m2" id="co-height" class="world-callout is-tech">3 m de altura</div>
+    <div data-hf-id="hf-somz" id="co-harness" class="world-callout">cinturão paraquedista</div>
+    <div data-hf-id="hf-ncno" id="co-2m" class="world-callout is-orange is-tech">2,00 m</div>
+    <div data-hf-id="hf-z0q0" id="co-dummy" class="world-callout">boneco de teste</div>
+    <div data-hf-id="hf-zosf" id="co-piece" class="world-callout">peça montada no chão</div>
+    <div data-hf-id="hf-9sar" id="co-pole" class="world-callout">cabo extensor</div>
+    <div data-hf-id="hf-pupk" id="co-platform" class="world-callout">plataforma de trabalho</div>
+    <div data-hf-id="hf-ensu" id="co-rail" class="world-callout is-orange is-tech">1,20 m</div>
+    <div data-hf-id="hf-a0xe" id="co-edge" class="world-callout is-red">borda sem guarda-corpo</div>
+    <div data-hf-id="hf-1k8j" id="co-anchor" class="world-callout">ponto de ancoragem</div>
+    <div data-hf-id="hf-6c3d" id="co-lanyard" class="world-callout">talabarte</div>
+    <div data-hf-id="hf-gpbq" id="co-absorber" class="world-callout is-orange">absorvedor de energia</div>
+    <div data-hf-id="hf-1zo6" id="co-belt" class="world-callout">cinturão paraquedista</div>
+    <div data-hf-id="hf-yzr5" id="co-foot" class="world-callout is-red">ancoragem no pé</div>
+    <div data-hf-id="hf-cl6j" id="co-longfall" class="world-callout is-red is-tech">queda livre ≈ 2× talabarte</div>
+    <div data-hf-id="hf-uiso" id="co-head" class="world-callout is-green">ancoragem acima da cabeça</div>
+    <div data-hf-id="hf-uri1" id="co-shortfall" class="world-callout is-green is-tech">queda livre curta</div>
+  </div>
+  <script type="module">
+    import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js";
+
+    // Tempos ancorados na narração (assets/transcript.json). Fonte única: tools/cues.json
+    /*CUES*/
+    const C = {
+      "hook": 0,
+      "basta": 3.76,
+      "nao": 4.88,
+      "nr35": 5.6,
+      "camadas": 8.96,
+      "problema": 10.32,
+      "acima2m": 13.68,
+      "queda2m": 18,
+      "menosSeg": 20.08,
+      "chega": 21.52,
+      "km": 23.2,
+      "c1": 25.12,
+      "evitar": 26.32,
+      "chao": 27.2,
+      "montar": 28.64,
+      "icar": 30.16,
+      "cabo": 30.8,
+      "naoSobe": 33.2,
+      "c2": 36,
+      "eliminar": 37.28,
+      "coletiva": 38.8,
+      "plataforma": 40.32,
+      "guarda": 41.68,
+      "travessao": 42.88,
+      "m120": 44,
+      "c3": 45.84,
+      "reduzir": 47.2,
+      "cinto": 49.12,
+      "ancoragem": 50.96,
+      "talabarte": 52.24,
+      "absorvedor": 53.2,
+      "cinturao": 54.72,
+      "naQueda": 56.48,
+      "abre": 57.36,
+      "forca": 59.52,
+      "kn": 60.64,
+      "atencao": 62.08,
+      "pe": 63.04,
+      "quedaLivre": 64.25,
+      "dobro": 65.93,
+      "sempre": 68.17,
+      "cabeca": 70.57,
+      "norma": 72.01,
+      "analise": 75.37,
+      "resgate": 76.49,
+      "treino": 77.93,
+      "reciclagem": 79.85,
+      "cta": 81.93,
+      "fale": 83.45,
+      "loop": 85.21,
+      "confira": 86.65,
+      "antes": 88.65,
+      "end": 90
+    };
+    /*END-CUES*/
+
+    const W = 1080;
+    const H = 1920;
+    const canvas = document.getElementById("world-canvas");
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
+    renderer.setPixelRatio(1);
+    renderer.setSize(W, H, false);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFShadowMap;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color("#eef1f6");
+    scene.fog = new THREE.Fog("#eef1f6", 26, 60);
+
+    const camera = new THREE.PerspectiveCamera(34, W / H, 0.1, 200);
+
+    // ---------- Luz: chave quente, preenchimento frio ----------
+    scene.add(new THREE.HemisphereLight("#ffffff", "#c9c3b8", 1.35));
+    const key = new THREE.DirectionalLight("#fff4e6", 2.1);
+    key.position.set(7, 12, 9);
+    key.castShadow = true;
+    key.shadow.mapSize.set(2048, 2048);
+    key.shadow.camera.left = -12;
+    key.shadow.camera.right = 12;
+    key.shadow.camera.top = 12;
+    key.shadow.camera.bottom = -12;
+    key.shadow.bias = -0.0006;
+    scene.add(key);
+    const rim = new THREE.DirectionalLight("#dbe8ff", 0.6);
+    rim.position.set(-8, 6, -6);
+    scene.add(rim);
+
+    // ---------- Materiais (paleta ECASI) ----------
+    const mat = (color, extra = {}) =>
+      new THREE.MeshStandardMaterial({ color, flatShading: true, roughness: 0.85, metalness: 0, ...extra });
+    const M = {
+      ground: mat("#e4e0d8"),
+      concrete: mat("#d6d2ca"),
+      concreteDark: mat("#bdb8ae"),
+      wall: mat("#e9e6e0"),
+      steel: mat("#5b6474", { roughness: 0.55 }),
+      navy: mat("#0b1d3f"),
+      navyLight: mat("#142b52"),
+      orange: mat("#f97316"),
+      orangeLight: mat("#fb923c"),
+      white: mat("#f8f8f6"),
+      skin: mat("#d9a074"),
+      boot: mat("#2a2f38"),
+      reflect: mat("#e5e7eb", { roughness: 0.4 }),
+      red: mat("#d32f2f"),
+      green: mat("#3bb273"),
+      dummy: mat("#fb923c"),
+      crate: mat("#c7a77a"),
+      lamp: mat("#ffffff", { emissive: "#fff3d6", emissiveIntensity: 0.25 }),
+    };
+    const ghost = (color) =>
+      new THREE.MeshStandardMaterial({ color, flatShading: true, transparent: true, opacity: 0.35, depthWrite: false });
+
+    const box = (w, h, d, m) => {
+      const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      return mesh;
+    };
+    const cyl = (r, h, m, seg = 8) => {
+      const mesh = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, seg), m);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      return mesh;
+    };
+
+    // ---------- Cenário: chão, prédio em obra, laje a 3 m ----------
+    const SLAB_Y = 3.0;
+    const EDGE_X = 2.0;
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), M.ground);
+    ground.rotation.x = -Math.PI / 2;
+    ground.receiveShadow = true;
+    scene.add(ground);
+
+    const slab = box(7.4, 0.26, 4.6, M.concrete);
+    slab.position.set(EDGE_X - 3.7, SLAB_Y - 0.13, -0.2);
+    scene.add(slab);
+    for (const [x, z] of [
+      [EDGE_X - 0.25, 1.85],
+      [EDGE_X - 0.25, -2.25],
+      [-5.0, 1.85],
+      [-5.0, -2.25],
+    ]) {
+      const col = box(0.32, SLAB_Y - 0.26, 0.32, M.concreteDark);
+      col.position.set(x, (SLAB_Y - 0.26) / 2, z);
+      scene.add(col);
+    }
+    // Parede do fundo, com faixa de 2,00 m
+    const wall = box(7.4, SLAB_Y - 0.26, 0.2, M.wall);
+    wall.position.set(EDGE_X - 3.7, (SLAB_Y - 0.26) / 2, -2.42);
+    scene.add(wall);
+    const mark2m = box(7.2, 0.06, 0.02, M.orange);
+    mark2m.position.set(EDGE_X - 3.7, 2.0, -2.31);
+    mark2m.scale.x = 0.0001;
+    scene.add(mark2m);
+    // Régua vertical de 0 a 2 m na parede
+    const ruler = box(0.06, 2.0, 0.02, M.navy);
+    ruler.position.set(EDGE_X - 0.8, 1.0, -2.31);
+    ruler.scale.y = 0.0001;
+    scene.add(ruler);
+
+    // Escada de mão encostada na laje
+    const ladder = new THREE.Group();
+    for (const dz of [-0.25, 0.25]) {
+      const rail = box(0.06, 3.4, 0.06, M.steel);
+      rail.position.set(0, 1.7, dz);
+      ladder.add(rail);
+    }
+    for (let i = 0; i < 10; i++) {
+      const rung = box(0.04, 0.04, 0.5, M.steel);
+      rung.position.set(0, 0.3 + i * 0.32, 0);
+      ladder.add(rung);
+    }
+    ladder.position.set(-4.4, 0, 1.6);
+    ladder.rotation.z = -0.12;
+    scene.add(ladder);
+
+    // Cota de 3 m (abertura) e entorno da obra
+    const dim3m = box(0.05, SLAB_Y, 0.05, M.navy);
+    dim3m.position.set(EDGE_X + 0.45, SLAB_Y / 2, 1.95);
+    scene.add(dim3m);
+    for (const y of [0, SLAB_Y]) {
+      const tick = box(0.3, 0.05, 0.05, M.navy);
+      tick.position.set(EDGE_X + 0.45, y + 0.025, 1.95);
+      scene.add(tick);
+      dim3m.userData[y ? "top" : "bot"] = tick;
+    }
+    const BACKDROP = [
+      [-14, -16, 6, 9, 5, "#d9dde5"],
+      [-6, -20, 5, 13, 5, "#cfd5df"],
+      [3, -18, 7, 7, 5, "#dde1e8"],
+      [12, -17, 5, 11, 5, "#d3d9e2"],
+      [20, -12, 6, 6, 6, "#dfe3ea"],
+      [-20, -6, 5, 5, 6, "#dde1e8"],
+    ];
+    for (const [x, z, w, h, d, c] of BACKDROP) {
+      const b = box(w, h, d, mat(c));
+      b.castShadow = false;
+      b.position.set(x, h / 2, z);
+      scene.add(b);
+    }
+    for (const [x, z] of [[5.6, 2.6], [6.4, 1.2], [-3.2, 3.4]]) {
+      const cone = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.55, 6), M.orange);
+      cone.position.set(x, 0.3, z);
+      cone.castShadow = true;
+      const base = box(0.42, 0.05, 0.42, M.navy);
+      base.position.set(x, 0.025, z);
+      scene.add(cone, base);
+    }
+    const pallet = box(1.1, 0.16, 0.9, M.crate);
+    pallet.position.set(-2.6, 0.08, 2.4);
+    scene.add(pallet);
+    const bags = box(0.9, 0.35, 0.7, mat("#ece7dc"));
+    bags.position.set(-2.6, 0.34, 2.4);
+    scene.add(bags);
+
+    // Pórtico de aço com viga acima da borda (ponto de ancoragem)
+    const ANCHOR_HEAD = new THREE.Vector3(1.55, 5.25, 0.45);
+    const ANCHOR_FOOT = new THREE.Vector3(1.55, SLAB_Y + 0.06, 0.45);
+    const gCol = box(0.22, 2.7, 0.22, M.steel);
+    gCol.position.set(1.55, SLAB_Y + 1.35, -2.1);
+    scene.add(gCol);
+    const gBeam = box(0.22, 0.26, 3.2, M.steel);
+    gBeam.position.set(1.55, 5.58, -0.6);
+    scene.add(gBeam);
+    const anchorRing = new THREE.Mesh(new THREE.TorusGeometry(0.11, 0.035, 6, 12), M.orange);
+    anchorRing.castShadow = true;
+    scene.add(anchorRing);
+    const anchorPlate = box(0.18, 0.2, 0.18, M.steel);
+    scene.add(anchorPlate);
+
+    // Lâmpada sob a laje (alvo do cabo extensor)
+    const lamp = box(0.5, 0.12, 0.5, M.lamp);
+    lamp.position.set(3.1, SLAB_Y - 0.32, 0.9);
+    scene.add(lamp);
+    lamp.visible = false;
+
+    // Guarda-corpo ao longo da borda (montado na camada 2)
+    const rail = new THREE.Group();
+    const railParts = { posts: [], top: null, mid: null, toe: null };
+    const postZ = [-2.2, -1.1, 0.0, 1.1, 1.8];
+    for (const z of postZ) {
+      const p = box(0.07, 1.2, 0.07, M.orange);
+      p.position.set(EDGE_X - 0.08, SLAB_Y + 0.6, z);
+      rail.add(p);
+      railParts.posts.push(p);
+    }
+    railParts.top = box(0.06, 0.06, 4.05, M.orange);
+    railParts.top.position.set(EDGE_X - 0.08, SLAB_Y + 1.2, -0.2);
+    railParts.mid = box(0.05, 0.05, 4.05, M.orange);
+    railParts.mid.position.set(EDGE_X - 0.08, SLAB_Y + 0.7, -0.2);
+    railParts.toe = box(0.03, 0.2, 4.05, M.orangeLight);
+    railParts.toe.position.set(EDGE_X - 0.08, SLAB_Y + 0.1, -0.2);
+    rail.add(railParts.top, railParts.mid, railParts.toe);
+    scene.add(rail);
+    const railMats = new Set();
+    rail.traverse((o) => {
+      if (o.isMesh) {
+        o.material = o.material.clone();
+        o.material.transparent = true;
+        railMats.add(o.material);
+      }
+    });
+    // Cota de 1,20 m
+    const dim120 = box(0.03, 1.2, 0.03, M.navy);
+    dim120.position.set(EDGE_X + 0.25, SLAB_Y + 0.6, 1.95);
+    scene.add(dim120);
+
+    // Peça que é montada no chão e içada
+    const piece = new THREE.Group();
+    const crateA = box(0.7, 0.35, 0.5, M.crate);
+    const crateB = box(0.5, 0.3, 0.4, M.orangeLight);
+    crateA.position.y = 0.175;
+    crateB.position.y = 0.5;
+    piece.add(crateA, crateB);
+    scene.add(piece);
+    const hoistRope = cyl(0.015, 1, M.navy, 5);
+    scene.add(hoistRope);
+    const jib = new THREE.Group();
+    const jibPost = box(0.12, 1.6, 0.12, M.steel);
+    jibPost.position.set(0, 0.8, 0);
+    const jibArm = box(1.7, 0.1, 0.1, M.steel);
+    jibArm.position.set(0.8, 1.6, 0);
+    jib.add(jibPost, jibArm);
+    jib.position.set(EDGE_X - 0.3, SLAB_Y, -1.3);
+    scene.add(jib);
+    const PIECE_X = EDGE_X + 1.35;
+    const PIECE_Z = -1.3;
+
+    // Barras de cota da queda livre (seção de atenção)
+    const barLong = box(0.08, 1, 0.08, M.red);
+    const barShort = box(0.08, 1, 0.08, M.green);
+    scene.add(barLong, barShort);
+
+    // ---------- Trabalhador low-poly ----------
+    function makeWorker(opts = {}) {
+      const g = new THREE.Group();
+      const m = opts.ghost
+        ? { navy: ghost("#0b1d3f"), orange: ghost("#f97316"), skin: ghost("#d9a074"), white: ghost("#ffffff"), boot: ghost("#2a2f38") }
+        : { navy: M.navy, orange: M.orange, skin: M.skin, white: M.white, boot: M.boot };
+      const hips = new THREE.Group();
+      hips.position.y = 0.9;
+      g.add(hips);
+      const legs = [];
+      for (const s of [-1, 1]) {
+        const leg = new THREE.Group();
+        leg.position.set(s * 0.13, 0, 0);
+        const thigh = box(0.22, 0.82, 0.26, m.navy);
+        thigh.position.y = -0.41;
+        const boot = box(0.24, 0.13, 0.36, m.boot);
+        boot.position.set(0, -0.84, 0.05);
+        leg.add(thigh, boot);
+        hips.add(leg);
+        legs.push(leg);
+      }
+      const torso = box(0.56, 0.68, 0.32, m.white);
+      torso.position.y = 0.34;
+      hips.add(torso);
+      const vest = box(0.6, 0.5, 0.36, m.orange);
+      vest.position.y = 0.36;
+      hips.add(vest);
+      if (!opts.ghost) {
+        for (const y of [0.24, 0.44]) {
+          const stripe = box(0.61, 0.05, 0.37, M.reflect);
+          stripe.position.y = y;
+          hips.add(stripe);
+        }
+      }
+      // Cinturão paraquedista: alças em azul-marinho
+      const harness = new THREE.Group();
+      for (const s of [-1, 1]) {
+        const strap = box(0.07, 0.62, 0.38, m.navy);
+        strap.position.set(s * 0.14, 0.36, 0);
+        harness.add(strap);
+        const legLoop = box(0.27, 0.07, 0.3, m.navy);
+        legLoop.position.set(s * 0.13, -0.08, 0);
+        harness.add(legLoop);
+      }
+      const chest = box(0.36, 0.06, 0.39, m.navy);
+      chest.position.y = 0.5;
+      harness.add(chest);
+      const waist = box(0.62, 0.08, 0.37, m.navy);
+      waist.position.y = 0.04;
+      harness.add(waist);
+      const dRing = new THREE.Mesh(new THREE.TorusGeometry(0.06, 0.02, 5, 10), m.orange);
+      dRing.position.set(0, 0.58, -0.2);
+      harness.add(dRing);
+      hips.add(harness);
+      const arms = [];
+      for (const s of [-1, 1]) {
+        const arm = new THREE.Group();
+        arm.position.set(s * 0.36, 0.64, 0);
+        const upper = box(0.16, 0.6, 0.18, m.white);
+        upper.position.y = -0.3;
+        const hand = box(0.14, 0.14, 0.14, m.skin);
+        hand.position.y = -0.66;
+        arm.add(upper, hand);
+        hips.add(arm);
+        arms.push(arm);
+      }
+      const head = new THREE.Mesh(new THREE.IcosahedronGeometry(0.19, 0), m.skin);
+      head.position.y = 0.9;
+      head.castShadow = true;
+      hips.add(head);
+      const helmet = new THREE.Mesh(
+        new THREE.SphereGeometry(0.215, 8, 4, 0, Math.PI * 2, 0, Math.PI / 2),
+        opts.helmet === "orange" ? m.orange : m.white,
+      );
+      helmet.position.y = 0.95;
+      helmet.castShadow = true;
+      hips.add(helmet);
+      const brim = cyl(0.25, 0.03, opts.helmet === "orange" ? m.orange : m.white, 10);
+      brim.position.set(0, 0.95, 0.03);
+      hips.add(brim);
+      g.userData = { hips, legs, arms, dRing, harness };
+      return g;
+    }
+
+    const worker = makeWorker();
+    scene.add(worker);
+    const helper = makeWorker({ helmet: "orange" });
+    scene.add(helper);
+    const pole = cyl(0.025, 2.2, M.steel, 6);
+    scene.add(pole);
+
+    // Boneco de teste (saco de areia em forma de pessoa)
+    const dummy = new THREE.Group();
+    const dBody = box(0.42, 0.7, 0.26, M.dummy);
+    dBody.position.y = 0.35;
+    const dHead = new THREE.Mesh(new THREE.IcosahedronGeometry(0.16, 0), M.dummy);
+    dHead.position.y = 0.86;
+    dummy.add(dBody, dHead);
+    scene.add(dummy);
+
+    // Talabarte: tubo reconstruído a cada quadro + absorvedor
+    let lanyardMesh = null;
+    const lanyardMat = mat("#142b52");
+    const absorberPack = box(0.16, 0.24, 0.12, M.orange);
+    scene.add(absorberPack);
+    const absorberTear = box(0.07, 1, 0.03, M.orangeLight);
+    scene.add(absorberTear);
+
+    // ---------- Utilidades de tempo ----------
+    const clamp01 = (x) => Math.min(1, Math.max(0, x));
+    const prog = (t, a, b) => clamp01((t - a) / (b - a));
+    const easeInOut = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+    const easeOut = (x) => 1 - Math.pow(1 - x, 3);
+    const easeOutExpo = (x) => (x >= 1 ? 1 : 1 - Math.pow(2, -10 * x));
+    const lerp = (a, b, x) => a + (b - a) * x;
+    const lerp3 = (a, b, x) => [lerp(a[0], b[0], x), lerp(a[1], b[1], x), lerp(a[2], b[2], x)];
+    // Mola fechada (amortecimento ~0,6), função pura de t
+    const spring = (x) => (x <= 0 ? 0 : 1 - Math.exp(-6 * x) * Math.cos(9 * x));
+
+    // ---------- Câmera: plano-sequência por quadros-chave ----------
+    // p = posição, q = alvo. Entre chaves: ease in-out.
+    const K = [
+      { t: C.hook, p: [7.6, 3.6, 12.8], q: [0.2, 3.15, 0.85] },
+      { t: C.nao, p: [7.0, 3.8, 11.6], q: [0.3, 3.3, 0.85] },
+      { t: C.camadas, p: [6.2, 4.0, 9.4], q: [1.1, 3.4, 0.4] },
+      { t: C.problema + 1.2, p: [-0.5, 1.5, 6.6], q: [-0.9, 1.35, -2.0] },
+      { t: C.queda2m - 0.2, p: [-0.5, 1.45, 7.0], q: [-0.9, 1.3, -2.0] },
+      { t: C.chega + 0.8, p: [-0.2, 1.3, 6.8], q: [-0.8, 1.2, -1.8] },
+      { t: C.c1 + 0.4, p: [7.8, 2.2, 8.4], q: [2.75, 1.85, 0.15] },
+      { t: C.cabo - 0.2, p: [7.4, 2.2, 7.8], q: [2.9, 1.9, -0.1] },
+      { t: C.naoSobe + 0.4, p: [7.2, 3.0, 7.6], q: [2.8, 2.6, -0.4] },
+      { t: C.c2 + 0.6, p: [6.8, 5.2, 7.2], q: [0.5, 3.75, 0.5] },
+      { t: C.travessao, p: [5.6, 4.6, 6.2], q: [1.6, 3.65, 0.5] },
+      { t: C.c3 + 0.5, p: [6.0, 4.6, 7.0], q: [0.6, 3.95, 0.9] },
+      { t: C.cinto, p: [4.4, 4.7, 5.6], q: [1.4, 4.25, 0.4] },
+      { t: C.cinturao + 0.6, p: [4.1, 4.5, 5.0], q: [1.5, 4.15, 0.4] },
+      { t: C.naQueda + 0.1, p: [6.8, 3.9, 6.8], q: [1.9, 3.45, 0.4] },
+      { t: C.kn + 0.8, p: [6.5, 3.6, 6.4], q: [2.0, 3.3, 0.4] },
+      { t: C.atencao + 0.5, p: [8.0, 3.4, 8.6], q: [1.9, 2.75, 0.4] },
+      { t: C.cabeca + 0.8, p: [7.7, 3.6, 8.2], q: [1.9, 3.0, 0.4] },
+      { t: C.norma + 1.4, p: [9.6, 6.8, 12.8], q: [-0.4, 2.4, -0.2] },
+      { t: C.cta, p: [10.4, 7.4, 13.8], q: [-0.6, 2.4, -0.2] },
+      { t: C.loop + 0.4, p: [9.6, 5.6, 13.6], q: [0.4, 2.6, 0.2] },
+      { t: C.end, p: [7.6, 3.6, 12.8], q: [0.2, 3.15, 0.85] },
+    ];
+    function cameraAt(t) {
+      if (t <= K[0].t) return K[0];
+      for (let i = 0; i < K.length - 1; i++) {
+        const a = K[i];
+        const b = K[i + 1];
+        if (t <= b.t) {
+          const x = easeInOut((t - a.t) / (b.t - a.t));
+          return { p: lerp3(a.p, b.p, x), q: lerp3(a.q, b.q, x) };
+        }
+      }
+      return K[K.length - 1];
+    }
+
+    // ---------- Estado do trabalhador ----------
+    const STAND = [1.15, SLAB_Y, 0.45];
+    const EDGE = [1.72, SLAB_Y, 0.45];
+    const DORSAL_H = 1.45;
+    const LANYARD_L = 1.75;
+    const TEAR_MAX = 0.55;
+    const G = 9.81;
+
+    // Queda com talabarte: posição dos pés (y) e extensão do absorvedor em função de t
+    function fallState(t, t0, anchorY, slow) {
+      // slow: fator de câmera lenta (tempo real = (t - t0) / slow)
+      const startDorsal = SLAB_Y + DORSAL_H;
+      const tautDorsal = anchorY - LANYARD_L;
+      const free = Math.max(0, startDorsal - tautDorsal);
+      const tFree = Math.sqrt((2 * free) / G);
+      const tau = Math.max(0, (t - t0) / slow);
+      if (tau <= tFree) {
+        const d = 0.5 * G * tau * tau;
+        return { dorsal: startDorsal - d, tear: 0, phase: "free" };
+      }
+      const after = tau - tFree;
+      const ext = TEAR_MAX * spring(after * 1.6);
+      return { dorsal: tautDorsal - ext, tear: ext, phase: "arrest" };
+    }
+
+    function workerAt(t) {
+      const s = {
+        pos: [...STAND],
+        rotY: 0.45,
+        armL: 0.05,
+        armR: -0.05,
+        tilt: 0,
+        anchor: "head",
+        lanyard: true,
+        tear: 0,
+        visible: true,
+      };
+      // Problema e camada 1: o trabalhador fica fora de cena
+      if (t >= C.problema + 0.9 && t < C.c2 + 0.2) s.visible = false;
+      // Camada 3: vai até a borda e cai
+      if (t >= C.c3 && t < C.atencao) {
+        const walk = easeInOut(prog(t, C.reduzir, C.reduzir + 1.6));
+        s.pos = lerp3(STAND, EDGE, walk);
+        s.rotY = lerp(0.45, 1.2, walk);
+        if (t >= C.cinto) s.armR = -0.6 * easeOut(prog(t, C.cinto, C.cinto + 0.5));
+        if (t >= C.naQueda + 0.12) {
+          const f = fallState(t, C.naQueda + 0.12, ANCHOR_HEAD.y, 2.2);
+          s.pos = [EDGE[0] + 0.45 * easeOut(prog(t, C.naQueda + 0.12, C.naQueda + 0.8)), f.dorsal - DORSAL_H, EDGE[2]];
+          s.tear = f.tear;
+          s.tilt = 0.25 * easeOut(prog(t, C.naQueda + 0.12, C.abre)) - 0.18 * spring(prog(t, C.abre, C.abre + 1.6));
+          s.armL = 1.2;
+          s.armR = -1.2;
+        }
+      }
+      // Atenção: ancoragem no pé (queda longa) e depois acima da cabeça
+      if (t >= C.atencao && t < C.norma) {
+        s.pos = [...EDGE];
+        s.rotY = 1.2;
+        s.anchor = t < C.sempre ? "foot" : "head";
+        if (t >= C.quedaLivre && t < C.sempre) {
+          const f = fallState(t, C.quedaLivre, ANCHOR_FOOT.y, 2.0);
+          s.pos = [EDGE[0] + 0.45 * easeOut(prog(t, C.quedaLivre, C.quedaLivre + 0.7)), f.dorsal - DORSAL_H, EDGE[2]];
+          s.tear = f.tear;
+          s.armL = 1.2;
+          s.armR = -1.2;
+        }
+        if (t >= C.cabeca - 0.6) {
+          const f = fallState(t, C.cabeca - 0.6, ANCHOR_HEAD.y, 2.0);
+          s.pos = [EDGE[0] + 0.45 * easeOut(prog(t, C.cabeca - 0.6, C.cabeca)), f.dorsal - DORSAL_H, EDGE[2]];
+          s.tear = f.tear;
+          s.armL = 1.2;
+          s.armR = -1.2;
+        }
+      }
+      if (t >= C.norma) {
+        s.pos = [...STAND];
+        s.rotY = 0.45;
+      }
+      // Nunca abaixo do chão: com ancoragem no pé, a 3 m, a queda chega ao piso
+      s.pos[1] = Math.max(0.02, s.pos[1]);
+      return s;
+    }
+
+    function poseWorker(w, s) {
+      w.visible = s.visible;
+      w.position.set(s.pos[0], s.pos[1], s.pos[2]);
+      w.rotation.set(0, s.rotY, s.tilt);
+      const { arms } = w.userData;
+      arms[0].rotation.z = -s.armL;
+      arms[1].rotation.z = -s.armR;
+    }
+
+    // Tubo do talabarte entre o anel dorsal e a ancoragem
+    const tmpV = new THREE.Vector3();
+    function drawLanyard(s, anchor) {
+      if (lanyardMesh) {
+        scene.remove(lanyardMesh);
+        lanyardMesh.geometry.dispose();
+        lanyardMesh = null;
+      }
+      worker.updateMatrixWorld(true);
+      const dorsal = worker.userData.dRing.getWorldPosition(tmpV).clone();
+      const packPos = dorsal.clone().add(new THREE.Vector3(0, 0.12 + s.tear, 0));
+      absorberPack.position.copy(packPos);
+      absorberPack.visible = s.visible && s.lanyard;
+      absorberTear.visible = s.visible && s.tear > 0.01;
+      absorberTear.scale.y = Math.max(0.001, s.tear);
+      absorberTear.position.set(dorsal.x, dorsal.y + s.tear / 2 + 0.02, dorsal.z);
+      if (!s.visible || !s.lanyard) return;
+      const top = packPos.clone().add(new THREE.Vector3(0, 0.12, 0));
+      const dist = top.distanceTo(anchor);
+      const slack = Math.max(0, LANYARD_L - 0.24 - dist);
+      const mid = top.clone().lerp(anchor, 0.5);
+      mid.y -= slack * 0.55;
+      mid.x += slack * 0.25;
+      const curve = new THREE.QuadraticBezierCurve3(top, mid, anchor.clone());
+      lanyardMesh = new THREE.Mesh(new THREE.TubeGeometry(curve, 24, 0.022, 5, false), lanyardMat);
+      lanyardMesh.castShadow = true;
+      scene.add(lanyardMesh);
+    }
+
+    // ---------- Callouts presos a pontos 3D ----------
+    const svg = document.getElementById("world-lines");
+    const SVGNS = "http://www.w3.org/2000/svg";
+    const CALLOUTS = [
+      { id: "co-height", a: C.hook + 0.3, b: C.nr35, at: () => [EDGE_X + 0.45, 1.5, 1.95], dx: 70, dy: 0 },
+      { id: "co-harness", a: C.hook + 2.2, b: C.nao, at: () => worldOf(worker.userData.hips, 0, 0.3, 0.2), dx: -330, dy: -140 },
+      { id: "co-2m", a: C.acima2m, b: C.chega, at: () => [EDGE_X - 0.8, 2.0, -2.3], dx: 90, dy: -150 },
+      { id: "co-dummy", a: C.queda2m + 0.2, b: C.menosSeg, at: () => worldOf(dummy, 0, 0.8, 0), dx: -300, dy: -160 },
+      { id: "co-piece", a: C.montar + 0.2, b: C.cabo, at: () => worldOf(piece, 0, 0.6, 0), dx: -320, dy: -170 },
+      { id: "co-pole", a: C.cabo + 0.2, b: C.c2, at: () => [3.0, 2.2, 0.85], dx: -340, dy: 40 },
+      { id: "co-platform", a: C.plataforma, b: C.travessao, at: () => [0.2, SLAB_Y, 1.2], dx: -260, dy: 170 },
+      { id: "co-rail", a: C.travessao + 0.2, b: C.c3, at: () => [EDGE_X + 0.25, SLAB_Y + 0.6, 1.95], dx: 120, dy: 60 },
+      { id: "co-edge", a: C.reduzir + 0.3, b: C.cinto, at: () => [EDGE_X, SLAB_Y, 0.8], dx: 60, dy: 170 },
+      { id: "co-anchor", a: C.ancoragem, b: C.naQueda, at: () => ANCHOR_HEAD.toArray(), dx: -340, dy: -120 },
+      { id: "co-lanyard", a: C.talabarte, b: C.naQueda, at: () => lanyardMid(), dx: 150, dy: -150 },
+      { id: "co-absorber", a: C.absorvedor, b: C.atencao, at: () => absorberPack.position.toArray(), dx: 170, dy: 30 },
+      { id: "co-belt", a: C.cinturao, b: C.naQueda, at: () => worldOf(worker.userData.hips, 0, 0.36, 0.2), dx: -340, dy: 150 },
+      { id: "co-foot", a: C.pe, b: C.quedaLivre + 0.4, at: () => ANCHOR_FOOT.toArray(), dx: -330, dy: 120 },
+      { id: "co-longfall", a: C.dobro - 0.3, b: C.sempre, at: () => [EDGE_X + 1.0, SLAB_Y - 0.4, 0.45], dx: -60, dy: 230 },
+      { id: "co-head", a: C.sempre + 0.3, b: C.cabeca, at: () => ANCHOR_HEAD.toArray(), dx: 60, dy: 140 },
+      { id: "co-shortfall", a: C.cabeca + 0.1, b: C.norma + 0.5, at: () => [EDGE_X + 1.0, SLAB_Y + 1.2, 0.45], dx: 40, dy: -40 },
+    ];
+    for (const c of CALLOUTS) {
+      c.el = document.getElementById(c.id);
+      c.line = document.createElementNS(SVGNS, "line");
+      c.line.setAttribute("stroke", c.color || "#0b1d3f");
+      c.line.setAttribute("stroke-width", "3");
+      c.dot = document.createElementNS(SVGNS, "circle");
+      c.dot.setAttribute("r", "8");
+      c.dot.setAttribute("fill", "#f97316");
+      c.dot.setAttribute("stroke", "#ffffff");
+      c.dot.setAttribute("stroke-width", "3");
+      svg.append(c.line, c.dot);
+    }
+    function worldOf(obj, x, y, z) {
+      obj.updateMatrixWorld(true);
+      return obj.localToWorld(new THREE.Vector3(x, y, z)).toArray();
+    }
+    function lanyardMid() {
+      const d = worker.userData.dRing.getWorldPosition(new THREE.Vector3());
+      return d.lerp(ANCHOR_HEAD, 0.78).toArray();
+    }
+    const proj = new THREE.Vector3();
+    function placeCallouts(t) {
+      for (const c of CALLOUTS) {
+        const fadeIn = prog(t, c.a, c.a + 0.25);
+        const fadeOut = 1 - prog(t, c.b - 0.2, c.b);
+        const o = Math.min(fadeIn, fadeOut);
+        if (o <= 0.001) {
+          c.el.style.opacity = "0";
+          c.line.setAttribute("opacity", "0");
+          c.dot.setAttribute("opacity", "0");
+          continue;
+        }
+        proj.fromArray(c.at()).project(camera);
+        const px = (proj.x * 0.5 + 0.5) * W;
+        const py = (-proj.y * 0.5 + 0.5) * H;
+        const el = c.el;
+        const bw = c.bw;
+        const bh = c.bh;
+        // Caixa deslocada do ponto; mantida dentro da faixa segura (168–1330 px, margem 54 px)
+        let bx = px + c.dx - (c.dx < 0 ? bw : 0);
+        let by = py + c.dy - bh / 2;
+        bx = Math.min(W - 54 - bw, Math.max(54, bx));
+        by = Math.min(1160 - bh, Math.max(330, by));
+        const lift = 14 * (1 - easeOutExpo(fadeIn));
+        el.style.opacity = String(o);
+        el.style.transform = `translate(${bx}px, ${by + lift}px)`;
+        const lx = bx + (c.dx < 0 ? bw : 0);
+        const ly = by + bh / 2;
+        const grow = easeOut(fadeIn);
+        c.line.setAttribute("x1", String(px));
+        c.line.setAttribute("y1", String(py));
+        c.line.setAttribute("x2", String(lerp(px, lx, grow)));
+        c.line.setAttribute("y2", String(lerp(py, ly, grow)));
+        c.line.setAttribute("opacity", String(o));
+        c.dot.setAttribute("cx", String(px));
+        c.dot.setAttribute("cy", String(py));
+        c.dot.setAttribute("opacity", String(o));
+      }
+    }
+
+    // ---------- Render de um quadro a partir de t ----------
+    function render(t) {
+      // Câmera
+      const cam = cameraAt(t);
+      camera.position.fromArray(cam.p);
+      camera.lookAt(cam.q[0], cam.q[1], cam.q[2]);
+      camera.updateMatrixWorld(true);
+
+      const d3 = 1 - prog(t, C.nr35, C.nr35 + 0.4);
+      dim3m.visible = d3 > 0.01;
+      dim3m.userData.top.visible = dim3m.userData.bot.visible = dim3m.visible;
+
+      // Faixa de 2,00 m e régua
+      const m2 = easeOutExpo(prog(t, C.acima2m, C.acima2m + 0.8));
+      const m2out = 1 - prog(t, C.c1 - 0.3, C.c1);
+      mark2m.scale.x = Math.max(0.0001, m2 * m2out);
+      ruler.scale.y = Math.max(0.0001, easeOut(prog(t, C.acima2m - 0.4, C.acima2m + 0.4)) * m2out);
+      ruler.position.y = ruler.scale.y;
+
+      // Boneco de teste: cai 2 m em câmera lenta (0,64 s reais em 1,4 s)
+      dummy.visible = t >= C.queda2m && t < C.c1;
+      if (dummy.visible) {
+        const real = Math.max(0, (t - C.menosSeg) / (1.4 / 0.64));
+        const tfall = Math.sqrt((2 * 2.0) / G);
+        const y = real < tfall ? 2.0 - 0.5 * G * real * real : 0;
+        const appear = easeOutExpo(prog(t, C.queda2m, C.queda2m + 0.4));
+        dummy.position.set(0.0, y, -1.5);
+        const squash = real >= tfall ? 1 - 0.25 * Math.exp(-8 * (real - tfall)) * Math.cos(18 * (real - tfall)) : 1;
+        dummy.scale.set(appear * (2 - squash), appear * squash, appear);
+      }
+
+      // Camada 1: peça montada no chão e içada; ajudante com cabo extensor
+      const inC1 = t >= C.c1 - 0.5 && t < C.c2 + 1.5;
+      helper.visible = inC1;
+      pole.visible = inC1 && t >= C.cabo;
+      jib.visible = t >= C.chao && t < C.c2 + 1.5;
+      lamp.visible = inC1;
+      piece.visible = t >= C.chao && t < C.c2 + 1.5;
+      if (piece.visible) {
+        const join = easeOutExpo(prog(t, C.montar, C.montar + 0.8));
+        crateB.position.set(0, lerp(1.3, 0.5, join), 0);
+        const lift = easeInOut(prog(t, C.icar, C.icar + 2.6));
+        piece.position.set(PIECE_X, lift * (SLAB_Y + 0.45), PIECE_Z);
+        hoistRope.visible = lift > 0.001;
+        const topY = SLAB_Y + 1.6;
+        const botY = piece.position.y + 0.65;
+        hoistRope.scale.y = Math.max(0.001, topY - botY);
+        hoistRope.position.set(PIECE_X, (topY + botY) / 2, PIECE_Z);
+      } else {
+        hoistRope.visible = false;
+      }
+      if (inC1) {
+        poseWorker(helper, { pos: [3.25, 0, 1.15], rotY: 0.5, armL: t >= C.cabo ? 2.6 : 0.2, armR: t >= C.cabo ? -2.6 : -0.2, tilt: 0, visible: true });
+        pole.position.set(3.1, 1.95, 0.95);
+        pole.rotation.set(0, 0, 0.05);
+      }
+
+      // Camada 2: guarda-corpo se monta (montantes, travessões, rodapé)
+      const railIn = (a) => easeOutExpo(prog(t, C.guarda + a, C.guarda + a + 0.5));
+      railParts.posts.forEach((p, i) => {
+        const k = railIn(i * 0.08);
+        p.scale.y = Math.max(0.001, k);
+        p.position.y = SLAB_Y + 0.6 * k;
+      });
+      for (const [part, delay] of [
+        [railParts.toe, 0.45],
+        [railParts.mid, 0.55],
+        [railParts.top, 0.65],
+      ]) {
+        part.scale.z = Math.max(0.001, railIn(delay));
+      }
+      // Some na camada 3 (borda sem proteção coletiva) e volta na norma
+      const railAlpha = t < C.c3 ? 1 : t < C.norma ? 1 - prog(t, C.c3, C.reduzir) : lerp(0, 1, prog(t, C.norma, C.norma + 0.8));
+      for (const m of railMats) m.opacity = railAlpha;
+      rail.visible = t >= C.guarda - 0.1 && railAlpha > 0.01;
+      const dimK = easeOut(prog(t, C.travessao, C.travessao + 0.5)) * (1 - prog(t, C.c3 - 0.3, C.c3));
+      dim120.scale.y = Math.max(0.001, dimK);
+      dim120.position.y = SLAB_Y + 0.6 * dimK;
+      dim120.visible = dimK > 0.002;
+
+      // Trabalhador, ancoragem e talabarte
+      const s = workerAt(t);
+      poseWorker(worker, s);
+      const footT = s.anchor === "foot" ? 1 : 0;
+      const anchor = footT ? ANCHOR_FOOT : ANCHOR_HEAD;
+      anchorRing.position.copy(anchor);
+      anchorRing.rotation.set(Math.PI / 2, 0, 0);
+      anchorRing.material = footT ? M.red : t >= C.sempre && t < C.norma ? M.green : M.orange;
+      anchorPlate.position.set(anchor.x, anchor.y + (footT ? -0.1 : 0.14), anchor.z);
+      drawLanyard(s, anchor);
+
+      // Cotas da queda livre (atenção)
+      const longK = easeOut(prog(t, C.quedaLivre + 0.2, C.dobro));
+      const longFree = SLAB_Y + DORSAL_H - (ANCHOR_FOOT.y - LANYARD_L);
+      barLong.visible = t >= C.quedaLivre && t < C.sempre;
+      barLong.scale.y = Math.max(0.001, longFree * longK);
+      barLong.position.set(EDGE_X + 1.0, SLAB_Y + DORSAL_H - (longFree * longK) / 2, 0.45);
+      const shortK = easeOut(prog(t, C.cabeca - 0.4, C.cabeca + 0.6));
+      const shortFree = SLAB_Y + DORSAL_H - (ANCHOR_HEAD.y - LANYARD_L);
+      barShort.visible = t >= C.cabeca - 0.4 && t < C.norma;
+      barShort.scale.y = Math.max(0.001, shortFree * shortK);
+      barShort.position.set(EDGE_X + 1.0, SLAB_Y + DORSAL_H - (shortFree * shortK) / 2, 0.45);
+
+      renderer.render(scene, camera);
+      placeCallouts(t);
+    }
+
+    // Relógio: um tween do GSAP alimenta render(t); a linha do tempo é registrada no fim
+    document.fonts.ready.then(() => {
+      for (const c of CALLOUTS) {
+        c.bw = c.el.offsetWidth;
+        c.bh = c.el.offsetHeight;
+      }
+      const state = { t: 0 };
+      const tl = gsap.timeline({ paused: true });
+      tl.to(state, { t: C.end, duration: C.end, ease: "none", onUpdate: () => render(state.t) }, 0);
+      render(0);
+      window.__timelines["world"] = tl;
+    });
+  </script>
+</template>

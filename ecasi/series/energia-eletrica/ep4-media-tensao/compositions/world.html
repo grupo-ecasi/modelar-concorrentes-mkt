@@ -1,0 +1,1233 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: #eef1f6;
+    }
+    #world-canvas {
+      position: absolute;
+      inset: 0;
+      width: 1080px;
+      height: 1920px;
+    }
+    #world-lines {
+      position: absolute;
+      inset: 0;
+      width: 1080px;
+      height: 1920px;
+      pointer-events: none;
+    }
+    .world-callout {
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      padding: 12px 20px;
+      border-radius: 12px;
+      background: #ffffff;
+      border: 2px solid #e5e7eb;
+      box-shadow: 0 10px 24px -12px rgba(11, 29, 63, 0.35);
+      color: #0b1d3f;
+      font-family: Poppins, sans-serif;
+      font-weight: 600;
+      font-size: 30px;
+      line-height: 1.15;
+      white-space: nowrap;
+    }
+    .world-callout.is-tech {
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 500;
+    }
+    .world-callout.is-orange {
+      background: #c2410c;
+      border-color: #c2410c;
+      color: #ffffff;
+    }
+    .world-callout.is-red {
+      background: #fdecec;
+      border-color: rgba(211, 47, 47, 0.45);
+      color: #b3261e;
+    }
+    .world-callout.is-green {
+      background: #ecf8f2;
+      border-color: rgba(59, 178, 115, 0.5);
+      color: #1f7a4c;
+    }
+  </style>
+  <div id="root" data-composition-id="world" data-width="1080" data-height="1920" data-layout-allow-overflow>
+    <canvas id="world-canvas" width="1080" height="1920"></canvas>
+    <svg id="world-lines" viewBox="0 0 1080 1920" data-layout-ignore></svg>
+    <div id="co-secc" class="world-callout is-tech">facas abertas</div>
+    <div id="co-live" class="world-callout is-red">entrada: ainda energizada</div>
+    <div id="co-arc" class="world-callout is-red">arco sem contato</div>
+    <div id="co-zr" class="world-callout is-red is-tech">zona de risco · 0,38 m</div>
+    <div id="co-zc" class="world-callout is-tech">zona controlada · 1,38 m</div>
+    <div id="co-team" class="world-callout is-green">equipe de 2 ✓</div>
+    <div id="co-lock" class="world-callout is-green">seccionadora travada ✓</div>
+    <div id="co-glock" class="world-callout is-green">gerador travado ✓</div>
+    <div id="co-test" class="world-callout is-green">detector funcionando ✓</div>
+    <div id="co-dead" class="world-callout is-green">sem tensão ✓</div>
+    <div id="co-g1" class="world-callout is-green is-tech">aterramento · lado 1</div>
+    <div id="co-g2" class="world-callout is-green is-tech">aterramento · lado 2</div>
+    <div id="co-zone" class="world-callout is-tech">zona sinalizada</div>
+    <div id="co-back" class="world-callout is-red">retorno pelo transformador</div>
+    <div id="co-earth" class="world-callout is-green">vai para a terra ✓</div>
+    <div id="co-safe" class="world-callout is-green is-tech">área de trabalho · 0 V ✓</div>
+    <div id="co-epi" class="world-callout">luvas de AT · protetor facial · roupa FR</div>
+    <div id="co-elet" class="world-callout is-orange">eletricista com NR-10 SEP</div>
+  </div>
+  <script type="module">
+    import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js";
+
+    // Tempos ancorados na narração (assets/transcript.json). Fonte única: tools/cues.json
+    /*CUES*/
+    const C = {
+      "hook": 0.0,
+      "secc": 0.56,
+      "cabine": 1.44,
+      "pode": 2.4,
+      "encostar": 2.72,
+      "nao": 4.16,
+      "chave": 4.8,
+      "aberta": 5.28,
+      "camadas": 8.08,
+      "problema": 11.04,
+      "v13800": 12.48,
+      "nr10": 15.04,
+      "alta": 16,
+      "mil": 17.76,
+      "nem": 19.44,
+      "chegar": 20.96,
+      "arco": 23.28,
+      "zonas": 25.92,
+      "r38": 26.88,
+      "risco": 29.68,
+      "r138": 30.56,
+      "controlada": 32.72,
+      "c1": 33.76,
+      "autorizar": 34.88,
+      "ordem": 35.92,
+      "equipe": 37.2,
+      "duas": 38.4,
+      "sep": 39.76,
+      "plano": 40.72,
+      "c2": 42.16,
+      "bloquear": 43.44,
+      "testar": 44.4,
+      "seccionadora2": 45.12,
+      "gerador": 46.16,
+      "travados": 46.72,
+      "detector": 47.76,
+      "bastao": 49.28,
+      "testado": 49.92,
+      "usar": 50.96,
+      "c3": 51.68,
+      "aterrar": 52.96,
+      "aterramento": 53.92,
+      "dois": 55.52,
+      "lados": 55.84,
+      "sinal": 58,
+      "chao": 58.88,
+      "mito": 59.63,
+      "semEnergia": 61.31,
+      "naoMito": 62.35,
+      "gerador2": 63.23,
+      "ligar": 64.35,
+      "voltar": 65.87,
+      "transformador": 66.59,
+      "entram": 67.63,
+      "v380": 68.19,
+      "saem": 70.03,
+      "x36": 72.43,
+      "terra": 74.75,
+      "lados2": 76.19,
+      "norma": 76.91,
+      "complementar": 78.99,
+      "nbr": 80.91,
+      "mediaTensao": 84.43,
+      "cta": 85.55,
+      "treinamento": 86.11,
+      "ecasi": 88.43,
+      "proximo": 90.43,
+      "reveja": 92.03,
+      "loop": 94.19,
+      "confira": 95.79,
+      "antes": 97.71,
+      "end": 99.81
+    };
+    /*END-CUES*/
+
+    const W = 1080;
+    const H = 1920;
+    const canvas = document.getElementById("world-canvas");
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
+    renderer.setPixelRatio(1);
+    renderer.setSize(W, H, false);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFShadowMap;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color("#eef1f6");
+    scene.fog = new THREE.Fog("#eef1f6", 16, 38);
+
+    const camera = new THREE.PerspectiveCamera(34, W / H, 0.05, 100);
+
+    // ---------- Luz: chave quente, preenchimento frio ----------
+    scene.add(new THREE.HemisphereLight("#ffffff", "#c3c7cc", 1.35));
+    const key = new THREE.DirectionalLight("#fff4e6", 2.0);
+    key.position.set(4, 7, 6);
+    key.castShadow = true;
+    key.shadow.mapSize.set(2048, 2048);
+    key.shadow.camera.left = -5;
+    key.shadow.camera.right = 5;
+    key.shadow.camera.top = 5;
+    key.shadow.camera.bottom = -5;
+    key.shadow.bias = -0.0006;
+    scene.add(key);
+    const rim = new THREE.DirectionalLight("#dbe8ff", 0.6);
+    rim.position.set(-5, 4, 3);
+    scene.add(rim);
+
+    // ---------- Materiais (paleta ECASI) ----------
+    const mat = (color, extra = {}) =>
+      new THREE.MeshStandardMaterial({ color, flatShading: true, roughness: 0.85, metalness: 0, ...extra });
+    function tileTex(base, line, repX, repY) {
+      const cv = document.createElement("canvas");
+      cv.width = cv.height = 256;
+      const g = cv.getContext("2d");
+      g.fillStyle = base;
+      g.fillRect(0, 0, 256, 256);
+      g.strokeStyle = line;
+      g.lineWidth = 4;
+      for (let i = 0; i <= 2; i++) {
+        const p = i * 128;
+        g.beginPath();
+        g.moveTo(p, 0);
+        g.lineTo(p, 256);
+        g.moveTo(0, p);
+        g.lineTo(256, p);
+        g.stroke();
+      }
+      const tx = new THREE.CanvasTexture(cv);
+      tx.wrapS = tx.wrapT = THREE.RepeatWrapping;
+      tx.repeat.set(repX, repY);
+      tx.colorSpace = THREE.SRGBColorSpace;
+      return tx;
+    }
+    function hazardTex() {
+      const cv = document.createElement("canvas");
+      cv.width = 256;
+      cv.height = 128;
+      const g = cv.getContext("2d");
+      g.fillStyle = "#facc15";
+      g.fillRect(0, 0, 256, 128);
+      g.fillStyle = "#1f2937";
+      for (let x = -128; x < 256; x += 48) {
+        g.beginPath();
+        g.moveTo(x, 128);
+        g.lineTo(x + 24, 128);
+        g.lineTo(x + 152, 0);
+        g.lineTo(x + 128, 0);
+        g.fill();
+      }
+      const tx = new THREE.CanvasTexture(cv);
+      tx.colorSpace = THREE.SRGBColorSpace;
+      return tx;
+    }
+    // Etiqueta/face de componente com texto (canvas, determinístico)
+    function textTex(lines, { bg = "#ffffff", fg = "#0b1d3f", w = 128, h = 128, size = 44, mono = true } = {}) {
+      const cv = document.createElement("canvas");
+      cv.width = w;
+      cv.height = h;
+      const g = cv.getContext("2d");
+      g.fillStyle = bg;
+      g.fillRect(0, 0, w, h);
+      g.fillStyle = fg;
+      g.textAlign = "center";
+      g.textBaseline = "middle";
+      g.font = `700 ${size}px ${mono ? '"JetBrains Mono", monospace' : "Poppins, sans-serif"}`;
+      lines.forEach((ln, i) => g.fillText(ln, w / 2, h / 2 + (i - (lines.length - 1) / 2) * size * 1.1));
+      const tx = new THREE.CanvasTexture(cv);
+      tx.colorSpace = THREE.SRGBColorSpace;
+      tx.anisotropy = 4;
+      return tx;
+    }
+    const M = {
+      wall: mat("#e9ecef"),
+      wallLow: mat("#cdd3db"),
+      floor: mat("#ffffff", { map: tileTex("#d5d8dc", "#c3c7cc", 8, 8) }),
+      steel: mat("#5b6474", { roughness: 0.55 }),
+      steelLight: mat("#c9ced6", { roughness: 0.6 }),
+      cabinet: mat("#d6dae0", { roughness: 0.6 }),
+      plate: mat("#eef0f2"),
+      duct: mat("#9ca3af"),
+      navy: mat("#0b1d3f"),
+      navyLight: mat("#142b52"),
+      orange: mat("#f97316"),
+      white: mat("#f8f8f6"),
+      skin: mat("#d9a074"),
+      glove: mat("#1f2937", { roughness: 0.5 }),
+      boot: mat("#2a2f38"),
+      reflect: mat("#dfe3e8", { roughness: 0.35, emissive: "#ffffff", emissiveIntensity: 0.12 }),
+      red: mat("#d32f2f"),
+      green: mat("#3bb273"),
+      yellow: mat("#facc15"),
+      dark: mat("#1f2937"),
+      blue: mat("#2563eb"),
+      belt: mat("#4a3426"),
+      motor: mat("#3b6ea8", { roughness: 0.6 }),
+      pump: mat("#6b7280", { roughness: 0.6 }),
+      paper: mat("#ffffff"),
+      board: mat("#8b5a2b"),
+    };
+
+    const box = (w, h, d, m) => {
+      const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      return mesh;
+    };
+    const cyl = (r, h, m, seg = 10) => {
+      const mesh = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, seg), m);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      return mesh;
+    };
+    const plane = (w, h, tex) => new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: tex }));
+    function wirePath(pts) {
+      const path = new THREE.CurvePath();
+      for (let i = 0; i < pts.length - 1; i++) path.add(new THREE.LineCurve3(new THREE.Vector3(...pts[i]), new THREE.Vector3(...pts[i + 1])));
+      return path;
+    }
+    const tube = (pts, r, m, seg = 120) => {
+      const mesh = new THREE.Mesh(new THREE.TubeGeometry(wirePath(pts), seg, r, 6, false), m);
+      mesh.castShadow = true;
+      return mesh;
+    };
+
+    // ---------- Cenário: cabine primária de 13,8 kV ----------
+    const MX = {
+      copper: mat("#c2703d", { roughness: 0.45 }),
+      porcelain: mat("#8b5e3c", { roughness: 0.4 }),
+      tank: mat("#9aa5b4", { roughness: 0.6 }),
+      gen: mat("#15803d", { roughness: 0.6 }),
+      cone: mat("#f97316"),
+      gcable: mat("#84cc16", { roughness: 0.5 }),
+      clamp: mat("#facc15"),
+      pole: mat("#f59e0b", { roughness: 0.5 }),
+      glove: mat("#eab308", { roughness: 0.5 }),
+    };
+    const WALL_Z = -1.6;
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(16, 16), M.floor);
+    floor.rotation.x = -Math.PI / 2;
+    floor.receiveShadow = true;
+    scene.add(floor);
+    const wall = box(10, 4.0, 0.2, M.wall);
+    wall.position.set(0, 2.0, WALL_Z - 0.1);
+    const wallLow = box(10, 1.0, 0.02, M.wallLow);
+    wallLow.position.set(0, 0.5, WALL_Z + 0.005);
+    scene.add(wall, wallLow);
+    const tag = (txt, w, h, size, opts = {}) => plane(w, h, textTex(txt, { w: Math.round(w * 1000), h: Math.round(h * 1000), size, ...opts }));
+    // Placa de perigo na parede
+    const danger = tag(["⚡ PERIGO", "13.800 V"], 0.34, 0.2, 52, { bg: "#facc15", mono: false });
+    danger.position.set(-0.25, 1.55, WALL_Z + 0.012);
+    scene.add(danger);
+
+    // Fases (em profundidade) e alturas
+    const PHZ = [WALL_Z + 0.38, WALL_Z + 0.55, WALL_Z + 0.72];
+    const SEC_X = -1.05;
+    const BUS_Y = 2.3;
+    const UP_Y = 2.88;
+    const TR_X = 0.75;
+
+    // Chave seccionadora tripolar: contatos de baixo (carga) e de cima (entrada, energizada pela concessionária)
+    const beamLow = box(0.08, 0.08, 0.9, M.steel);
+    beamLow.position.set(SEC_X, 2.12, WALL_Z + 0.45);
+    const beamUp = box(0.08, 0.08, 0.9, M.steel);
+    beamUp.position.set(SEC_X, 3.12, WALL_Z + 0.45);
+    scene.add(beamLow, beamUp);
+    const blades = [];
+    const upContacts = [];
+    for (const z of PHZ) {
+      const insLow = cyl(0.035, 0.12, MX.porcelain, 8);
+      insLow.position.set(SEC_X, 2.22, z);
+      const cLow = box(0.08, 0.04, 0.06, MX.copper);
+      cLow.position.set(SEC_X, BUS_Y, z);
+      const insUp = cyl(0.035, 0.14, MX.porcelain, 8);
+      insUp.position.set(SEC_X, 3.01, z);
+      const cUp = box(0.08, 0.05, 0.06, MX.copper);
+      cUp.position.set(SEC_X, UP_Y + 0.05, z);
+      scene.add(insLow, cLow, insUp, cUp);
+      upContacts.push(cUp);
+      const pivot = new THREE.Group();
+      pivot.position.set(SEC_X, BUS_Y, z);
+      const blade = box(0.03, 0.6, 0.045, M.steelLight);
+      blade.position.y = 0.3;
+      pivot.add(blade);
+      scene.add(pivot);
+      blades.push(pivot);
+      // Cabo de entrada da concessionária com mufla
+      const cab = cyl(0.025, 0.55, M.dark, 8);
+      cab.position.set(SEC_X - 0.12, 3.45, z);
+      const mufla = new THREE.Mesh(new THREE.ConeGeometry(0.045, 0.14, 8), MX.porcelain);
+      mufla.position.set(SEC_X - 0.12, 3.12, z);
+      mufla.rotation.x = Math.PI;
+      const lead = box(0.12, 0.02, 0.02, MX.copper);
+      lead.position.set(SEC_X - 0.06, UP_Y + 0.12, z);
+      const leadV = box(0.02, 0.1, 0.02, MX.copper);
+      leadV.position.set(SEC_X - 0.12, UP_Y + 0.12 + 0.05, z);
+      scene.add(cab, mufla, lead, leadV);
+    }
+    const secLab = tag(["SECCIONADORA"], 0.3, 0.05, 30);
+    secLab.position.set(SEC_X, 1.98, WALL_Z + 0.012);
+    scene.add(secLab);
+    // Manopla na parede e haste até o eixo da chave
+    const MAN = new THREE.Vector3(-1.9, 1.15, WALL_Z + 0.1);
+    const manPlate = box(0.16, 0.3, 0.04, M.steelLight);
+    manPlate.position.copy(MAN);
+    scene.add(manPlate);
+    const manLever = new THREE.Group();
+    manLever.position.set(MAN.x, MAN.y, MAN.z + 0.05);
+    const lev = box(0.04, 0.26, 0.04, M.red);
+    lev.position.y = 0.12;
+    manLever.add(lev);
+    scene.add(manLever);
+    const manLab = tag(["I", "O"], 0.05, 0.12, 22);
+    manLab.position.set(MAN.x + 0.12, MAN.y, MAN.z + 0.025);
+    scene.add(manLab);
+    scene.add(tube([[MAN.x, MAN.y + 0.15, MAN.z], [MAN.x, 2.12, MAN.z], [SEC_X, 2.12, MAN.z], [SEC_X, 2.12, WALL_Z + 0.3]], 0.015, M.steel, 60));
+    const MAN_LOCK = new THREE.Vector3(MAN.x, MAN.y - 0.1, MAN.z + 0.09);
+
+    // Barramento interno (lado da carga) até o transformador
+    const bus = [];
+    for (const z of PHZ) {
+      const b = box(TR_X - SEC_X, 0.03, 0.03, MX.copper);
+      b.position.set((SEC_X + TR_X) / 2, BUS_Y, z);
+      const drop = box(0.03, BUS_Y - 1.36, 0.03, MX.copper);
+      drop.position.set(TR_X, (BUS_Y + 1.36) / 2, z);
+      scene.add(b, drop);
+      bus.push(b);
+    }
+    for (const x of [-0.3, 0.35]) {
+      const beam = box(0.06, 0.06, 0.9, M.steel);
+      beam.position.set(x, 2.12, WALL_Z + 0.45);
+      scene.add(beam);
+      for (const z of PHZ) {
+        const ins = cyl(0.03, 0.14, MX.porcelain, 8);
+        ins.position.set(x, 2.22, z);
+        scene.add(ins);
+      }
+    }
+
+    // Transformador 13.800/380 V
+    const TR = new THREE.Vector3(TR_X, 0.62, WALL_Z + 0.55);
+    const trMat = mat("#9aa5b4", { roughness: 0.6, emissive: "#f97316", emissiveIntensity: 0 });
+    const tank = box(0.8, 1.0, 0.56, trMat);
+    tank.position.copy(TR);
+    scene.add(tank);
+    for (let i = 0; i < 6; i++) {
+      const fin = box(0.03, 0.8, 0.12, trMat);
+      fin.position.set(TR.x - 0.3 + i * 0.12, TR.y, TR.z + 0.33);
+      scene.add(fin);
+    }
+    for (const z of PHZ) {
+      const bush = cyl(0.045, 0.26, MX.porcelain, 10);
+      bush.position.set(TR_X, 1.24, z);
+      scene.add(bush);
+    }
+    for (let i = 0; i < 4; i++) {
+      const lv = cyl(0.03, 0.14, MX.porcelain, 8);
+      lv.rotation.z = Math.PI / 2;
+      lv.position.set(TR.x + 0.46, 0.85, TR.z - 0.18 + i * 0.12);
+      scene.add(lv);
+    }
+    const trLab = tag(["TRAFO", "13.800/380 V"], 0.26, 0.12, 30);
+    trLab.position.set(TR.x, TR.y + 0.25, TR.z + 0.281);
+    scene.add(trLab);
+
+    // Quadro de baixa tensão (QGBT) e gerador de emergência
+    const QG = new THREE.Vector3(1.8, 1.0, WALL_Z + 0.25);
+    const qg = box(0.55, 1.6, 0.4, M.cabinet);
+    qg.position.copy(QG);
+    const qgLab = tag(["QGBT", "380 V"], 0.2, 0.1, 30);
+    qgLab.position.set(QG.x, QG.y + 0.45, QG.z + 0.201);
+    scene.add(qg, qgLab);
+    const lvPath = wirePath([[TR.x + 0.53, 0.85, TR.z], [1.42, 0.85, TR.z], [1.42, 0.85, QG.z + 0.1], [QG.x - 0.28, 0.85, QG.z + 0.1]]);
+    scene.add(new THREE.Mesh(new THREE.TubeGeometry(lvPath, 60, 0.03, 6, false), M.dark));
+    const GEN = new THREE.Vector3(2.45, 0.45, -0.55);
+    const genGroup = new THREE.Group();
+    genGroup.position.copy(GEN);
+    const genBody = box(0.8, 0.8, 1.2, MX.gen);
+    const genTop = box(0.6, 0.06, 0.9, M.dark);
+    genTop.position.y = 0.43;
+    const exhaust = cyl(0.04, 0.35, M.steel, 8);
+    exhaust.position.set(0.2, 0.62, -0.35);
+    const genPanel = box(0.36, 0.26, 0.03, M.dark);
+    genPanel.position.set(-0.1, 0.15, 0.61);
+    const genLab = tag(["GERADOR"], 0.3, 0.07, 34, { bg: "#ffffff" });
+    genLab.position.set(-0.1, 0.32, 0.602);
+    genGroup.add(genBody, genTop, exhaust, genPanel, genLab);
+    scene.add(genGroup);
+    const GEN_LOCK = new THREE.Vector3(GEN.x - 0.1, GEN.y + 0.08, GEN.z + 0.66);
+    const genPath = wirePath([[GEN.x - 0.4, 0.06, GEN.z - 0.3], [QG.x, 0.06, GEN.z - 0.3], [QG.x, 0.06, QG.z + 0.22], [QG.x, 0.25, QG.z + 0.22]]);
+    scene.add(new THREE.Mesh(new THREE.TubeGeometry(genPath, 60, 0.03, 6, false), M.dark));
+    const smoke = [];
+    for (let k = 0; k < 8; k++) {
+      const m = new THREE.Mesh(new THREE.IcosahedronGeometry(0.06, 0), new THREE.MeshBasicMaterial({ color: "#6b7280", transparent: true, depthWrite: false }));
+      m.userData = { off: k / 8 };
+      scene.add(m);
+      smoke.push(m);
+    }
+
+    // Barra de terra na parede
+    const GBAR_Y = 0.22;
+    const gbar = box(2.6, 0.04, 0.04, M.green);
+    gbar.position.set(-0.2, GBAR_Y, WALL_Z + 0.03);
+    scene.add(gbar);
+
+    // Aterramento temporário: grampos nos dois lados do ponto de trabalho, com cabos até a barra de terra
+    function groundSet(points) {
+      return points.map((p, k) => {
+        const g = new THREE.Group();
+        const cl = box(0.06, 0.07, 0.06, MX.clamp);
+        cl.position.copy(p);
+        const end = new THREE.Vector3(p.x + 0.04 * (k - 1), GBAR_Y + 0.03, WALL_Z + 0.06);
+        const mid = new THREE.Vector3(p.x + 0.02 * (k - 1), (p.y + GBAR_Y) / 2, (p.z + WALL_Z) / 2 + 0.25);
+        const cab = new THREE.Mesh(new THREE.TubeGeometry(new THREE.QuadraticBezierCurve3(p.clone(), mid, end), 30, 0.01, 6, false), MX.gcable);
+        g.add(cl, cab);
+        g.userData.path = new THREE.QuadraticBezierCurve3(p.clone(), mid, end);
+        scene.add(g);
+        return g;
+      });
+    }
+    const G1P = PHZ.map((z) => new THREE.Vector3(SEC_X + 0.3, BUS_Y - 0.04, z));
+    const G2P = PHZ.map((z) => new THREE.Vector3(TR_X, 1.78, z));
+    const G1 = groundSet(G1P);
+    const G2 = groundSet(G2P);
+
+    // Zona sinalizada no chão em frente à entrada energizada: cones e fita zebrada
+    const ZX0 = -1.6;
+    const ZX1 = -0.5;
+    const ZZ1 = WALL_Z + 1.05;
+    const conePts = [[ZX0, WALL_Z + 0.15], [ZX0, ZZ1], [(ZX0 + ZX1) / 2, ZZ1], [ZX1, ZZ1], [ZX1, WALL_Z + 0.15]];
+    const cones = conePts.map(([x, z]) => {
+      const g = new THREE.Group();
+      const c = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.42, 10), MX.cone);
+      c.position.y = 0.21;
+      c.castShadow = true;
+      const band = cyl(0.068, 0.05, M.white, 10);
+      band.position.y = 0.26;
+      const base = box(0.24, 0.03, 0.24, M.dark);
+      g.add(c, band, base);
+      g.position.set(x, 0, z);
+      scene.add(g);
+      return g;
+    });
+    const zebraTex = hazardTex();
+    const tapes = [];
+    for (let i = 0; i < conePts.length - 1; i++) {
+      const [x0, z0] = conePts[i];
+      const [x1, z1] = conePts[i + 1];
+      const len = Math.hypot(x1 - x0, z1 - z0);
+      const t = new THREE.Mesh(new THREE.PlaneGeometry(len, 0.07), new THREE.MeshBasicMaterial({ map: zebraTex, side: THREE.DoubleSide }));
+      t.position.set((x0 + x1) / 2, 0.38, (z0 + z1) / 2);
+      t.rotation.y = -Math.atan2(z1 - z0, x1 - x0);
+      scene.add(t);
+      tapes.push(t);
+    }
+
+    // Zonas da NR-10 em volta da entrada energizada (esferas translúcidas)
+    const ZC = new THREE.Vector3(SEC_X, UP_Y + 0.05, PHZ[1]);
+    const zrMat = new THREE.MeshBasicMaterial({ color: "#ef4444", transparent: true, opacity: 0, depthWrite: false });
+    const zr = new THREE.Mesh(new THREE.SphereGeometry(0.38, 24, 16), zrMat);
+    zr.position.copy(ZC);
+    const zcMat = new THREE.MeshBasicMaterial({ color: "#f97316", transparent: true, opacity: 0, depthWrite: false, wireframe: true });
+    const zcS = new THREE.Mesh(new THREE.SphereGeometry(1.38, 20, 14), zcMat);
+    zcS.position.copy(ZC);
+    scene.add(zr, zcS);
+
+    // Pulsos de energia
+    function pulseSet(n, color, r = 0.022) {
+      const arr = [];
+      for (let k = 0; k < n; k++) {
+        const p = new THREE.Mesh(new THREE.SphereGeometry(r, 8, 6), new THREE.MeshBasicMaterial({ color }));
+        scene.add(p);
+        arr.push(p);
+      }
+      return arr;
+    }
+    const inPaths = PHZ.map((z) => wirePath([[SEC_X - 0.12, 3.7, z], [SEC_X - 0.12, UP_Y + 0.12, z], [SEC_X, UP_Y + 0.12, z]]));
+    const inPulses = PHZ.map(() => pulseSet(5, "#fde047", 0.02));
+    const busPaths = PHZ.map((z) => wirePath([[SEC_X, BUS_Y + 0.03, z], [TR_X, BUS_Y + 0.03, z], [TR_X, 1.38, z]]));
+    const busPulses = PHZ.map(() => pulseSet(6, "#fde047", 0.02));
+    const backA = pulseSet(10, "#fde047", 0.024);
+    const backHV = PHZ.map(() => pulseSet(4, "#fb923c", 0.03));
+    const hvPaths = PHZ.map((z) => wirePath([[TR_X, 1.36, z], [TR_X, 1.78, z]]));
+    const earthPulses = [...G2.map(() => pulseSet(4, "#86efac", 0.026))];
+    const backPath = wirePath([[GEN.x - 0.4, 0.09, GEN.z - 0.3], [QG.x, 0.09, GEN.z - 0.3], [QG.x, 0.09, QG.z + 0.22], [QG.x, 0.85, QG.z + 0.22], [QG.x - 0.28, 0.88, QG.z + 0.1], [1.42, 0.88, QG.z + 0.1], [1.42, 0.88, TR.z], [TR.x + 0.53, 0.88, TR.z]]);
+
+    // Arco sem contato: ferramenta metálica que se aproxima da entrada
+    const tool = new THREE.Group();
+    const toolBar = box(0.03, 0.03, 0.42, M.steel);
+    const toolHead = box(0.08, 0.05, 0.05, M.steel);
+    toolHead.position.z = -0.22;
+    tool.add(toolBar, toolHead);
+    scene.add(tool);
+    const ARC_P = new THREE.Vector3(SEC_X, UP_Y + 0.05, PHZ[2]);
+    const arcMat = new THREE.MeshBasicMaterial({ color: "#e0f2fe", transparent: true, depthWrite: false });
+    const arcBall = new THREE.Mesh(new THREE.IcosahedronGeometry(0.1, 1), arcMat);
+    scene.add(arcBall);
+    const arcLight = new THREE.PointLight("#bfdbfe", 0, 4, 1.5);
+    scene.add(arcLight);
+    const boltMat = new THREE.MeshBasicMaterial({ color: "#dbeafe" });
+    const boltPts = [];
+    for (let i = 0; i <= 6; i++) boltPts.push(new THREE.Vector3(0, 0, 0));
+    let bolt = null;
+
+    // Fonte de teste do detector, num tripé
+    const TS = new THREE.Vector3(-0.45, 1.05, -0.35);
+    const tsLegs = cyl(0.015, 1.0, M.dark, 6);
+    tsLegs.position.set(TS.x, 0.5, TS.z);
+    const tsBox = box(0.14, 0.1, 0.1, M.dark);
+    tsBox.position.copy(TS);
+    const tsLab = tag(["TESTE"], 0.11, 0.035, 26, { bg: "#facc15" });
+    tsLab.position.set(TS.x, TS.y, TS.z + 0.051);
+    scene.add(tsLegs, tsBox, tsLab);
+    // ---------- Trabalhador low-poly: colete com faixas, capacete e óculos (logo ECASI nas costas, se houver) ----------
+    function makeWorker({ logoTex = null, vest = M.orange, vestDark = "#ea6a0c", helmet = M.white, hand = M.skin, shirt = M.navyLight, pants = M.navy, visor = false } = {}) {
+      const g = new THREE.Group();
+      const hips = new THREE.Group();
+      hips.position.y = 0.9;
+      g.add(hips);
+      const legs = [];
+      for (const s of [-1, 1]) {
+        const leg = new THREE.Group();
+        leg.position.set(s * 0.13, 0, 0);
+        const thigh = box(0.22, 0.82, 0.26, pants);
+        thigh.position.y = -0.41;
+        const boot = box(0.24, 0.13, 0.36, M.boot);
+        boot.position.set(0, -0.84, 0.05);
+        leg.add(thigh, boot);
+        hips.add(leg);
+        legs.push(leg);
+      }
+      const torso = box(0.56, 0.68, 0.32, shirt);
+      torso.position.y = 0.34;
+      hips.add(torso);
+      const V = new THREE.Group();
+      V.position.y = 0.36;
+      hips.add(V);
+      const back = box(0.6, 0.56, 0.035, vest);
+      back.position.z = -0.175;
+      V.add(back);
+      for (const s of [-1, 1]) {
+        const front = box(0.2, 0.56, 0.035, vest);
+        front.position.set(s * 0.2, 0, 0.175);
+        const side = box(0.035, 0.5, 0.36, vest);
+        side.position.set(s * 0.3, -0.03, 0);
+        const strap = box(0.15, 0.035, 0.38, vest);
+        strap.position.set(s * 0.19, 0.3, 0);
+        const vStripe = box(0.05, 0.57, 0.04, M.reflect);
+        vStripe.position.set(s * 0.2, 0, 0.18);
+        const vBack = box(0.05, 0.57, 0.04, M.reflect);
+        vBack.position.set(s * 0.255, 0, -0.18);
+        V.add(front, side, strap, vStripe, vBack);
+        for (const y of [-0.17, -0.04]) {
+          const hf = box(0.205, 0.045, 0.04, M.reflect);
+          hf.position.set(s * 0.2, y, 0.18);
+          const hs = box(0.04, 0.045, 0.37, M.reflect);
+          hs.position.set(s * 0.305, y, 0);
+          V.add(hf, hs);
+        }
+      }
+      for (const y of [-0.17, -0.04]) {
+        const hb = box(0.61, 0.045, 0.04, M.reflect);
+        hb.position.set(0, y, -0.18);
+        V.add(hb);
+      }
+      if (logoTex) {
+        // Símbolo do Grupo ECASI nas costas, numa etiqueta branca
+        const patch = box(0.4, 0.27, 0.012, M.white);
+        patch.position.set(0, 0.13, -0.196);
+        V.add(patch);
+        const logo = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 0.3), new THREE.MeshBasicMaterial({ map: logoTex, transparent: true }));
+        logo.position.set(0, 0.13, -0.203);
+        logo.rotation.y = Math.PI;
+        V.add(logo);
+      }
+      const pocket = box(0.12, 0.1, 0.02, mat(vestDark));
+      pocket.position.set(-0.2, 0.1, 0.2);
+      const pen = cyl(0.012, 0.09, M.yellow, 6);
+      pen.position.set(-0.17, 0.16, 0.205);
+      V.add(pocket, pen);
+      const beltBand = box(0.62, 0.07, 0.36, M.belt);
+      beltBand.position.y = 0.03;
+      const pouch = box(0.1, 0.16, 0.12, M.belt);
+      pouch.position.set(0.33, -0.06, 0.06);
+      const h1 = cyl(0.014, 0.12, M.yellow, 6);
+      h1.position.set(0.32, 0.06, 0.04);
+      const h2 = cyl(0.014, 0.1, M.red, 6);
+      h2.position.set(0.345, 0.05, 0.09);
+      hips.add(beltBand, pouch, h1, h2);
+      const arms = [];
+      const hands = [];
+      for (const s of [-1, 1]) {
+        const arm = new THREE.Group();
+        arm.position.set(s * 0.36, 0.64, 0);
+        const upper = box(0.16, 0.6, 0.18, shirt);
+        upper.position.y = -0.3;
+        arm.add(upper);
+        const hnd = box(0.14, 0.14, 0.14, hand);
+        hnd.position.y = -0.66;
+        arm.add(hnd);
+        if (hand !== M.skin) {
+          const cuff = box(0.17, 0.06, 0.19, hand);
+          cuff.position.y = -0.57;
+          arm.add(cuff);
+        }
+        hips.add(arm);
+        arms.push(arm);
+        hands.push(hnd);
+      }
+      const head = new THREE.Mesh(new THREE.IcosahedronGeometry(0.19, 0), M.skin);
+      head.position.y = 0.9;
+      head.castShadow = true;
+      hips.add(head);
+      const hel = new THREE.Mesh(new THREE.SphereGeometry(0.215, 8, 4, 0, Math.PI * 2, 0, Math.PI / 2), helmet);
+      hel.position.y = 0.95;
+      hel.castShadow = true;
+      const brim = cyl(0.25, 0.03, helmet, 10);
+      brim.position.set(0, 0.95, 0.03);
+      const glasses = box(0.27, 0.05, 0.03, mat("#1f2937", { roughness: 0.3 }));
+      glasses.position.set(0, 0.9, 0.17);
+      hips.add(hel, brim, glasses);
+      if (visor) {
+        // Protetor facial translúcido (EPI de alta tensão)
+        const vis = box(0.34, 0.26, 0.02, new THREE.MeshStandardMaterial({ color: "#bae6fd", transparent: true, opacity: 0.45, roughness: 0.1, depthWrite: false }));
+        vis.position.set(0, 0.86, 0.24);
+        vis.rotation.x = 0.12;
+        vis.castShadow = false;
+        hips.add(vis);
+      }
+      g.userData = { hips, arms, hands, legs };
+      return g;
+    }
+
+    // ---------- Utilidades de tempo ----------
+    const clamp01 = (x) => Math.min(1, Math.max(0, x));
+    const prog = (t, a, b) => clamp01((t - a) / (b - a));
+    const easeInOut = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+    const easeOut = (x) => 1 - Math.pow(1 - x, 3);
+    const easeOutExpo = (x) => (x >= 1 ? 1 : 1 - Math.pow(2, -10 * x));
+    const lerp = (a, b, x) => a + (b - a) * x;
+    const lerp3 = (a, b, x) => [lerp(a[0], b[0], x), lerp(a[1], b[1], x), lerp(a[2], b[2], x)];
+    const spring = (x) => (x <= 0 ? 0 : 1 - Math.exp(-6 * x) * Math.cos(9 * x));
+    function track(t, keys) {
+      if (t <= keys[0][0]) return keys[0][1];
+      for (let i = 0; i < keys.length - 1; i++) {
+        const [ta, va] = keys[i];
+        const [tb, vb] = keys[i + 1];
+        if (t <= tb) return tb === ta ? vb : lerp(va, vb, easeInOut((t - ta) / (tb - ta)));
+      }
+      return keys[keys.length - 1][1];
+    }
+    // Posição por quadros-chave com pontos 3D
+    function track3(t, keys) {
+      if (t <= keys[0][0]) return keys[0][1];
+      for (let i = 0; i < keys.length - 1; i++) {
+        const [ta, va] = keys[i];
+        const [tb, vb] = keys[i + 1];
+        if (t <= tb) return tb === ta ? vb : lerp3(va, vb, easeInOut((t - ta) / (tb - ta)));
+      }
+      return keys[keys.length - 1][1];
+    }
+
+    // ---------- Ferramentas: prancheta, cadeados e bastão com detector de alta tensão ----------
+    function makeClipboard() {
+      const g = new THREE.Group();
+      const b = box(0.22, 0.012, 0.3, M.board);
+      const p = box(0.19, 0.014, 0.25, M.paper);
+      p.position.z = 0.015;
+      const clip = box(0.08, 0.02, 0.03, M.steel);
+      clip.position.set(0, 0.006, -0.14);
+      g.add(b, p, clip);
+      return g;
+    }
+    function makeLock(color, label) {
+      const g = new THREE.Group();
+      const body = box(0.055, 0.065, 0.03, mat(color));
+      const shackle = new THREE.Mesh(new THREE.TorusGeometry(0.018, 0.005, 6, 12, Math.PI), M.steelLight);
+      shackle.position.y = 0.032;
+      const t = plane(0.05, 0.07, textTex([label, "NÃO", "OPERE"], { w: 96, h: 136, size: 22, bg: "#d32f2f", fg: "#ffffff" }));
+      t.position.set(0, -0.08, 0.004);
+      g.add(body, shackle, t);
+      scene.add(g);
+      return g;
+    }
+    const lockS = makeLock("#f97316", "ECASI");
+    lockS.position.copy(MAN_LOCK);
+    const lockG = makeLock("#2563eb", "EQUIPE");
+    lockG.position.copy(GEN_LOCK);
+    const UP = new THREE.Vector3(0, 1, 0);
+    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.016, 1, 8), MX.pole);
+    pole.castShadow = true;
+    const head = new THREE.Group();
+    const headBody = box(0.07, 0.12, 0.07, M.yellow);
+    const ledMat = new THREE.MeshBasicMaterial({ color: "#374151" });
+    const led = box(0.075, 0.03, 0.075, ledMat);
+    led.position.y = 0.03;
+    const hook = cyl(0.006, 0.08, M.steel, 6);
+    hook.position.y = 0.09;
+    head.add(headBody, led, hook);
+    scene.add(pole, head);
+    function setPole(a, b) {
+      const d = new THREE.Vector3().subVectors(b, a);
+      const len = d.length();
+      pole.position.copy(a).addScaledVector(d, 0.5);
+      pole.scale.set(1, Math.max(0.001, len), 1);
+      pole.quaternion.setFromUnitVectors(UP, d.clone().normalize());
+      head.position.copy(b);
+      head.quaternion.copy(pole.quaternion);
+    }
+
+    // ---------- Montagem (depois de carregar o símbolo da ECASI) ----------
+    function build(logoTex) {
+      const elet = makeWorker({ logoTex, hand: MX.glove, visor: true });
+      const col = makeWorker({ vest: M.blue, vestDark: "#1d4ed8", helmet: M.blue, hand: MX.glove, visor: true, shirt: mat("#4b5563"), pants: mat("#374151") });
+      scene.add(elet, col);
+      const [armA, armB] = elet.userData.arms;
+      const [colA] = col.userData.arms;
+      const clip = makeClipboard();
+      clip.position.set(0, -0.72, 0.1);
+      clip.rotation.x = Math.PI / 2 - 0.3;
+      armA.add(clip);
+
+      // ---------- Posições ----------
+      const P_MAN = [MAN.x - 0.1, 0, MAN.z + 0.72];
+      const P_FAR = [-0.9, 0, 0.35];
+      const P_WORK = [0.0, 0, -0.15];
+      const P_TEAM = [0.85, 0, 0.3];
+      const P_SIDE = [-2.45, 0, 0.1];
+      const OFF_L = [-4.2, 0, 0.6];
+      const P_GEN = [GEN.x - 0.85, 0, GEN.z + 1.0];
+      const OFF_R = [3.8, 0, 0.6];
+      const POS = [
+        [0, P_MAN], [C.chave + 0.2, P_MAN], [C.camadas + 0.6, P_FAR],
+        [C.c2, P_FAR], [C.bloquear + 0.4, P_MAN],
+        [C.seccionadora2 + 0.7, P_MAN], [C.detector - 0.2, P_WORK],
+        [C.cta + 0.3, P_WORK], [C.ecasi, P_MAN],
+      ];
+      const COLPOS = [
+        [0, OFF_R], [C.equipe - 1.4, OFF_R], [C.duas + 0.2, P_TEAM], [C.bloquear, P_TEAM], [C.gerador - 0.3, P_GEN],
+        [C.usar + 1.6, P_GEN], [C.aterramento + 0.4, P_SIDE], [C.cta + 0.5, P_SIDE], [C.cta + 2.4, OFF_L],
+      ];
+      const posAt = (t) => track3(t, POS);
+      const colAt = (t) => track3(t, COLPOS);
+      const yawTo = (p, q) => Math.atan2(q[0] - p[0], q[2] - p[2]);
+      const yawCam = 0.38;
+
+      // ---------- Câmera: plano-sequência por quadros-chave ----------
+      const DIR = [0.42, 0.12, 1];
+      const shot = (q, d, dir = DIR) => {
+        const n = Math.hypot(...dir);
+        return { q, p: q.map((v, i) => v + (dir[i] / n) * d) };
+      };
+      const OPEN = shot([-1.7, 2.6, -0.95], 7.8);
+      const WIDE = (d = 8.4, y = 2.3) => shot([-0.2, y, -0.95], d);
+      const K = [
+        { t: 0, ...OPEN },
+        { t: C.pode, ...shot([-1.66, 2.62, -0.95], 7.3) },
+        { t: C.chave + 0.6, ...shot([SEC_X, 2.95, PHZ[1]], 3.8) },
+        { t: C.camadas + 0.6, ...shot([SEC_X + 0.1, 3.0, PHZ[1]], 4.2) },
+        { t: C.problema + 0.6, ...WIDE(8.2) },
+        { t: C.mil, ...WIDE(8.0) },
+        { t: C.chegar, ...shot([SEC_X + 0.1, 3.05, PHZ[1]], 3.6) },
+        { t: C.arco + 0.4, ...shot([SEC_X + 0.1, 3.05, PHZ[1]], 3.4) },
+        { t: C.zonas + 0.3, ...shot([SEC_X, 2.75, PHZ[1]], 6.4) },
+        { t: C.controlada + 0.5, ...shot([SEC_X, 2.7, PHZ[1]], 6.8) },
+        { t: C.c1 + 0.6, ...shot([-0.1, 2.35, -0.2], 6.6) },
+        { t: C.plano + 0.4, ...shot([-0.05, 2.3, -0.2], 6.4) },
+        { t: C.bloquear + 0.4, ...shot([MAN.x + 0.25, 1.75, MAN.z], 4.4, [0.9, 0.12, 1]) },
+        { t: C.seccionadora2 + 0.8, ...shot([MAN.x + 0.25, 1.7, MAN.z], 4.2, [0.9, 0.12, 1]) },
+        { t: C.gerador + 0.2, ...shot([GEN.x - 0.2, 1.4, GEN.z + 0.3], 4.4) },
+        { t: C.travados + 0.6, ...shot([GEN.x - 0.2, 1.4, GEN.z + 0.3], 4.6) },
+        { t: C.detector + 0.4, ...shot([-0.35, 2.3, -0.6], 5.2) },
+        { t: C.testado + 0.2, ...shot([-0.3, 2.05, -0.45], 4.8) },
+        { t: C.usar + 0.3, ...shot([-0.4, 2.65, -0.8], 4.9) },
+        { t: C.aterramento, ...shot([-0.15, 2.45, -0.9], 5.6) },
+        { t: C.lados + 0.4, ...shot([0.1, 2.35, -0.9], 5.6) },
+        { t: C.sinal, ...shot([-1.05, 1.55, -0.75], 6.8) },
+        { t: C.mito + 0.6, ...shot([1.35, 1.9, -0.8], 6.8) },
+        { t: C.saem, ...shot([1.1, 2.1, -0.9], 6.4) },
+        { t: C.terra, ...shot([0.9, 2.1, -0.9], 6.0) },
+        { t: C.norma + 0.6, ...WIDE(8.0, 2.25) },
+        { t: C.cta + 0.7, ...shot([-0.9, 3.25, -0.6], 9.8) },
+        { t: C.loop, ...shot([-0.95, 3.2, -0.6], 9.4) },
+        { t: C.loop + 1.6, ...shot([-1.68, 2.6, -0.95], 7.9) },
+        { t: C.end, ...OPEN },
+      ];
+      function cameraAt(t) {
+        if (t <= K[0].t) return K[0];
+        for (let i = 0; i < K.length - 1; i++) {
+          const a = K[i];
+          const b = K[i + 1];
+          if (t <= b.t) {
+            const x = easeInOut((t - a.t) / (b.t - a.t));
+            return { p: lerp3(a.p, b.p, x), q: lerp3(a.q, b.q, x) };
+          }
+        }
+        return K[K.length - 1];
+      }
+
+      // ---------- Braço apontando para um ponto 3D (IK simples) ----------
+      const DOWN = new THREE.Vector3(0, -1, 0);
+      const qTmp = new THREE.Quaternion();
+      const qHips = new THREE.Quaternion();
+      const IDQ = new THREE.Quaternion();
+      const vS = new THREE.Vector3();
+      function aimArm(who, arm, target, k) {
+        if (k <= 0.001) {
+          arm.quaternion.identity();
+          return;
+        }
+        who.updateMatrixWorld(true);
+        arm.getWorldPosition(vS);
+        const dir = new THREE.Vector3(...target).sub(vS).normalize();
+        who.userData.hips.getWorldQuaternion(qHips);
+        dir.applyQuaternion(qHips.invert());
+        qTmp.setFromUnitVectors(DOWN, dir);
+        arm.quaternion.slerpQuaternions(IDQ, qTmp, k);
+      }
+
+      // ---------- Callouts presos a pontos 3D ----------
+      const svg = document.getElementById("world-lines");
+      const SVGNS = "http://www.w3.org/2000/svg";
+      function worldOf(obj, x, y, z) {
+        obj.updateMatrixWorld(true);
+        return obj.localToWorld(new THREE.Vector3(x, y, z)).toArray();
+      }
+      const CTA_BOX = { top: 1320, bottom: 1600 };
+      const CALLOUTS = [
+        { id: "co-secc", a: C.chave + 0.6, b: C.camadas, at: () => worldOf(blades[2], 0, 0.45, 0), dx: 130, dy: 60, top: 640 },
+        { id: "co-live", a: C.aberta + 0.6, b: C.problema, at: () => [SEC_X - 0.12, UP_Y + 0.25, PHZ[2]], dx: 120, dy: -60, top: 640 },
+        { id: "co-arc", a: C.arco, b: C.zonas, at: () => ARC_P.toArray(), dx: 140, dy: 120, top: 640 },
+        { id: "co-zr", a: C.r38 - 0.1, b: C.c1, at: () => [ZC.x + 0.27, ZC.y - 0.27, ZC.z + 0.1], dx: 140, dy: 40, top: 760 },
+        { id: "co-zc", a: C.r138 - 0.1, b: C.c1, at: () => [ZC.x + 0.98, ZC.y - 0.98, ZC.z + 0.2], dx: 120, dy: 90, top: 860 },
+        { id: "co-team", a: C.duas + 0.3, b: C.c2, at: () => worldOf(col.userData.hips, 0, 1.05, 0), dx: 100, dy: -50, top: 960 },
+        { id: "co-lock", a: C.seccionadora2 + 0.4, b: C.gerador + 0.3, at: () => MAN_LOCK.toArray(), dx: 130, dy: 90, top: 960 },
+        { id: "co-glock", a: C.gerador + 0.7, b: C.detector, at: () => GEN_LOCK.toArray(), dx: -110, dy: -120, top: 960 },
+        { id: "co-test", a: C.testado + 0.35, b: C.usar + 0.2, at: () => head.position.toArray(), dx: 120, dy: -70, top: 960 },
+        { id: "co-dead", a: C.usar + 0.4, b: C.aterramento, at: () => head.position.toArray(), dx: 120, dy: -70, top: 960 },
+        { id: "co-g1", a: C.aterramento + 1.0, b: C.sinal, at: () => G1P[2].toArray(), dx: -60, dy: -140, top: 960 },
+        { id: "co-g2", a: C.dois + 1.0, b: C.sinal, at: () => G2P[2].toArray(), dx: 110, dy: 90, top: 960 },
+        { id: "co-zone", a: C.sinal + 0.4, b: C.mito, at: () => cones[2].position.toArray().map((v, i) => (i === 1 ? 0.4 : v)), dx: 120, dy: -80, top: 960 },
+        { id: "co-back", a: C.voltar, b: C.terra, at: () => [TR.x + 0.4, 0.88, TR.z], dx: 120, dy: 150, top: 960 },
+        { id: "co-earth", a: C.terra + 0.3, b: C.norma, at: () => G2P[2].toArray(), dx: 120, dy: 160, top: 960 },
+        { id: "co-safe", a: C.lados2 - 0.3, b: C.norma + 1.0, at: () => [-0.3, BUS_Y, PHZ[2]], dx: -60, dy: -150, top: 960 },
+        { id: "co-epi", a: C.complementar, b: C.cta, at: () => worldOf(elet.userData.hips, 0, 0.9, 0.2), dx: -120, dy: 160, top: 1000 },
+        { id: "co-elet", ...CTA_BOX, a: C.treinamento + 0.6, b: C.loop, at: () => worldOf(elet.userData.hips, 0, 1.05, 0), dx: 110, dy: -60 },
+      ];
+      for (const c of CALLOUTS) {
+        c.el = document.getElementById(c.id);
+        c.bw = c.el.offsetWidth;
+        c.bh = c.el.offsetHeight;
+        c.line = document.createElementNS(SVGNS, "line");
+        c.line.setAttribute("stroke", "#0b1d3f");
+        c.line.setAttribute("stroke-width", "3");
+        c.dot = document.createElementNS(SVGNS, "circle");
+        c.dot.setAttribute("r", "8");
+        c.dot.setAttribute("fill", "#f97316");
+        c.dot.setAttribute("stroke", "#ffffff");
+        c.dot.setAttribute("stroke-width", "3");
+        svg.append(c.line, c.dot);
+      }
+      const proj = new THREE.Vector3();
+      function placeCallouts(t) {
+        for (const c of CALLOUTS) {
+          const fadeIn = prog(t, c.a, c.a + 0.25);
+          const fadeOut = 1 - prog(t, c.b - 0.2, c.b);
+          const o = Math.min(fadeIn, fadeOut);
+          if (o <= 0.001) {
+            c.el.style.opacity = "0";
+            c.line.setAttribute("opacity", "0");
+            c.dot.setAttribute("opacity", "0");
+            continue;
+          }
+          proj.fromArray(c.at()).project(camera);
+          const px = (proj.x * 0.5 + 0.5) * W;
+          const py = (-proj.y * 0.5 + 0.5) * H;
+          let bx = px + c.dx - (c.dx < 0 ? c.bw : 0);
+          let by = py + c.dy - c.bh / 2;
+          bx = Math.min(W - 54 - c.bw, Math.max(54, bx));
+          by = Math.min((c.bottom ?? 1160) - c.bh, Math.max(c.top ?? 330, by));
+          const lift = 14 * (1 - easeOutExpo(fadeIn));
+          c.el.style.opacity = String(o);
+          c.el.style.transform = `translate(${bx}px, ${by + lift}px)`;
+          const lx = bx + (c.dx < 0 ? c.bw : 0);
+          const ly = by + c.bh / 2;
+          const grow = easeOut(fadeIn);
+          c.line.setAttribute("x1", String(px));
+          c.line.setAttribute("y1", String(py));
+          c.line.setAttribute("x2", String(lerp(px, lx, grow)));
+          c.line.setAttribute("y2", String(lerp(py, ly, grow)));
+          c.line.setAttribute("opacity", String(o));
+          c.dot.setAttribute("cx", String(px));
+          c.dot.setAttribute("cy", String(py));
+          c.dot.setAttribute("opacity", String(o));
+        }
+      }
+
+      // ---------- Estados ao longo do tempo ----------
+      // Seccionadora: aberta no gancho, fechada de novo na chamada final (depois de tirar aterramentos e cadeados)
+      const SEC = [[0, 1], [0.55, 1], [0.95, 0], [C.proximo + 0.8, 0], [C.proximo + 1.2, 1]];
+      // Gerador: no mito, "e se ligar?" (replay ilustrativo, sem o cadeado)
+      const genOn = (t) => t >= C.gerador2 - 0.1 && t < C.norma;
+      // Grampos de aterramento: um por vez com o bastão; saem na chamada final
+      const G1T = [0, 1, 2].map((k) => C.aterramento + 0.3 + k * 0.35);
+      const G2T = [0, 1, 2].map((k) => C.dois + 0.1 + k * 0.35);
+      const G_OFF = C.cta + 0.5;
+      // Alvo do bastão: fonte de teste, as três fases e os pontos de aterramento
+      const IDLE = [-0.15, 2.75, -0.55];
+      const DETP = PHZ.map((z) => [-0.45, BUS_Y + 0.02, z]);
+      const STICK = [
+        [C.bastao - 0.6, IDLE], [C.testado - 0.15, TS.toArray().map((v, i) => (i === 1 ? v + 0.06 : v))], [C.testado + 0.5, TS.toArray().map((v, i) => (i === 1 ? v + 0.06 : v))],
+        [C.usar + 0.05, DETP[0]], [C.usar + 0.35, DETP[0]], [C.usar + 0.6, DETP[1]], [C.usar + 0.9, DETP[1]], [C.usar + 1.15, DETP[2]], [C.usar + 1.45, DETP[2]],
+        [C.aterramento - 0.3, IDLE],
+        ...G1T.flatMap((tt, k) => [[tt - 0.1, G1P[k].toArray()], [tt + 0.1, G1P[k].toArray()]]),
+        ...G2T.flatMap((tt, k) => [[tt - 0.1, G2P[k].toArray()], [tt + 0.1, G2P[k].toArray()]]),
+        [C.sinal - 0.4, IDLE],
+      ];
+      const stickOn = (t) => t >= C.bastao - 0.6 && t < C.chao + 0.4;
+      const stickK = (t) => track(t, [[C.bastao - 0.7, 0], [C.bastao - 0.3, 1], [C.chao, 1], [C.chao + 0.4, 0]]);
+
+      // ---------- Render de um quadro a partir de t ----------
+      const tmp = new THREE.Vector3();
+      const vH = new THREE.Vector3();
+      return function render(t) {
+        const cam = cameraAt(t);
+        camera.position.fromArray(cam.p);
+        camera.lookAt(cam.q[0], cam.q[1], cam.q[2]);
+        camera.updateMatrixWorld(true);
+
+        // Seccionadora e manopla
+        const sec = track(t, SEC);
+        blades.forEach((b) => (b.rotation.z = lerp(1.15, 0, sec)));
+        manLever.rotation.z = lerp(Math.PI * 0.8, 0, sec);
+        const busLive = sec > 0.5;
+
+        // Energia: entrada sempre energizada (concessionária); barramento só com a chave fechada
+        inPulses.forEach((arr, ph) => arr.forEach((p, k) => {
+          inPaths[ph].getPointAt((k / arr.length + t * 0.35) % 1, tmp);
+          p.position.copy(tmp);
+          p.position.x += 0.03;
+        }));
+        busPulses.forEach((arr, ph) => arr.forEach((p, k) => {
+          p.visible = busLive;
+          if (busLive) {
+            busPaths[ph].getPointAt((k / arr.length + t * 0.25) % 1, tmp);
+            p.position.copy(tmp);
+            p.position.z += 0.025;
+          }
+        }));
+
+        // Zonas da NR-10 (problema)
+        const zk = Math.min(prog(t, C.zonas - 0.3, C.zonas + 0.3), 1 - prog(t, C.c1, C.c1 + 0.5));
+        zrMat.opacity = 0.32 * Math.min(zk, prog(t, C.r38 - 0.4, C.r38 + 0.1) + 0.15 * zk);
+        zcMat.opacity = 0.4 * Math.min(zk, prog(t, C.r138 - 0.4, C.r138 + 0.1) + 0.15 * zk);
+        zr.visible = zrMat.opacity > 0.005;
+        zcS.visible = zcMat.opacity > 0.005;
+        zr.scale.setScalar(0.92 + 0.08 * Math.sin(t * 4));
+
+        // Ferramenta que se aproxima e arco sem contato
+        const toolOn = t >= C.nem && t < C.arco + 0.7;
+        tool.visible = toolOn;
+        if (toolOn) {
+          const a = [-0.35, 2.45, -0.25];
+          const b = [SEC_X + 0.24, UP_Y + 0.04, PHZ[2] + 0.12];
+          const p = t < C.arco - 0.1 ? lerp3(a, b, easeInOut(prog(t, C.chegar - 0.6, C.arco - 0.15))) : b;
+          const fall = t > C.arco ? Math.pow(t - C.arco, 2) * 4 : 0;
+          tool.position.set(p[0] + 0.1 * prog(t, C.arco, C.arco + 0.5), p[1] - fall, p[2] + 0.15 * prog(t, C.arco, C.arco + 0.5));
+          tool.lookAt(ARC_P);
+        }
+        const ak = t >= C.arco - 0.1 ? Math.exp(-(t - (C.arco - 0.1)) * 5) : 0;
+        arcBall.visible = ak > 0.02;
+        arcBall.position.copy(ARC_P).add(new THREE.Vector3(0.12, 0, 0.06));
+        arcBall.scale.setScalar(0.5 + 1.4 * (1 - ak));
+        arcMat.opacity = ak;
+        arcLight.position.copy(arcBall.position);
+        arcLight.intensity = 16 * ak;
+        if (bolt) {
+          scene.remove(bolt);
+          bolt.geometry.dispose();
+          bolt = null;
+        }
+        if (t >= C.arco - 0.1 && t < C.arco + 0.35) {
+          const from = ARC_P.clone();
+          const to = new THREE.Vector3(SEC_X + 0.24, UP_Y + 0.04, PHZ[2] + 0.12);
+          const seed = Math.floor(t * 20);
+          for (let i = 0; i <= 6; i++) {
+            const f = i / 6;
+            const j = i === 0 || i === 6 ? 0 : 0.035 * Math.sin(seed * 12.9898 + i * 78.233);
+            boltPts[i].set(lerp(from.x, to.x, f) + j, lerp(from.y, to.y, f) + j * 1.4, lerp(from.z, to.z, f) - j);
+          }
+          bolt = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(boltPts), 24, 0.008, 5, false), boltMat);
+          scene.add(bolt);
+        }
+
+        // Cadeados
+        lockS.visible = t >= C.seccionadora2 + 0.35 && t < C.ecasi + 0.6;
+        lockS.scale.setScalar(Math.max(0.01, spring(prog(t, C.seccionadora2 + 0.35, C.seccionadora2 + 0.95))));
+        lockG.visible = t >= C.gerador + 0.45 && t < C.cta + 0.9 && !(t >= C.mito && t < C.norma);
+        lockG.scale.setScalar(Math.max(0.01, spring(prog(t, C.gerador + 0.45, C.gerador + 1.05))));
+
+        // Aterramento temporário
+        [[G1, G1T], [G2, G2T]].forEach(([set, times]) => set.forEach((g, k) => {
+          const s = spring(prog(t, times[k], times[k] + 0.5)) * (1 - prog(t, G_OFF + k * 0.1, G_OFF + 0.4 + k * 0.1));
+          g.visible = s > 0.01;
+          g.scale.setScalar(1);
+          g.children[0].scale.setScalar(Math.max(0.01, s));
+          g.children[1].visible = s > 0.6;
+        }));
+
+        // Zona sinalizada
+        const zs = (k) => spring(prog(t, C.sinal + k * 0.12, C.sinal + 0.5 + k * 0.12)) * (1 - prog(t, G_OFF, G_OFF + 0.4));
+        cones.forEach((c, k) => {
+          const s = zs(k);
+          c.visible = s > 0.01;
+          c.scale.setScalar(Math.max(0.01, s));
+        });
+        tapes.forEach((tp, k) => (tp.visible = zs(k + 1) > 0.9));
+
+        // Gerador (mito): vibra, solta fumaça e manda energia de volta pelo transformador
+        const gon = genOn(t);
+        genGroup.position.set(GEN.x + (gon ? 0.006 * Math.sin(t * 90) : 0), GEN.y, GEN.z);
+        smoke.forEach((m) => {
+          m.visible = gon;
+          if (gon) {
+            const f = (m.userData.off + t * 0.7) % 1;
+            m.position.set(GEN.x + 0.2 + 0.05 * f, GEN.y + 0.8 + f * 0.6, GEN.z - 0.35);
+            m.scale.setScalar(0.6 + f * 1.6);
+            m.material.opacity = 0.6 * (1 - f);
+          }
+        });
+        const backOn = t >= C.ligar && t < C.norma;
+        backA.forEach((p, k) => {
+          p.visible = backOn;
+          if (backOn) {
+            backPath.getPointAt((k / backA.length + t * 0.3) % 1, tmp);
+            p.position.copy(tmp);
+          }
+        });
+        const hvOn = t >= C.saem - 0.3 && t < C.norma;
+        backHV.forEach((arr, ph) => arr.forEach((p, k) => {
+          p.visible = hvOn;
+          if (hvOn) {
+            hvPaths[ph].getPointAt((k / arr.length + t * 0.6) % 1, tmp);
+            p.position.copy(tmp);
+            p.position.x += 0.03;
+          }
+        }));
+        const earthOn = t >= C.terra - 0.3 && t < C.norma;
+        earthPulses.forEach((arr, ph) => arr.forEach((p, k) => {
+          p.visible = earthOn;
+          if (earthOn) {
+            G2[ph].userData.path.getPointAt((k / arr.length + t * 0.5) % 1, tmp);
+            p.position.copy(tmp);
+          }
+        }));
+        trMat.emissiveIntensity = (busLive ? 0.08 : 0) + (hvOn ? 0.35 + 0.2 * Math.sin(t * 8) : 0);
+
+        // ---------- Eletricista ECASI ----------
+        const ep = posAt(t);
+        const ep2 = posAt(t - 0.05);
+        const moving = Math.hypot(ep[0] - ep2[0], ep[2] - ep2[2]);
+        const walk = Math.min(1, moving / 0.03);
+        const LEV = worldOf(lev, 0, 0.1, 0.03);
+        const targetYaw = (() => {
+          if (t < C.pode + 0.2) return yawTo(ep, LEV);
+          if (t < C.chave) return lerp(yawTo(ep, LEV), yawCam, prog(t, C.pode + 0.2, C.pode + 0.8));
+          if (t < C.c1) return yawTo(ep, [SEC_X, 0, PHZ[1]]);
+          if (t < C.c2) return 0.7;
+          if (t < C.seccionadora2 + 0.7) return yawTo(ep, LEV);
+          if (t < C.cta + 0.3) return yawTo(ep, [-0.3, 0, PHZ[1]]);
+          return yawTo(ep, LEV);
+        })();
+        const headingYaw = moving > 0.004 ? Math.atan2(ep[0] - ep2[0], ep[2] - ep2[2]) : targetYaw;
+        elet.position.fromArray(ep);
+        elet.rotation.y = lerp(targetYaw, headingYaw, walk * 0.85);
+        const ph = Math.sin(t * 9) * walk;
+        elet.userData.legs[0].rotation.x = 0.4 * ph;
+        elet.userData.legs[1].rotation.x = -0.4 * ph;
+        elet.userData.hips.position.y = 0.9 + 0.02 * Math.abs(ph);
+
+        // Braço A: manopla (gancho e fim), cadeado, prancheta; com o bastão, as duas mãos seguram
+        const actsA = [
+          [track(t, [[0, 1], [0.95, 1], [1.4, 0], [C.end - 1.0, 0], [C.end - 0.4, 1]]), LEV],
+          [track(t, [[C.seccionadora2 - 0.3, 0], [C.seccionadora2 + 0.2, 1], [C.seccionadora2 + 0.6, 1], [C.seccionadora2 + 0.9, 0]]), MAN_LOCK.toArray()],
+          [track(t, [[C.ecasi + 0.05, 0], [C.ecasi + 0.35, 1], [C.ecasi + 0.75, 1], [C.ecasi + 1.05, 0]]), MAN_LOCK.toArray()],
+          [track(t, [[C.proximo + 0.3, 0], [C.proximo + 0.6, 1], [C.proximo + 1.3, 1], [C.proximo + 1.6, 0]]), LEV],
+        ];
+        const clipK = track(t, [[C.c1 - 0.2, 0], [C.c1 + 0.4, 1], [C.c2 - 0.5, 1], [C.c2 + 0.1, 0]]);
+        clip.visible = clipK > 0.05;
+        clip.scale.setScalar(Math.max(0.01, clipK));
+        const sk = stickK(t);
+        const sOn = stickOn(t);
+        pole.visible = head.visible = sOn && sk > 0.05;
+        const ST = track3(t, STICK);
+        const actA = actsA.find(([k]) => k > 0.001);
+        if (actA) aimArm(elet, armA, actA[1], actA[0]);
+        else if (clipK > 0.001) armA.quaternion.setFromEuler(new THREE.Euler(-1.25 * clipK, 0, 0.35 * clipK));
+        else if (sk > 0.001) aimArm(elet, armA, ST, sk * 0.85);
+        else armA.quaternion.identity();
+        if (sk > 0.001) aimArm(elet, armB, ST, sk);
+        else armB.quaternion.identity();
+        if (pole.visible) {
+          elet.updateMatrixWorld(true);
+          elet.userData.hands[1].getWorldPosition(vH);
+          const target = new THREE.Vector3(...ST);
+          const d = target.clone().sub(vH);
+          const len = Math.min(1.9, Math.max(0.6, d.length() - 0.06));
+          setPole(vH, vH.clone().addScaledVector(d.normalize(), len * Math.max(0.3, sk)));
+        }
+        // LED do detector: pisca vermelho na fonte de teste (detector funcionando); apagado nas fases (sem tensão)
+        const onTest = t >= C.testado - 0.05 && t < C.testado + 0.5;
+        ledMat.color.set(onTest && Math.sin(t * 40) > -0.3 ? "#ef4444" : "#374151");
+
+        // ---------- Colega (equipe de 2) ----------
+        const cp = colAt(t);
+        const cp2 = colAt(t - 0.05);
+        const cMove = Math.hypot(cp[0] - cp2[0], cp[2] - cp2[2]);
+        const cWalk = Math.min(1, cMove / 0.03);
+        col.visible = cp[0] < 3.6 && cp[0] > -4.0;
+        col.position.fromArray(cp);
+        const cTarget = t >= C.bloquear && t < C.c3 + 0.6 ? GEN_LOCK.toArray() : [-0.3, 0, PHZ[1]];
+        col.rotation.y = cMove > 0.004 ? Math.atan2(cp[0] - cp2[0], cp[2] - cp2[2]) : yawTo(cp, cTarget);
+        const cph = Math.sin(t * 9 + 1) * cWalk;
+        col.userData.legs[0].rotation.x = 0.4 * cph;
+        col.userData.legs[1].rotation.x = -0.4 * cph;
+        col.userData.hips.position.y = 0.9 + 0.02 * Math.abs(cph);
+        const cK = track(t, [[C.gerador - 0.2, 0], [C.gerador + 0.3, 1], [C.gerador + 0.8, 1], [C.gerador + 1.1, 0]]);
+        aimArm(col, colA, GEN_LOCK.toArray(), cK);
+
+        renderer.render(scene, camera);
+        placeCallouts(t);
+      };
+    }
+
+    // Relógio: um tween do GSAP alimenta render(t). A linha do tempo só é registrada depois que as fontes e o
+    // símbolo da ECASI carregaram, para o colete nunca aparecer sem o logo.
+    const logoTex = new THREE.TextureLoader().loadAsync("assets/brand/simbolo-ecasi.png");
+    Promise.all([document.fonts.ready, logoTex]).then(([, tex]) => {
+      tex.colorSpace = THREE.SRGBColorSpace;
+      const render = build(tex);
+      const state = { t: 0 };
+      const tl = gsap.timeline({ paused: true });
+      tl.to(state, { t: C.end, duration: C.end, ease: "none", onUpdate: () => render(state.t) }, 0);
+      render(0);
+      window.__timelines["world"] = tl;
+    });
+  </script>
+</template>

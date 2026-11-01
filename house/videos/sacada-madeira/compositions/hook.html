@@ -1,0 +1,130 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Barlow Condensed";
+      font-weight: 900;
+      src: url("assets/fonts/BarlowCondensed-900.woff2") format("woff2");
+    }
+    @font-face {
+      font-family: "Barlow Condensed";
+      font-weight: 800;
+      src: url("assets/fonts/BarlowCondensed-800.woff2") format("woff2");
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: #0b1220;
+    }
+    .hk-half {
+      position: absolute;
+      left: 0;
+      width: 1080px;
+      height: 960px;
+      overflow: hidden;
+    }
+    .hk-half img {
+      position: absolute;
+      left: 0;
+      top: -60px;
+      width: 1080px;
+      height: 1080px;
+      object-fit: cover;
+    }
+    #hk-top {
+      top: 0;
+    }
+    #hk-bot {
+      top: 960px;
+    }
+    .hk-label {
+      position: absolute;
+      left: 56px;
+      padding: 10px 26px 8px;
+      border-radius: 10px;
+      font-family: "Barlow Condensed", sans-serif;
+      font-weight: 800;
+      font-size: 56px;
+      letter-spacing: 0.06em;
+      color: #ffffff;
+      text-transform: uppercase;
+    }
+    #hk-l-antes {
+      top: 200px;
+      background: rgba(11, 18, 32, 0.82);
+    }
+    #hk-l-depois {
+      top: 1140px;
+      background: #2457d6;
+    }
+    #hk-band {
+      position: absolute;
+      left: 0;
+      top: 800px;
+      width: 1080px;
+      height: 300px;
+      background: rgba(11, 18, 32, 0.94);
+    }
+    #hk-seam {
+      position: absolute;
+      left: 0;
+      top: 1094px;
+      width: 1080px;
+      height: 12px;
+      background: #2457d6;
+      box-shadow: 0 0 40px 6px rgba(90, 152, 239, 0.7);
+      transform-origin: 0% 50%;
+    }
+    #hk-knob {
+      position: absolute;
+      left: -44px;
+      top: 1056px;
+      width: 88px;
+      height: 88px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 8px solid #2457d6;
+      box-shadow: 0 10px 30px rgba(5, 10, 25, 0.5);
+    }
+    #hk-title {
+      position: absolute;
+      left: 60px;
+      right: 60px;
+      top: 826px;
+      text-align: center;
+      font-family: "Barlow Condensed", sans-serif;
+      font-weight: 900;
+      font-size: 136px;
+      line-height: 0.92;
+      letter-spacing: -0.01em;
+      text-transform: uppercase;
+      color: #ffffff;
+      text-shadow: 0 8px 40px rgba(5, 10, 25, 0.85), 0 2px 6px rgba(5, 10, 25, 0.9);
+    }
+    #hk-title span {
+      display: block;
+      color: #8db4f6;
+    }
+  </style>
+  <div id="root" data-composition-id="hook" data-width="1080" data-height="1920">
+    <div id="hk-top" class="hk-half"><img src="assets/site/ba4-antes.png" alt="Sacada antes da pintura" /></div>
+    <div id="hk-bot" class="hk-half"><img src="assets/site/ba4-depois.png" alt="Sacada depois da pintura" /></div>
+    <div id="hk-band"></div>
+    <div id="hk-l-antes" class="hk-label">Antes</div>
+    <div id="hk-l-depois" class="hk-label">Depois</div>
+    <div id="hk-seam"></div>
+    <div id="hk-knob"></div>
+    <div id="hk-title">Dá pra salvar<span>essa sacada?</span></div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    // O primeiro quadro já mostra tudo (é a capa e o gancho); a barra azul corre como o "arraste" do site
+    tl.fromTo("#hk-seam", { scaleX: 0.08 }, { scaleX: 1, duration: 1.1, ease: "power2.inOut" }, 0.15);
+    tl.fromTo("#hk-knob", { x: 130 }, { x: 1080, duration: 1.1, ease: "power2.inOut" }, 0.15);
+    tl.fromTo("#hk-title", { scale: 1.06 }, { scale: 1, duration: 0.6, ease: "expo.out", transformOrigin: "50% 50%" }, 0);
+    tl.fromTo(".hk-half img", { scale: 1 }, { scale: 1.06, duration: 2.4, ease: "none", transformOrigin: "50% 50%" }, 0);
+    // Saída: o título sobe e some no corte para o primeiro clipe
+    tl.to("#hk-title", { y: -40, opacity: 0, duration: 0.22, ease: "power2.in" }, 2.16);
+    window.__timelines["hook"] = tl;
+  </script>
+</template>

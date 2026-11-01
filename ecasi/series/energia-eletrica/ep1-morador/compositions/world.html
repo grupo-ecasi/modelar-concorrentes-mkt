@@ -1,0 +1,1014 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: #eef1f6;
+    }
+    #world-canvas {
+      position: absolute;
+      inset: 0;
+      width: 1080px;
+      height: 1920px;
+    }
+    #world-lines {
+      position: absolute;
+      inset: 0;
+      width: 1080px;
+      height: 1920px;
+      pointer-events: none;
+    }
+    .world-callout {
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      padding: 12px 20px;
+      border-radius: 12px;
+      background: #ffffff;
+      border: 2px solid #e5e7eb;
+      box-shadow: 0 10px 24px -12px rgba(11, 29, 63, 0.35);
+      color: #0b1d3f;
+      font-family: Poppins, sans-serif;
+      font-weight: 600;
+      font-size: 30px;
+      line-height: 1.15;
+      white-space: nowrap;
+    }
+    .world-callout.is-tech {
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 500;
+    }
+    .world-callout.is-orange {
+      background: #c2410c;
+      border-color: #c2410c;
+      color: #ffffff;
+    }
+    .world-callout.is-red {
+      background: #fdecec;
+      border-color: rgba(211, 47, 47, 0.45);
+      color: #b3261e;
+    }
+    .world-callout.is-green {
+      background: #ecf8f2;
+      border-color: rgba(59, 178, 115, 0.5);
+      color: #1f7a4c;
+    }
+  </style>
+  <div data-hf-id="hf-2fmg" id="root" data-composition-id="world" data-width="1080" data-height="1920" data-layout-allow-overflow>
+    <canvas data-hf-id="hf-kh1v" id="world-canvas" width="1080" height="1920"></canvas>
+    <svg data-hf-id="hf-64bb" id="world-lines" viewBox="0 0 1080 1920" data-layout-ignore></svg>
+    <div data-hf-id="hf-ghuj" id="co-res" class="world-callout">resistência</div>
+    <div data-hf-id="hf-fj3j" id="co-live" class="world-callout is-red">fios com energia</div>
+    <div data-hf-id="hf-8owx" id="co-mao" class="world-callout">mão molhada conduz</div>
+    <div data-hf-id="hf-h6og" id="co-trava" class="world-callout is-red">o músculo trava</div>
+    <div data-hf-id="hf-bj1y" id="co-heart" class="world-callout is-red">coração</div>
+    <div data-hf-id="hf-vmvh" id="co-reg" class="world-callout is-red">✕ registro · só fecha a água</div>
+    <div data-hf-id="hf-8vkr" id="co-knob" class="world-callout is-red">✕ chave · só muda a temperatura</div>
+    <div data-hf-id="hf-y91h" id="co-brk" class="world-callout is-tech">CHUVEIRO · 2 polos</div>
+    <div data-hf-id="hf-xjua" id="co-off" class="world-callout is-green">fios desligados ✓</div>
+    <div data-hf-id="hf-smxj" id="co-pkg" class="world-callout">resistência nova</div>
+    <div data-hf-id="hf-sa39" id="co-model" class="world-callout is-green">mesmo modelo ✓</div>
+    <div data-hf-id="hf-wmm5" id="co-volt" class="world-callout is-green is-tech">220 V ✓</div>
+    <div data-hf-id="hf-ryv6" id="co-burn" class="world-callout is-red">fio queimado</div>
+    <div data-hf-id="hf-wce7" id="co-127" class="world-callout is-red is-tech">resistência de 127 V</div>
+    <div data-hf-id="hf-9hvp" id="co-220" class="world-callout is-orange is-tech">rede de 220 V</div>
+    <div data-hf-id="hf-j49b" id="co-hot" class="world-callout is-red">esquenta 3×</div>
+    <div data-hf-id="hf-mhlw" id="co-burnt" class="world-callout is-red">queimou</div>
+    <div data-hf-id="hf-9iqy" id="co-circ" class="world-callout is-tech">circuito só do chuveiro</div>
+    <div data-hf-id="hf-og98" id="co-dr" class="world-callout is-green is-tech">DR 30 mA</div>
+    <div data-hf-id="hf-zn0s" id="co-elet" class="world-callout is-orange">eletricista qualificado</div>
+    <div data-hf-id="hf-f5g2" id="co-det" class="world-callout">detector de tensão</div>
+  </div>
+  <script type="module">
+    import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js";
+
+    // Tempos ancorados na narração (assets/transcript.json). Fonte única: tools/cues.json
+    /*CUES*/
+    const C = {
+      "hook": 0.0,
+      "resist": 1.68,
+      "choque": 3.28,
+      "pode": 4,
+      "fios": 4.88,
+      "camadas": 8,
+      "problema": 10.8,
+      "puxa": 12.16,
+      "a34": 12.88,
+      "geladeira": 14.96,
+      "tv": 15.92,
+      "micro": 16.56,
+      "juntos": 17.44,
+      "molhada": 18.72,
+      "ma10": 20.64,
+      "trava": 22.4,
+      "ma50": 23.52,
+      "coracao": 24.4,
+      "c1": 26,
+      "desligar": 27.12,
+      "registro": 29.12,
+      "chave": 30.08,
+      "cortam": 31.2,
+      "disjuntor": 33.04,
+      "c2": 34.72,
+      "conferir": 36,
+      "modelo": 38.16,
+      "tensao": 39.28,
+      "v127": 40,
+      "v220": 41.28,
+      "fio": 42.88,
+      "queimado": 43.28,
+      "instalacao": 45.12,
+      "c3": 46.08,
+      "saber": 47.52,
+      "achou": 48.88,
+      "confirmar": 50.8,
+      "pare": 52.56,
+      "mito": 53.84,
+      "naoMito": 55.68,
+      "ligada": 58.08,
+      "esquenta": 59.68,
+      "vezes": 60.64,
+      "queimar": 62,
+      "norma": 63.49,
+      "exige": 65.81,
+      "circuito": 66.37,
+      "protecao": 68.13,
+      "cta": 69.57,
+      "eletricista": 71.01,
+      "segue": 72.69,
+      "proximo": 74.45,
+      "loop": 77.41,
+      "confira": 78.93,
+      "antes": 80.85,
+      "end": 82.87
+    };
+    /*END-CUES*/
+
+    const W = 1080;
+    const H = 1920;
+    const canvas = document.getElementById("world-canvas");
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
+    renderer.setPixelRatio(1);
+    renderer.setSize(W, H, false);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFShadowMap;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color("#eef1f6");
+    scene.fog = new THREE.Fog("#eef1f6", 14, 34);
+
+    const camera = new THREE.PerspectiveCamera(34, W / H, 0.05, 100);
+
+    // ---------- Luz: chave quente, preenchimento frio ----------
+    scene.add(new THREE.HemisphereLight("#ffffff", "#c9c3b8", 1.35));
+    const key = new THREE.DirectionalLight("#fff4e6", 2.0);
+    key.position.set(4, 7, 6);
+    key.castShadow = true;
+    key.shadow.mapSize.set(2048, 2048);
+    key.shadow.camera.left = -5;
+    key.shadow.camera.right = 5;
+    key.shadow.camera.top = 5;
+    key.shadow.camera.bottom = -5;
+    key.shadow.bias = -0.0006;
+    scene.add(key);
+    const rim = new THREE.DirectionalLight("#dbe8ff", 0.6);
+    rim.position.set(-5, 4, 3);
+    scene.add(rim);
+
+    // ---------- Materiais (paleta ECASI) ----------
+    const mat = (color, extra = {}) =>
+      new THREE.MeshStandardMaterial({ color, flatShading: true, roughness: 0.85, metalness: 0, ...extra });
+    // Azulejo e piso desenhados num canvas (determinístico)
+    function tileTex(base, line, repX, repY) {
+      const cv = document.createElement("canvas");
+      cv.width = cv.height = 256;
+      const g = cv.getContext("2d");
+      g.fillStyle = base;
+      g.fillRect(0, 0, 256, 256);
+      g.strokeStyle = line;
+      g.lineWidth = 5;
+      for (let i = 0; i <= 4; i++) {
+        const p = i * 64;
+        g.beginPath();
+        g.moveTo(p, 0);
+        g.lineTo(p, 256);
+        g.moveTo(0, p);
+        g.lineTo(256, p);
+        g.stroke();
+      }
+      const tx = new THREE.CanvasTexture(cv);
+      tx.wrapS = tx.wrapT = THREE.RepeatWrapping;
+      tx.repeat.set(repX, repY);
+      tx.colorSpace = THREE.SRGBColorSpace;
+      return tx;
+    }
+    function plankTex(base, line, rep) {
+      const cv = document.createElement("canvas");
+      cv.width = cv.height = 256;
+      const g = cv.getContext("2d");
+      g.fillStyle = base;
+      g.fillRect(0, 0, 256, 256);
+      g.strokeStyle = line;
+      g.lineWidth = 4;
+      for (let i = 0; i <= 4; i++) {
+        g.beginPath();
+        g.moveTo(0, i * 64);
+        g.lineTo(256, i * 64);
+        g.stroke();
+        const x = (i * 97) % 256;
+        g.beginPath();
+        g.moveTo(x, i * 64);
+        g.lineTo(x, i * 64 + 64);
+        g.stroke();
+      }
+      const tx = new THREE.CanvasTexture(cv);
+      tx.wrapS = tx.wrapT = THREE.RepeatWrapping;
+      tx.repeat.set(rep, rep);
+      tx.colorSpace = THREE.SRGBColorSpace;
+      return tx;
+    }
+    const M = {
+      wallTile: mat("#ffffff", { map: tileTex("#e8eef3", "#d0dae3", 3.4, 2.6) }),
+      floorTile: mat("#ffffff", { map: tileTex("#dcd7ce", "#c9c2b6", 10, 10) }),
+      wood: mat("#ffffff", { map: plankTex("#d8bf98", "#c2a57a", 3) }),
+      paint: mat("#efe8dc"),
+      steel: mat("#5b6474", { roughness: 0.55 }),
+      steelLight: mat("#c9ced6", { roughness: 0.6 }),
+      navy: mat("#0b1d3f"),
+      navyLight: mat("#142b52"),
+      orange: mat("#f97316"),
+      white: mat("#f8f8f6"),
+      skin: mat("#d9a074"),
+      boot: mat("#2a2f38"),
+      reflect: mat("#dfe3e8", { roughness: 0.35, emissive: "#ffffff", emissiveIntensity: 0.12 }),
+      red: mat("#d32f2f"),
+      green: mat("#3bb273"),
+      yellow: mat("#facc15"),
+      dark: mat("#1f2937"),
+      teal: mat("#2a9d8f"),
+      khaki: mat("#b8a27c"),
+      hair: mat("#3b2a20"),
+      flip: mat("#2563eb"),
+      belt: mat("#4a3426"),
+      glass: new THREE.MeshStandardMaterial({ color: "#cfe8f3", transparent: true, opacity: 0.35, roughness: 0.1, depthWrite: false }),
+      mirror: mat("#bcd7e6", { roughness: 0.15, metalness: 0.2 }),
+      plant: mat("#4f9a5a"),
+      pot: mat("#c56a3c"),
+      card: mat("#fff7ed"),
+    };
+
+    const box = (w, h, d, m) => {
+      const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      return mesh;
+    };
+    const cyl = (r, h, m, seg = 10) => {
+      const mesh = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, seg), m);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      return mesh;
+    };
+
+    // ---------- Cenário: banheiro (esquerda) e corredor com o quadro (direita) ----------
+    const WALL_Z = -1.4; // face da parede do fundo
+    const DIV_X = 1.15; // divisória entre o banheiro e o corredor
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(16, 16), M.floorTile);
+    floor.rotation.x = -Math.PI / 2;
+    floor.receiveShadow = true;
+    scene.add(floor);
+    const hallFloor = new THREE.Mesh(new THREE.PlaneGeometry(6, 8), M.wood);
+    hallFloor.rotation.x = -Math.PI / 2;
+    hallFloor.position.set(DIV_X + 3, 0.002, 2.6);
+    hallFloor.receiveShadow = true;
+    scene.add(hallFloor);
+    const bathWall = box(3.8, 2.8, 0.2, M.wallTile);
+    bathWall.position.set(DIV_X - 1.9, 1.4, WALL_Z - 0.1);
+    scene.add(bathWall);
+    const hallWall = box(3.0, 2.8, 0.2, M.paint);
+    hallWall.position.set(DIV_X + 1.5, 1.4, WALL_Z - 0.1);
+    scene.add(hallWall);
+    const skirting = box(3.0, 0.08, 0.03, M.white);
+    skirting.position.set(DIV_X + 1.5, 0.04, WALL_Z + 0.01);
+    scene.add(skirting);
+    const divider = box(0.1, 2.4, 0.9, M.paint);
+    divider.position.set(DIV_X, 1.2, WALL_Z + 0.45);
+    scene.add(divider);
+    // Box de vidro do chuveiro
+    const glassPanel = box(0.03, 2.0, 1.0, M.glass);
+    glassPanel.castShadow = false;
+    glassPanel.position.set(-1.25, 1.0, WALL_Z + 0.5);
+    scene.add(glassPanel);
+    const glassFrame = box(0.05, 0.04, 1.0, M.steelLight);
+    glassFrame.position.set(-1.25, 2.02, WALL_Z + 0.5);
+    scene.add(glassFrame);
+    // Pia e espelho
+    const SINK_X = 0.68;
+    const pedestal = cyl(0.07, 0.72, M.white, 10);
+    pedestal.position.set(SINK_X, 0.36, WALL_Z + 0.2);
+    const basin = box(0.46, 0.14, 0.36, M.white);
+    basin.position.set(SINK_X, 0.79, WALL_Z + 0.2);
+    const faucet = box(0.04, 0.1, 0.1, M.steelLight);
+    faucet.position.set(SINK_X, 0.9, WALL_Z + 0.07);
+    const mirror = box(0.42, 0.56, 0.02, M.mirror);
+    mirror.position.set(SINK_X, 1.48, WALL_Z + 0.012);
+    scene.add(pedestal, basin, faucet, mirror);
+    // Corredor: quadro, interruptor, vaso e foto na parede
+    const frame = box(0.36, 0.28, 0.02, M.navyLight);
+    frame.position.set(3.25, 1.62, WALL_Z + 0.012);
+    const frameIn = box(0.3, 0.22, 0.022, mat("#f2c48d"));
+    frameIn.position.set(3.25, 1.62, WALL_Z + 0.014);
+    const pot = cyl(0.12, 0.26, M.pot, 8);
+    pot.position.set(3.35, 0.13, WALL_Z + 0.3);
+    const leaves = new THREE.Mesh(new THREE.IcosahedronGeometry(0.22, 0), M.plant);
+    leaves.position.set(3.35, 0.45, WALL_Z + 0.3);
+    leaves.castShadow = true;
+    const sw = box(0.08, 0.12, 0.02, M.white);
+    sw.position.set(1.5, 1.2, WALL_Z + 0.012);
+    scene.add(frame, frameIn, pot, leaves, sw);
+
+    // ---------- Chuveiro elétrico ----------
+    const SH = new THREE.Vector3(0, 2.1, WALL_Z + 0.28); // centro do corpo
+    const inlet = cyl(0.025, 0.28, M.steelLight, 8);
+    inlet.rotation.x = Math.PI / 2;
+    inlet.position.set(0, 2.24, WALL_Z + 0.14);
+    scene.add(inlet);
+    const shellMat = new THREE.MeshStandardMaterial({ color: "#f8f8f6", flatShading: true, roughness: 0.5, transparent: true, opacity: 1 });
+    const shell = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.15, 0.24, 14), shellMat);
+    shell.position.copy(SH);
+    shell.castShadow = true;
+    scene.add(shell);
+    const plate = cyl(0.17, 0.025, M.steelLight, 14);
+    plate.position.set(SH.x, SH.y - 0.13, SH.z);
+    scene.add(plate);
+    // Chave de temperatura (inverno / verão) na lateral do chuveiro
+    const knob = new THREE.Group();
+    const knobLever = box(0.03, 0.03, 0.09, M.dark);
+    knobLever.position.z = 0.04;
+    knob.add(knobLever);
+    knob.position.set(SH.x + 0.12, SH.y - 0.07, SH.z + 0.1);
+    scene.add(knob);
+    // Resistência em espiral (vista no raio-x)
+    const coilPts = [];
+    for (let k = 0; k <= 60; k++) {
+      const a = k * 0.42;
+      coilPts.push(new THREE.Vector3(SH.x + Math.cos(a) * 0.1, SH.y - 0.08 + (k / 60) * 0.14, SH.z + Math.sin(a) * 0.1));
+    }
+    const coilMat = new THREE.MeshStandardMaterial({ color: "#c2410c", emissive: "#ff5a1f", emissiveIntensity: 0, flatShading: true });
+    const coil = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(coilPts), 200, 0.011, 5), coilMat);
+    scene.add(coil);
+    const COIL_C = new THREE.Vector3(SH.x, SH.y - 0.01, SH.z);
+    // Faíscas da resistência queimando (direções fixas)
+    const sparks = [];
+    for (let i = 0; i < 16; i++) {
+      const a = i * 2.399;
+      const dir = new THREE.Vector3(Math.cos(a), 0.4 + ((i * 0.37) % 1) * 0.9 - 0.6, Math.sin(a)).normalize();
+      const m = new THREE.Mesh(new THREE.BoxGeometry(0.016, 0.016, 0.05), new THREE.MeshBasicMaterial({ color: i % 3 ? "#fde047" : "#fb923c", transparent: true }));
+      m.userData = { dir, speed: 0.28 + (i % 5) * 0.06 };
+      scene.add(m);
+      sparks.push(m);
+    }
+    // Registro na parede
+    const VALVE = new THREE.Vector3(0, 1.2, WALL_Z + 0.025);
+    const valve = cyl(0.045, 0.05, M.steelLight, 10);
+    valve.rotation.x = Math.PI / 2;
+    valve.position.copy(VALVE);
+    scene.add(valve);
+    const valveHandle = box(0.14, 0.03, 0.03, M.steelLight);
+    valveHandle.position.set(0, 1.2, WALL_Z + 0.06);
+    scene.add(valveHandle);
+    // Água (só na explicação do problema)
+    const drops = [];
+    const dropMat = new THREE.MeshStandardMaterial({ color: "#7cc3e6", transparent: true, opacity: 0.55, depthWrite: false });
+    for (let i = 0; i < 7; i++) {
+      for (let j = 0; j < 4; j++) {
+        const d = new THREE.Mesh(new THREE.BoxGeometry(0.012, 0.16, 0.012), dropMat);
+        d.userData = { x: SH.x + Math.cos(i * 0.9) * 0.1, z: SH.z + Math.sin(i * 0.9) * 0.1, off: (i * 0.37 + j * 0.25) % 1 };
+        scene.add(d);
+        drops.push(d);
+      }
+    }
+
+    // ---------- Quadro de luz (corredor) ----------
+    const QD = new THREE.Vector3(2.25, 1.55, WALL_Z + 0.08);
+    const enclosure = box(0.62, 0.82, 0.16, M.steelLight);
+    enclosure.position.copy(QD);
+    scene.add(enclosure);
+    const innerPlate = box(0.54, 0.72, 0.01, M.white);
+    innerPlate.position.set(QD.x, QD.y, QD.z + 0.08);
+    scene.add(innerPlate);
+    const rail = box(0.5, 0.025, 0.02, M.steel);
+    rail.position.set(QD.x, 1.6, QD.z + 0.09);
+    scene.add(rail);
+    const BR_Y = 1.6;
+    const BR_Z = QD.z + 0.14;
+    const L = QD.x - 0.23;
+    // DR (2 módulos) com botão de teste
+    const DR_X = L + 0.07;
+    const drBody = box(0.13, 0.16, 0.09, M.white);
+    drBody.position.set(DR_X, BR_Y, BR_Z - 0.02);
+    const drLever = box(0.03, 0.05, 0.03, M.navy);
+    drLever.position.set(DR_X - 0.03, BR_Y + 0.035, BR_Z + 0.04);
+    const drBtn = box(0.026, 0.026, 0.02, M.yellow);
+    drBtn.position.set(DR_X + 0.035, BR_Y - 0.04, BR_Z + 0.035);
+    const drStripe = box(0.13, 0.02, 0.092, mat("#2563eb"));
+    drStripe.position.set(DR_X, BR_Y - 0.072, BR_Z - 0.02);
+    scene.add(drBody, drLever, drBtn, drStripe);
+    // Disjuntores: dois comuns + o bipolar do chuveiro
+    const breakers = [];
+    for (const [i, x] of [L + 0.17, L + 0.245, L + 0.33, L + 0.405].entries()) {
+      const body = box(0.065, 0.16, 0.09, M.white);
+      body.position.set(x, BR_Y, BR_Z - 0.02);
+      const lever = box(0.024, 0.05, 0.03, i >= 2 ? M.navy : M.dark);
+      lever.position.set(x, BR_Y + 0.035, BR_Z + 0.04);
+      scene.add(body, lever);
+      breakers.push({ body, lever, x });
+    }
+    const POLE1 = breakers[2];
+    const POLE2 = breakers[3];
+    const tieBar = box(0.1, 0.014, 0.018, M.orange);
+    scene.add(tieBar);
+
+    // ---------- Fiação: F1, F2 e terra, do chuveiro ao quadro ----------
+    const W_Z = WALL_Z + 0.03;
+    function wirePath(pts) {
+      const path = new THREE.CurvePath();
+      for (let i = 0; i < pts.length - 1; i++) path.add(new THREE.LineCurve3(new THREE.Vector3(...pts[i]), new THREE.Vector3(...pts[i + 1])));
+      return path;
+    }
+    const WIRES = [
+      { id: 1, color: "#1f2937", pts: [[-0.035, 2.24, SH.z], [-0.035, 2.24, W_Z], [-0.035, 2.66, W_Z], [POLE1.x, 2.66, W_Z], [POLE1.x, 1.96, W_Z]] },
+      { id: 2, color: "#d32f2f", pts: [[0.035, 2.24, SH.z], [0.035, 2.24, W_Z], [0.035, 2.59, W_Z], [POLE2.x, 2.59, W_Z], [POLE2.x, 1.96, W_Z]] },
+      { id: 0, color: "#3bb273", pts: [[0, 2.22, SH.z + 0.02], [0, 2.18, W_Z], [0.11, 2.18, W_Z], [0.11, 2.52, W_Z], [QD.x + 0.25, 2.52, W_Z], [QD.x + 0.25, 1.96, W_Z]] },
+    ];
+    for (const w of WIRES) {
+      w.path = wirePath(w.pts);
+      w.mat = new THREE.MeshStandardMaterial({ color: w.color, emissive: "#ff7a1a", emissiveIntensity: 0, flatShading: true });
+      w.mesh = new THREE.Mesh(new THREE.TubeGeometry(w.path, 200, 0.016, 6, false), w.mat);
+      w.mesh.castShadow = true;
+      scene.add(w.mesh);
+      w.pulses = [];
+      if (w.id) {
+        for (let k = 0; k < 11; k++) {
+          const p = new THREE.Mesh(new THREE.SphereGeometry(0.026, 8, 6), new THREE.MeshBasicMaterial({ color: "#fde047" }));
+          scene.add(p);
+          w.pulses.push(p);
+        }
+      }
+    }
+    const duct = box(QD.x + 0.25 + 0.1, 0.16, 0.035, mat("#e8e6e1"));
+    duct.position.set((QD.x + 0.25) / 2, 2.62, WALL_Z + 0.005);
+    scene.add(duct);
+    // Fio queimado perto do chuveiro (camada 2)
+    const BURN = new THREE.Vector3(0.035, 2.34, W_Z);
+    const burnMat = mat("#2b1a12", { emissive: "#7c2d12", emissiveIntensity: 0.25 });
+    const burn = box(0.05, 0.1, 0.05, burnMat);
+    burn.position.copy(BURN);
+    scene.add(burn);
+
+    // ---------- Detector de tensão (na mão do eletricista) ----------
+    function makeDetector() {
+      const g = new THREE.Group();
+      const body = box(0.04, 0.17, 0.04, M.yellow);
+      const tip = cyl(0.007, 0.07, M.steel, 6);
+      tip.position.y = -0.12;
+      const led = box(0.03, 0.03, 0.042, new THREE.MeshBasicMaterial({ color: "#22c55e" }));
+      led.position.y = 0.06;
+      g.add(body, tip, led);
+      return g;
+    }
+
+    // ---------- Pessoas low-poly ----------
+    // kind "morador": camiseta, bermuda e chinelo. kind "eletricista": colete com faixas, cinto, capacete e óculos.
+    function makePerson(kind, logoTex) {
+      const pro = kind === "eletricista";
+      const g = new THREE.Group();
+      const hips = new THREE.Group();
+      hips.position.y = 0.9;
+      g.add(hips);
+      const legs = [];
+      for (const s of [-1, 1]) {
+        const leg = new THREE.Group();
+        leg.position.set(s * 0.13, 0, 0);
+        if (pro) {
+          const thigh = box(0.22, 0.82, 0.26, M.navy);
+          thigh.position.y = -0.41;
+          const boot = box(0.24, 0.13, 0.36, M.boot);
+          boot.position.set(0, -0.84, 0.05);
+          leg.add(thigh, boot);
+        } else {
+          const shorts = box(0.24, 0.38, 0.28, M.khaki);
+          shorts.position.y = -0.19;
+          const shin = box(0.17, 0.48, 0.19, M.skin);
+          shin.position.y = -0.6;
+          const sole = box(0.22, 0.035, 0.34, M.flip);
+          sole.position.set(0, -0.88, 0.05);
+          const strap = box(0.18, 0.03, 0.05, M.flip);
+          strap.position.set(0, -0.85, 0.1);
+          leg.add(shorts, shin, sole, strap);
+        }
+        hips.add(leg);
+        legs.push(leg);
+      }
+      const torso = box(0.56, 0.68, 0.32, pro ? M.navyLight : M.teal);
+      torso.position.y = 0.34;
+      hips.add(torso);
+      if (pro) {
+        // Colete aberto na frente: painéis, laterais, alças e faixas refletivas
+        const V = new THREE.Group();
+        V.position.y = 0.36;
+        hips.add(V);
+        const back = box(0.6, 0.56, 0.035, M.orange);
+        back.position.z = -0.175;
+        V.add(back);
+        for (const s of [-1, 1]) {
+          const front = box(0.2, 0.56, 0.035, M.orange);
+          front.position.set(s * 0.2, 0, 0.175);
+          const side = box(0.035, 0.5, 0.36, M.orange);
+          side.position.set(s * 0.3, -0.03, 0);
+          const strap = box(0.15, 0.035, 0.38, M.orange);
+          strap.position.set(s * 0.19, 0.3, 0);
+          const vStripe = box(0.05, 0.57, 0.04, M.reflect);
+          vStripe.position.set(s * 0.2, 0, 0.18);
+          const vBack = box(0.05, 0.57, 0.04, M.reflect);
+          vBack.position.set(s * 0.255, 0, -0.18);
+          V.add(front, side, strap, vStripe, vBack);
+          for (const y of [-0.17, -0.04]) {
+            const hf = box(0.205, 0.045, 0.04, M.reflect);
+            hf.position.set(s * 0.2, y, 0.18);
+            const hs = box(0.04, 0.045, 0.37, M.reflect);
+            hs.position.set(s * 0.305, y, 0);
+            V.add(hf, hs);
+          }
+        }
+        for (const y of [-0.17, -0.04]) {
+          const hb = box(0.61, 0.045, 0.04, M.reflect);
+          hb.position.set(0, y, -0.18);
+          V.add(hb);
+        }
+        // Símbolo do Grupo ECASI nas costas, numa etiqueta branca
+        const patch = box(0.4, 0.27, 0.012, M.white);
+        patch.position.set(0, 0.13, -0.196);
+        V.add(patch);
+        const logo = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 0.3), new THREE.MeshBasicMaterial({ map: logoTex, transparent: true }));
+        logo.position.set(0, 0.13, -0.203);
+        logo.rotation.y = Math.PI;
+        V.add(logo);
+        // Bolso no peito com caneta
+        const pocket = box(0.12, 0.1, 0.02, mat("#ea6a0c"));
+        pocket.position.set(-0.2, 0.1, 0.2);
+        const pen = cyl(0.012, 0.09, M.yellow, 6);
+        pen.position.set(-0.17, 0.16, 0.205);
+        V.add(pocket, pen);
+        // Cinto de ferramentas
+        const beltBand = box(0.62, 0.07, 0.36, M.belt);
+        beltBand.position.y = 0.03;
+        const pouch = box(0.1, 0.16, 0.12, M.belt);
+        pouch.position.set(0.33, -0.06, 0.06);
+        const h1 = cyl(0.014, 0.12, M.yellow, 6);
+        h1.position.set(0.32, 0.06, 0.04);
+        const h2 = cyl(0.014, 0.1, M.red, 6);
+        h2.position.set(0.345, 0.05, 0.09);
+        hips.add(beltBand, pouch, h1, h2);
+      } else {
+        const hem = box(0.58, 0.06, 0.34, mat("#238579"));
+        hem.position.y = 0.03;
+        hips.add(hem);
+      }
+      const arms = [];
+      const hands = [];
+      for (const s of [-1, 1]) {
+        const arm = new THREE.Group();
+        arm.position.set(s * 0.36, 0.64, 0);
+        if (pro) {
+          const upper = box(0.16, 0.6, 0.18, M.navyLight);
+          upper.position.y = -0.3;
+          arm.add(upper);
+        } else {
+          const sleeve = box(0.18, 0.22, 0.2, M.teal);
+          sleeve.position.y = -0.11;
+          const fore = box(0.14, 0.42, 0.15, M.skin);
+          fore.position.y = -0.4;
+          arm.add(sleeve, fore);
+        }
+        const hand = box(0.14, 0.14, 0.14, M.skin);
+        hand.position.y = -0.66;
+        arm.add(hand);
+        hips.add(arm);
+        arms.push(arm);
+        hands.push(hand);
+      }
+      const head = new THREE.Mesh(new THREE.IcosahedronGeometry(0.19, 0), M.skin);
+      head.position.y = 0.9;
+      head.castShadow = true;
+      hips.add(head);
+      if (pro) {
+        const helmet = new THREE.Mesh(new THREE.SphereGeometry(0.215, 8, 4, 0, Math.PI * 2, 0, Math.PI / 2), M.white);
+        helmet.position.y = 0.95;
+        helmet.castShadow = true;
+        const brim = cyl(0.25, 0.03, M.white, 10);
+        brim.position.set(0, 0.95, 0.03);
+        const glasses = box(0.27, 0.05, 0.03, mat("#1f2937", { roughness: 0.3 }));
+        glasses.position.set(0, 0.9, 0.17);
+        hips.add(helmet, brim, glasses);
+      } else {
+        const hair = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 4, 0, Math.PI * 2, 0, Math.PI / 2), M.hair);
+        hair.position.set(0, 0.94, -0.02);
+        hair.scale.set(1, 0.7, 1);
+        hair.castShadow = true;
+        hips.add(hair);
+      }
+      g.userData = { hips, arms, hands, legs };
+      return g;
+    }
+
+    // ---------- Utilidades de tempo ----------
+    const clamp01 = (x) => Math.min(1, Math.max(0, x));
+    const prog = (t, a, b) => clamp01((t - a) / (b - a));
+    const easeInOut = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+    const easeOut = (x) => 1 - Math.pow(1 - x, 3);
+    const easeOutExpo = (x) => (x >= 1 ? 1 : 1 - Math.pow(2, -10 * x));
+    const lerp = (a, b, x) => a + (b - a) * x;
+    const lerp3 = (a, b, x) => [lerp(a[0], b[0], x), lerp(a[1], b[1], x), lerp(a[2], b[2], x)];
+    const spring = (x) => (x <= 0 ? 0 : 1 - Math.exp(-6 * x) * Math.cos(9 * x));
+    function track(t, keys) {
+      if (t <= keys[0][0]) return keys[0][1];
+      for (let i = 0; i < keys.length - 1; i++) {
+        const [ta, va] = keys[i];
+        const [tb, vb] = keys[i + 1];
+        if (t <= tb) return tb === ta ? vb : lerp(va, vb, easeInOut((t - ta) / (tb - ta)));
+      }
+      return keys[keys.length - 1][1];
+    }
+    function track3(t, keys) {
+      if (t <= keys[0][0]) return keys[0][1];
+      for (let i = 0; i < keys.length - 1; i++) {
+        const [ta, va] = keys[i];
+        const [tb, vb] = keys[i + 1];
+        if (t <= tb) return lerp3(va, vb, easeInOut((t - ta) / Math.max(1e-6, tb - ta)));
+      }
+      return keys[keys.length - 1][1];
+    }
+
+    // ---------- Montagem (depois de carregar o símbolo da ECASI) ----------
+    function build(logoTex) {
+      const morador = makePerson("morador");
+      const MPOS = [-0.6, 0, WALL_Z + 0.62];
+      morador.position.set(...MPOS);
+      morador.rotation.y = Math.PI / 2 - 0.35; // de lado para a câmera, virado para o chuveiro
+      scene.add(morador);
+      const [armReach, armHold] = morador.userData.arms;
+      // Embalagem da resistência nova na outra mão
+      const pkg = new THREE.Group();
+      const pkgBox = box(0.16, 0.22, 0.06, M.card);
+      const pkgBand = box(0.162, 0.06, 0.062, M.orange);
+      pkgBand.position.y = 0.04;
+      pkg.add(pkgBox, pkgBand);
+      pkg.position.set(0, -0.8, 0.04);
+      armHold.add(pkg);
+
+      const elet = makePerson("eletricista", logoTex);
+      scene.add(elet);
+      const det = makeDetector();
+      det.position.set(0, -0.8, 0.03);
+      det.rotation.x = -0.4;
+      elet.userData.arms[1].add(det);
+
+      // Caminho da corrente: bolinha vermelha da mão ao coração
+      const spark = new THREE.Mesh(new THREE.SphereGeometry(0.045, 10, 8), new THREE.MeshBasicMaterial({ color: "#ef4444" }));
+      const sparkHalo = new THREE.Mesh(
+        new THREE.SphereGeometry(0.09, 12, 10),
+        new THREE.MeshBasicMaterial({ color: "#ef4444", transparent: true, opacity: 0.3, depthWrite: false }),
+      );
+      scene.add(spark, sparkHalo);
+
+      // ---------- Câmera: plano-sequência por quadros-chave ----------
+      // p = posição, q = alvo; z = afastamento ao longo de (p - q), 1,7 por padrão
+      const CAM_OPEN = { p: [2.3, 1.95, 3.7], q: [-0.2, 1.5, -1.0] };
+      const QD_Q = (dy = 0) => [QD.x - 0.3, 1.62 + dy, -1.32];
+      const SHOWER_CLOSE = { p: [0.75, 2.05, 0.15], q: [0.0, 2.0, -1.12], z: 1.5 };
+      // Chuveiro mais baixo no quadro, para aparecer abaixo do painel de comparação do mito
+      const SHOWER_LOW = { p: [0.75, 2.6, 0.15], q: [0.0, 2.52, -1.12], z: 1.6 };
+      const CTA_CAM = { p: [2.4, 3.5, 7.6], q: [0.2, 2.85, -0.6], z: 1.0 };
+      const K = [
+        { t: C.hook, ...CAM_OPEN },
+        { t: C.pode, p: [2.0, 1.85, 3.2], q: [-0.15, 1.4, -1.0] },
+        { t: C.camadas, p: [3.8, 2.3, 6.6], q: [1.05, 1.55, -1.0], z: 1.1 },
+        { t: C.problema + 0.9, ...SHOWER_CLOSE },
+        { t: C.molhada - 0.4, p: [0.85, 2.0, 0.3], q: [0.0, 1.98, -1.12], z: 1.5 },
+        { t: C.molhada + 0.6, p: [1.7, 1.75, 2.2], q: [-0.35, 1.45, -0.95] },
+        { t: C.coracao + 0.6, p: [1.5, 1.65, 1.9], q: [-0.45, 1.4, -0.9] },
+        { t: C.c1 + 0.8, p: [1.25, 1.75, 1.3], q: [0.2, 1.68, -1.2], z: 1.35 },
+        { t: C.cortam + 0.4, p: [1.15, 1.72, 1.15], q: [0.2, 1.68, -1.2], z: 1.35 },
+        { t: C.disjuntor + 0.3, p: [QD.x + 0.55, 1.75, 0.9], q: QD_Q() },
+        { t: C.c2 - 0.2, p: [QD.x + 0.5, 1.72, 0.8], q: QD_Q(-0.02) },
+        { t: C.conferir + 0.6, p: [1.3, 1.7, 1.7], q: [-0.3, 1.55, -0.9], z: 1.6 },
+        { t: C.v220 + 0.8, p: [1.2, 1.7, 1.5], q: [-0.3, 1.55, -0.9], z: 1.6 },
+        { t: C.fio + 0.5, p: [0.65, 2.35, 0.1], q: [0.04, 2.3, -1.3], z: 1.25 },
+        { t: C.instalacao + 0.6, p: [0.7, 2.3, 0.2], q: [0.04, 2.3, -1.3], z: 1.25 },
+        { t: C.c3 + 0.8, p: [2.0, 1.8, 2.9], q: [-0.3, 1.3, -0.9], z: 1.4 },
+        { t: C.pare + 0.6, p: [1.8, 1.75, 2.6], q: [-0.35, 1.3, -0.9], z: 1.4 },
+        { t: C.mito + 0.6, p: [3.3, 2.3, 5.6], q: [0.6, 1.75, -1.2], z: 1.2 },
+        { t: C.ligada + 0.4, ...SHOWER_LOW },
+        { t: C.queimar + 0.9, p: [0.85, 2.6, 0.3], q: [0.0, 2.52, -1.12], z: 1.6 },
+        { t: C.norma + 0.8, p: [QD.x + 0.45, 1.72, 0.95], q: QD_Q(-0.02) },
+        { t: C.protecao + 0.6, p: [QD.x + 0.4, 1.7, 0.85], q: QD_Q(-0.02) },
+        { t: C.cta + 0.7, ...CTA_CAM },
+        { t: C.proximo + 1.0, p: [2.2, 3.45, 7.2], q: [0.2, 2.85, -0.6], z: 1.0 },
+        { t: C.loop + 0.4, p: [3.0, 2.1, 5.0], q: [0.1, 1.4, -1.0], z: 1.3 },
+        { t: C.end, ...CAM_OPEN },
+      ].map((k) => {
+        const z = k.z ?? 1.7;
+        return { t: k.t, q: k.q, p: k.q.map((q, i) => q + (k.p[i] - q) * z) };
+      });
+      function cameraAt(t) {
+        if (t <= K[0].t) return K[0];
+        for (let i = 0; i < K.length - 1; i++) {
+          const a = K[i];
+          const b = K[i + 1];
+          if (t <= b.t) {
+            const x = easeInOut((t - a.t) / (b.t - a.t));
+            return { p: lerp3(a.p, b.p, x), q: lerp3(a.q, b.q, x) };
+          }
+        }
+        return K[K.length - 1];
+      }
+
+      // Disjuntor do chuveiro: ligado, exceto da camada 1 até a resistência errada ser ligada (mito)
+      const LEV = [
+        [0, 1],
+        [C.disjuntor + 0.25, 1],
+        [C.disjuntor + 0.5, 0],
+        [C.ligada - 0.35, 0],
+        [C.ligada - 0.1, 1],
+      ];
+
+      // Eletricista: entra de costas (mostra o símbolo no colete), vira para a câmera e sai pelo corredor no loop
+      const E0 = [1.9, 0, 2.2];
+      const E1 = [0.5, 0, WALL_Z + 1.0];
+      const E2 = [3.1, 0, 0.7];
+      const E_IN = [C.cta, C.eletricista + 0.9];
+      const E_OUT = [C.loop + 0.3, C.loop + 2.6];
+      const yawIn = Math.atan2(E1[0] - E0[0], E1[2] - E0[2]);
+      const yawCam = 0.32;
+      const yawOut = Math.atan2(E2[0] - E1[0], E2[2] - E1[2]);
+
+      // ---------- Callouts presos a pontos 3D ----------
+      const svg = document.getElementById("world-lines");
+      const SVGNS = "http://www.w3.org/2000/svg";
+      function worldOf(obj, x, y, z) {
+        obj.updateMatrixWorld(true);
+        return obj.localToWorld(new THREE.Vector3(x, y, z)).toArray();
+      }
+      const handOf = (i) => worldOf(morador.userData.hands[i], 0, 0, 0);
+      const BRK = () => [(POLE1.x + POLE2.x) / 2, BR_Y + 0.07, BR_Z + 0.04];
+      const CTA_BOX = { top: 1300, bottom: 1600 };
+      const CALLOUTS = [
+        { id: "co-res", a: C.resist + 0.2, b: C.pode, at: () => [SH.x + 0.1, SH.y - 0.04, SH.z], dx: 90, dy: -110, top: 700 },
+        { id: "co-live", a: C.fios, b: C.camadas + 1.2, at: () => [1.2, 2.66, W_Z], dx: 40, dy: 170 },
+        { id: "co-mao", a: C.molhada, b: C.ma10, at: () => handOf(0), dx: 120, dy: 190 },
+        { id: "co-trava", a: C.trava, b: C.ma50, at: () => worldOf(armReach, 0, -0.2, 0), dx: 140, dy: 160 },
+        { id: "co-heart", a: C.coracao, b: C.c1, at: () => spark.position.toArray(), dx: 150, dy: 140 },
+        { id: "co-reg", a: C.registro, b: C.disjuntor - 0.3, at: () => VALVE.toArray(), dx: 90, dy: 150 },
+        { id: "co-knob", a: C.chave, b: C.disjuntor - 0.3, at: () => worldOf(knobLever, 0, 0, 0.04), dx: 90, dy: -150 },
+        { id: "co-brk", a: C.disjuntor - 0.1, b: C.c2, at: BRK, dx: -120, dy: -190 },
+        { id: "co-off", a: C.disjuntor + 0.7, b: C.c2, at: () => [POLE2.x, 2.25, W_Z], dx: 70, dy: -40 },
+        { id: "co-pkg", a: C.conferir + 0.4, b: C.modelo, at: () => worldOf(pkgBox, 0, 0.11, 0), dx: 130, dy: -150 },
+        { id: "co-model", a: C.modelo, b: C.fio - 0.3, at: () => worldOf(pkgBox, 0, 0.05, 0.03), dx: 130, dy: -170 },
+        { id: "co-volt", a: C.tensao, b: C.fio - 0.3, at: () => worldOf(pkgBand, 0, 0, 0.03), dx: -150, dy: -40 },
+        { id: "co-burn", a: C.fio + 0.2, b: C.c3, at: () => BURN.toArray(), dx: 120, dy: 170 },
+        { id: "co-127", top: 690, a: C.mito + 0.6, b: C.esquenta, at: () => [SH.x + 0.1, SH.y - 0.03, SH.z], dx: 110, dy: 160 },
+        { id: "co-220", top: 690, a: C.ligada + 0.3, b: C.esquenta, at: () => [-0.035, 2.5, W_Z], dx: -100, dy: -60 },
+        { id: "co-hot", top: 690, a: C.esquenta + 0.1, b: C.queimar, at: () => COIL_C.toArray(), dx: 120, dy: 170 },
+        { id: "co-burnt", top: 690, a: C.queimar + 0.3, b: C.norma, at: () => COIL_C.toArray(), dx: 120, dy: 170 },
+        { id: "co-circ", top: 690, a: C.circuito, b: C.cta, at: BRK, dx: 110, dy: 330 },
+        { id: "co-dr", top: 860, a: C.protecao, b: C.cta, at: () => [DR_X, BR_Y + 0.06, BR_Z + 0.04], dx: -100, dy: 130 },
+        { id: "co-elet", ...CTA_BOX, a: C.eletricista + 0.4, b: C.loop, at: () => worldOf(elet.userData.hips, 0, 1.05, 0), dx: 110, dy: -60 },
+        { id: "co-det", ...CTA_BOX, a: C.segue + 0.3, b: C.loop, at: () => worldOf(det, 0, 0.06, 0), dx: -110, dy: 80 },
+      ];
+      for (const c of CALLOUTS) {
+        c.el = document.getElementById(c.id);
+        c.bw = c.el.offsetWidth;
+        c.bh = c.el.offsetHeight;
+        c.line = document.createElementNS(SVGNS, "line");
+        c.line.setAttribute("stroke", "#0b1d3f");
+        c.line.setAttribute("stroke-width", "3");
+        c.dot = document.createElementNS(SVGNS, "circle");
+        c.dot.setAttribute("r", "8");
+        c.dot.setAttribute("fill", "#f97316");
+        c.dot.setAttribute("stroke", "#ffffff");
+        c.dot.setAttribute("stroke-width", "3");
+        svg.append(c.line, c.dot);
+      }
+      const proj = new THREE.Vector3();
+      function placeCallouts(t) {
+        for (const c of CALLOUTS) {
+          const fadeIn = prog(t, c.a, c.a + 0.25);
+          const fadeOut = 1 - prog(t, c.b - 0.2, c.b);
+          const o = Math.min(fadeIn, fadeOut);
+          if (o <= 0.001) {
+            c.el.style.opacity = "0";
+            c.line.setAttribute("opacity", "0");
+            c.dot.setAttribute("opacity", "0");
+            continue;
+          }
+          proj.fromArray(c.at()).project(camera);
+          const px = (proj.x * 0.5 + 0.5) * W;
+          const py = (-proj.y * 0.5 + 0.5) * H;
+          // Caixa deslocada do ponto, mantida dentro da faixa segura (abaixo dos cards e acima da legenda)
+          let bx = px + c.dx - (c.dx < 0 ? c.bw : 0);
+          let by = py + c.dy - c.bh / 2;
+          bx = Math.min(W - 54 - c.bw, Math.max(54, bx));
+          by = Math.min((c.bottom ?? 1160) - c.bh, Math.max(c.top ?? 330, by));
+          const lift = 14 * (1 - easeOutExpo(fadeIn));
+          c.el.style.opacity = String(o);
+          c.el.style.transform = `translate(${bx}px, ${by + lift}px)`;
+          const lx = bx + (c.dx < 0 ? c.bw : 0);
+          const ly = by + c.bh / 2;
+          const grow = easeOut(fadeIn);
+          c.line.setAttribute("x1", String(px));
+          c.line.setAttribute("y1", String(py));
+          c.line.setAttribute("x2", String(lerp(px, lx, grow)));
+          c.line.setAttribute("y2", String(lerp(py, ly, grow)));
+          c.line.setAttribute("opacity", String(o));
+          c.dot.setAttribute("cx", String(px));
+          c.dot.setAttribute("cy", String(py));
+          c.dot.setAttribute("opacity", String(o));
+        }
+      }
+
+      // ---------- Render de um quadro a partir de t ----------
+      const tmp = new THREE.Vector3();
+      return function render(t) {
+        const cam = cameraAt(t);
+        camera.position.fromArray(cam.p);
+        camera.lookAt(cam.q[0], cam.q[1], cam.q[2]);
+        camera.updateMatrixWorld(true);
+
+        // Disjuntor bipolar do chuveiro
+        const lev = track(t, LEV);
+        for (const P of [POLE1, POLE2]) P.lever.position.y = BR_Y + lerp(-0.035, 0.035, lev);
+        tieBar.position.set((POLE1.x + POLE2.x) / 2, POLE1.lever.position.y, BR_Z + 0.06);
+        const live = lev > 0.5;
+
+        // Fios energizados: brilho + pulsos andando do quadro para o chuveiro
+        for (const w of WIRES) {
+          if (!w.id) continue;
+          w.mat.emissiveIntensity = live ? 0.55 : 0;
+          w.pulses.forEach((p, k) => {
+            p.visible = live;
+            if (live) {
+              w.path.getPointAt(1 - ((k / w.pulses.length + t * 0.32) % 1), tmp);
+              p.position.copy(tmp);
+            }
+          });
+        }
+
+        // Registro fecha no início e reabre no fim (para o loop emendar)
+        const closed = track(t, [[0, 0], [0.15, 0], [0.75, 1], [C.loop + 1.0, 1], [C.end - 0.3, 0]]);
+        valveHandle.rotation.z = (Math.PI / 2) * closed;
+        // Chave de temperatura gira quando é citada
+        knob.rotation.y = track(t, [[C.chave, 0], [C.chave + 0.35, 0.9], [C.cortam + 0.4, 0.9], [C.cortam + 0.8, 0]]);
+
+        // Raio-x do chuveiro: casca fica transparente e mostra a resistência
+        const xray = track(t, [
+          [0, 1], [C.resist, 1], [C.resist + 0.4, 0.28], [C.pode, 0.28], [C.pode + 0.4, 1],
+          [C.problema, 1], [C.problema + 0.5, 0.25], [C.c1 - 0.4, 0.25], [C.c1, 1],
+          [C.mito + 0.4, 1], [C.mito + 0.9, 0.25], [C.norma, 0.25], [C.norma + 0.5, 1],
+        ]);
+        shellMat.opacity = xray;
+        shellMat.depthWrite = xray > 0.98;
+
+        // Resistência: brilha com energia; no mito superaquece, queima e é trocada depois
+        const over = prog(t, C.esquenta - 0.2, C.queimar);
+        const burnt = t >= C.queimar + 0.05 && t < C.norma + 0.3;
+        if (burnt) {
+          coilMat.color.set("#1c1917");
+          coilMat.emissiveIntensity = 0;
+        } else {
+          coilMat.color.set(over > 0 && t < C.queimar + 0.05 ? "#f59e0b" : "#c2410c");
+          coilMat.emissive.set(over > 0.3 && t < C.queimar + 0.05 ? "#fde047" : "#ff5a1f");
+          coilMat.emissiveIntensity = live ? 0.9 + 0.25 * Math.sin(t * 9) + 2.2 * over * (t < C.queimar + 0.05 ? 1 : 0) : 0;
+        }
+        const shake = t >= C.esquenta && t < C.queimar + 0.05 ? 0.004 * Math.sin(t * 61) * over : 0;
+        coil.position.set(shake, 0, -shake);
+        // Faíscas: estouram em "queimar"
+        const sp = t - C.queimar;
+        for (const s of sparks) {
+          const on = sp >= 0 && sp < 0.9;
+          s.visible = on;
+          if (on) {
+            const d = s.userData.speed * Math.sqrt(sp);
+            s.position.copy(COIL_C).addScaledVector(s.userData.dir, d);
+            s.position.y -= 0.25 * sp * sp;
+            s.lookAt(COIL_C);
+            s.material.opacity = 1 - sp / 0.9;
+          }
+        }
+
+        // Água só enquanto o problema é explicado
+        const water = t >= C.problema + 0.3 && t < C.c1 - 0.2;
+        for (const d of drops) {
+          d.visible = water;
+          if (water) {
+            const f = (d.userData.off + t * 1.8) % 1;
+            d.position.set(d.userData.x, SH.y - 0.15 - f * 2.0, d.userData.z);
+          }
+        }
+
+        // Fio queimado: só na camada 2
+        const burnK = t < C.fio - 0.2 || t >= C.c3 + 0.5 ? 0 : spring(prog(t, C.fio - 0.2, C.fio + 0.6)) * (1 - prog(t, C.c3, C.c3 + 0.5));
+        burn.visible = burnK > 0.01;
+        burn.scale.setScalar(Math.max(0.01, burnK));
+        burnMat.emissiveIntensity = 0.25 + 0.2 * Math.sin(t * 7);
+
+        // Morador: braço que alcança (registro no início, chuveiro no gancho e no problema)
+        const reach = track(t, [
+          [0, 0.47], [0.9, 0.47], [C.resist, 0.47], [C.choque, 1], [C.pode + 0.6, 0.1],
+          [C.molhada - 0.7, 0.1], [C.molhada, 1], [C.c1, 1], [C.c1 + 0.6, 0],
+          [C.loop, 0], [C.end - 0.5, 0.47],
+        ]);
+        armReach.rotation.set(-2.15 * reach, 0, 0.12 * reach);
+        const hold = track(t, [[C.conferir - 0.5, 0], [C.conferir + 0.2, 0.75], [C.pare - 0.2, 0.75], [C.pare + 0.4, 0]]);
+        armHold.rotation.set(-1.25 * hold, 0, 0);
+        const pkgK = t >= C.conferir - 0.4 && t < C.pare + 0.4 ? spring(prog(t, C.conferir - 0.4, C.conferir + 0.5)) * (1 - easeOut(prog(t, C.pare, C.pare + 0.4))) : 0;
+        pkg.visible = pkgK > 0.01;
+        pkg.scale.setScalar(Math.max(0.01, pkgK));
+        // "Saber parar": o morador dá meio passo para trás e balança a cabeça
+        const back = track(t, [[C.pare - 0.1, 0], [C.pare + 0.5, 1], [C.mito + 0.5, 1], [C.mito + 1.3, 0]]);
+        morador.position.set(MPOS[0] - 0.18 * back, 0, MPOS[2] + 0.12 * back);
+        const shakeHead = t >= C.pare && t < C.pare + 1.2 ? 0.25 * Math.sin((t - C.pare) * 14) * (1 - prog(t, C.pare, C.pare + 1.2)) : 0;
+        morador.rotation.y = Math.PI / 2 - 0.35 + shakeHead;
+
+        // Eletricista
+        const eOn = t >= E_IN[0] && t < E_OUT[1];
+        elet.visible = eOn;
+        if (eOn) {
+          let pos;
+          let yaw;
+          let walk = 0;
+          if (t < E_IN[1]) {
+            const k = prog(t, E_IN[0], E_IN[1]);
+            pos = lerp3(E0, E1, easeOut(k));
+            yaw = yawIn;
+            walk = 1 - prog(t, E_IN[1] - 0.4, E_IN[1]);
+          } else if (t < E_OUT[0]) {
+            pos = E1;
+            yaw = lerp(yawIn, yawCam, easeInOut(prog(t, C.segue - 0.3, C.segue + 0.5)));
+          } else {
+            const k = prog(t, E_OUT[0], E_OUT[1]);
+            pos = lerp3(E1, E2, easeInOut(k));
+            yaw = lerp(yawCam, yawOut, easeOut(prog(t, E_OUT[0], E_OUT[0] + 0.5)));
+            walk = prog(t, E_OUT[0], E_OUT[0] + 0.3);
+          }
+          elet.position.fromArray(pos);
+          elet.rotation.y = yaw;
+          const ph = Math.sin(t * 7.5) * walk;
+          const [lA, lB] = elet.userData.legs;
+          lA.rotation.x = 0.45 * ph;
+          lB.rotation.x = -0.45 * ph;
+          elet.userData.hips.position.y = 0.9 + 0.02 * Math.abs(ph);
+          const [eArmA, eArmB] = elet.userData.arms;
+          eArmA.rotation.x = -0.35 * ph;
+          // Mão com o detector sobe quando ele é apresentado
+          const showDet = track(t, [[C.segue - 0.2, 0], [C.segue + 0.5, 1], [C.loop, 1], [C.loop + 0.4, 0]]);
+          eArmB.rotation.x = 0.35 * ph - 1.1 * showDet;
+        }
+
+        // Caminho da corrente: mão -> ombro -> coração
+        const showSpark = t >= C.ma10 && t < C.c1;
+        spark.visible = sparkHalo.visible = showSpark;
+        if (showSpark) {
+          const hand = new THREE.Vector3(...handOf(0));
+          const shoulder = new THREE.Vector3(...worldOf(armReach, 0, -0.05, 0));
+          const heart = new THREE.Vector3(...worldOf(morador.userData.hips, -0.08, 0.42, 0.2));
+          const k = track(t, [[C.ma10, 0], [C.trava, 0.5], [C.ma50, 0.5], [C.coracao, 1]]);
+          const pos = k < 0.5 ? hand.lerp(shoulder, k * 2) : shoulder.lerp(heart, (k - 0.5) * 2);
+          spark.position.copy(pos);
+          sparkHalo.position.copy(pos);
+          const beat = t >= C.coracao ? 1 + 0.45 * Math.pow(Math.abs(Math.sin(t * 6)), 3) : 1 + 0.15 * Math.sin(t * 10);
+          sparkHalo.scale.setScalar(beat);
+        }
+
+        renderer.render(scene, camera);
+        placeCallouts(t);
+      };
+    }
+
+    // Relógio: um tween do GSAP alimenta render(t). A linha do tempo só é registrada depois que as fontes e o
+    // símbolo da ECASI carregaram, para o colete nunca aparecer sem o logo.
+    const logoTex = new THREE.TextureLoader().loadAsync("assets/brand/simbolo-ecasi.png");
+    Promise.all([document.fonts.ready, logoTex]).then(([, tex]) => {
+      tex.colorSpace = THREE.SRGBColorSpace;
+      const render = build(tex);
+      const state = { t: 0 };
+      const tl = gsap.timeline({ paused: true });
+      tl.to(state, { t: C.end, duration: C.end, ease: "none", onUpdate: () => render(state.t) }, 0);
+      render(0);
+      window.__timelines["world"] = tl;
+    });
+  </script>
+</template>

@@ -1,0 +1,155 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Barlow Condensed";
+      font-weight: 800;
+      src: url("assets/fonts/BarlowCondensed-800.woff2") format("woff2");
+    }
+    @font-face {
+      font-family: "Barlow Condensed";
+      font-weight: 900;
+      src: url("assets/fonts/BarlowCondensed-900.woff2") format("woff2");
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+    .hk-line {
+      position: absolute;
+      left: 90px;
+      right: 90px;
+      text-align: center;
+      font-family: "Barlow Condensed", sans-serif;
+      font-weight: 900;
+      line-height: 0.9;
+      letter-spacing: -0.01em;
+      text-transform: uppercase;
+      z-index: 2; /* as notas passam por trás do texto */
+    }
+    #hk-l1 {
+      top: 420px;
+      font-size: 132px;
+      color: #0b1220;
+      text-shadow: 0 0 40px rgba(255, 255, 255, 0.8), 0 0 12px rgba(255, 255, 255, 0.85);
+    }
+    #hk-l2 {
+      top: 790px;
+      font-size: 124px;
+      color: #ffffff;
+    }
+    #hk-l2 span {
+      display: inline-block;
+      padding: 6px 26px 0;
+      margin: 6px 0;
+      background: #d93b41;
+      border-radius: 12px;
+      box-shadow: 0 18px 40px -12px rgba(110, 20, 25, 0.55);
+    }
+    #hk-bucket {
+      position: absolute;
+      left: 90px;
+      top: 1050px;
+      width: 290px;
+      height: 280px;
+      filter: drop-shadow(10px 20px 18px rgba(11, 18, 32, 0.4));
+    }
+    #hk-stamp {
+      position: absolute;
+      left: 300px;
+      top: 980px;
+      padding: 14px 30px 10px;
+      border: 8px solid #b8333a;
+      border-radius: 16px;
+      background: #ffffff;
+      color: #b8333a;
+      font-family: "Barlow Condensed", sans-serif;
+      font-weight: 900;
+      font-size: 72px;
+      line-height: 1;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      opacity: 0;
+    }
+    .hk-bill {
+      position: absolute;
+      left: 180px;
+      top: 1120px;
+      width: 190px;
+      height: 92px;
+      opacity: 0;
+      z-index: 1;
+    }
+  </style>
+  <div data-hf-id="hf-62cw" id="root" data-composition-id="hook" data-width="1080" data-height="1920" data-layout-allow-overlap>
+    <div data-hf-id="hf-4kb8" id="hk-l1" class="hk-line">Massa corrida<br data-hf-id="hf-x5px" />na parede<br data-hf-id="hf-rsrt" />de fora?</div>
+    <div data-hf-id="hf-jlyy" id="hk-l2" class="hk-line"><span data-hf-id="hf-kj29">Dinheiro</span><br data-hf-id="hf-szow" /><span data-hf-id="hf-kvpv">jogado fora</span></div>
+
+    <!-- Notas genéricas (sem valor) saindo do balde -->
+    <svg data-hf-id="hf-7vmu" id="hk-b1" class="hk-bill" data-layout-ignore viewBox="0 0 190 92"><rect data-hf-id="hf-pn1r" x="2" y="2" width="186" height="88" rx="8" fill="#3f9b5f" stroke="#2c7046" stroke-width="3" /><rect data-hf-id="hf-rj94" x="14" y="13" width="162" height="66" rx="6" fill="none" stroke="#a7dcb7" stroke-width="3" /><circle data-hf-id="hf-1nlh" cx="95" cy="46" r="22" fill="#a7dcb7" /><text data-hf-id="hf-250t" x="95" y="56" text-anchor="middle" font-family="Barlow Condensed" font-weight="900" font-size="30" fill="#2c7046">R$</text></svg>
+    <svg data-hf-id="hf-v4db" id="hk-b2" class="hk-bill" data-layout-ignore viewBox="0 0 190 92"><rect data-hf-id="hf-7fgv" x="2" y="2" width="186" height="88" rx="8" fill="#3f9b5f" stroke="#2c7046" stroke-width="3" /><rect data-hf-id="hf-r1n4" x="14" y="13" width="162" height="66" rx="6" fill="none" stroke="#a7dcb7" stroke-width="3" /><circle data-hf-id="hf-6lm1" cx="95" cy="46" r="22" fill="#a7dcb7" /><text data-hf-id="hf-4yw1" x="95" y="56" text-anchor="middle" font-family="Barlow Condensed" font-weight="900" font-size="30" fill="#2c7046">R$</text></svg>
+    <svg data-hf-id="hf-75n0" id="hk-b3" class="hk-bill" data-layout-ignore viewBox="0 0 190 92"><rect data-hf-id="hf-715u" x="2" y="2" width="186" height="88" rx="8" fill="#3f9b5f" stroke="#2c7046" stroke-width="3" /><rect data-hf-id="hf-puq1" x="14" y="13" width="162" height="66" rx="6" fill="none" stroke="#a7dcb7" stroke-width="3" /><circle data-hf-id="hf-7sj4" cx="95" cy="46" r="22" fill="#a7dcb7" /><text data-hf-id="hf-65t4" x="95" y="56" text-anchor="middle" font-family="Barlow Condensed" font-weight="900" font-size="30" fill="#2c7046">R$</text></svg>
+    <svg data-hf-id="hf-nhp9" id="hk-b4" class="hk-bill" data-layout-ignore viewBox="0 0 190 92"><rect data-hf-id="hf-6mut" x="2" y="2" width="186" height="88" rx="8" fill="#3f9b5f" stroke="#2c7046" stroke-width="3" /><rect data-hf-id="hf-q912" x="14" y="13" width="162" height="66" rx="6" fill="none" stroke="#a7dcb7" stroke-width="3" /><circle data-hf-id="hf-7e83" cx="95" cy="46" r="22" fill="#a7dcb7" /><text data-hf-id="hf-5ri3" x="95" y="56" text-anchor="middle" font-family="Barlow Condensed" font-weight="900" font-size="30" fill="#2c7046">R$</text></svg>
+    <svg data-hf-id="hf-yr1e" id="hk-b5" class="hk-bill" data-layout-ignore viewBox="0 0 190 92"><rect data-hf-id="hf-9f00" x="2" y="2" width="186" height="88" rx="8" fill="#3f9b5f" stroke="#2c7046" stroke-width="3" /><rect data-hf-id="hf-p23z" x="14" y="13" width="162" height="66" rx="6" fill="none" stroke="#a7dcb7" stroke-width="3" /><circle data-hf-id="hf-5eoy" cx="95" cy="46" r="22" fill="#a7dcb7" /><text data-hf-id="hf-3ryy" x="95" y="56" text-anchor="middle" font-family="Barlow Condensed" font-weight="900" font-size="30" fill="#2c7046">R$</text></svg>
+
+    <!-- Balde genérico de massa corrida comum (sem marca) -->
+    <svg data-hf-id="hf-7zj9" id="hk-bucket" data-layout-ignore viewBox="0 0 290 280" aria-label="Balde de massa corrida PVA, uso interno">
+      <defs data-hf-id="hf-mh0t">
+        <linearGradient data-hf-id="hf-sa30" id="hk-body" x1="0" y1="0" x2="1" y2="0">
+          <stop data-hf-id="hf-0i15" offset="0" stop-color="#dfe3e8" />
+          <stop data-hf-id="hf-5cyi" offset="0.35" stop-color="#ffffff" />
+          <stop data-hf-id="hf-kjmd" offset="1" stop-color="#c9ced6" />
+        </linearGradient>
+      </defs>
+      <path data-hf-id="hf-9qhg" d="M40 40 Q145 -30 250 40" fill="none" stroke="#5d646c" stroke-width="7" />
+      <path data-hf-id="hf-vm8l" d="M28 52 L262 52 L246 272 L44 272 Z" fill="url(#hk-body)" stroke="#aab1ba" stroke-width="3" />
+      <rect data-hf-id="hf-sbiv" x="18" y="34" width="254" height="30" rx="8" fill="#f4f6f8" stroke="#aab1ba" stroke-width="3" />
+      <rect data-hf-id="hf-e0lw" x="40" y="96" width="210" height="140" rx="10" fill="#2457d6" />
+      <text data-hf-id="hf-vxlt" x="145" y="138" text-anchor="middle" font-family="Barlow Condensed" font-weight="900" font-size="36" fill="#ffffff">MASSA CORRIDA</text>
+      <text data-hf-id="hf-jqbw" x="145" y="194" text-anchor="middle" font-family="Barlow Condensed" font-weight="900" font-size="62" fill="#ffffff">PVA</text>
+      <path data-hf-id="hf-x5sg" d="M86 214 l12 -10 l12 10 v10 h-24 Z" fill="#8db4f6" />
+      <text data-hf-id="hf-upam" x="166" y="225" text-anchor="middle" font-family="Barlow Condensed" font-weight="800" font-size="24" fill="#dce8fd">USO INTERNO</text>
+    </svg>
+    <div data-hf-id="hf-oip4" id="hk-stamp">Só área interna</div>
+  </div>
+  <script>
+    // Deixas sincronizadas com a narração (assets/transcript.json). Para ressincronizar, mude só aqui.
+    const CUE = {
+      dinheiro: 2.4, // "dinheiro jogado fora"
+      sai: 4.05, // antes de "A comum é de uso interno"
+      uso: 5.0, // "uso interno" (5,12 s; o carimbo assenta junto)
+      balde: 6.4, // já chovendo
+    };
+    const tl = gsap.timeline({ paused: true });
+
+    // Quadro 0: pergunta e balde já na tela (capa)
+    tl.fromTo("#hk-l1", { scale: 1.04 }, { scale: 1, duration: 0.6, ease: "expo.out", transformOrigin: "50% 50%" }, 0);
+    tl.fromTo("#hk-bucket", { rotation: -2 }, { rotation: 2, duration: 2.3, ease: "sine.inOut", transformOrigin: "50% 100%" }, 0);
+
+    // "Dinheiro jogado fora": faixa vermelha bate e as notas voam do balde
+    tl.fromTo("#hk-l2 span", { opacity: 0, scale: 1.35 }, { opacity: 1, scale: 1, duration: 0.24, ease: "expo.out", stagger: 0.1 }, CUE.dinheiro);
+    const bills = [
+      ["#hk-b1", 520, -620, -38],
+      ["#hk-b2", 760, -380, 52],
+      ["#hk-b3", 300, -760, 24],
+      ["#hk-b4", 880, -120, -60],
+      ["#hk-b5", 640, -900, 80],
+    ];
+    bills.forEach(([id, x, y, r], i) => {
+      const t = CUE.dinheiro + 0.05 + i * 0.09;
+      tl.fromTo(id, { opacity: 1, x: 0, y: 0, rotation: 0, scale: 0.6 }, { x, y, rotation: r * 3, scale: 1, duration: 1.1, ease: "power2.out" }, t);
+      tl.to(id, { opacity: 0, duration: 0.3, ease: "power1.in" }, t + 0.8);
+    });
+
+    // Sai o texto; o balde vai para o centro
+    tl.to(["#hk-l1", "#hk-l2"], { y: -60, opacity: 0, duration: 0.24, ease: "power2.in", stagger: 0.04 }, CUE.sai);
+    tl.to("#hk-bucket", { x: 300, y: -330, scale: 1.45, rotation: 0, duration: 0.5, ease: "power3.inOut" }, CUE.sai + 0.1);
+    // "Uso interno": carimbo
+    tl.fromTo("#hk-stamp", { opacity: 0, scale: 2, rotation: -4 }, { opacity: 1, scale: 1, rotation: -10, duration: 0.22, ease: "power4.in" }, CUE.uso - 0.12);
+    // Começa a chover: balde e carimbo saem
+    tl.to(["#hk-bucket", "#hk-stamp"], { x: "-=900", opacity: 0, duration: 0.35, ease: "power2.in" }, CUE.balde);
+
+    window.__timelines["hook"] = tl;
+  </script>
+</template>

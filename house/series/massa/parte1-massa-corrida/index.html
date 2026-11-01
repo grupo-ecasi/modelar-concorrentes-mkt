@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="pt-BR" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      /* Paleta do site housepintura.com.br (site.v2.css) */
+      :root {
+        --ink-950: #0b1220;
+        --blue-600: #2457d6;
+        --wa: #1a9e4b;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: var(--ink-950);
+      }
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Massa corrida mal feita × bem feita, revelada pela luz rasante com narração (21 s, 9:16) -->
+    <div data-hf-id="hf-wajd" id="root" data-composition-id="main" data-start="0" data-duration="21" data-width="1080" data-height="1920">
+      <!-- A parede: luz de frente, faixa de sol rasante, desempenadeira e a parede refeita -->
+      <div data-hf-id="hf-ch5t"
+        id="wall"
+        class="clip"
+        data-composition-id="wall"
+        data-composition-src="compositions/wall.html"
+        data-start="0"
+        data-duration="16.5"
+        data-track-index="1"
+        data-track-kind="graphics"
+        data-width="1080"
+        data-height="1920"
+        style="z-index: 1"
+      ></div>
+      <!-- Gancho: já está na tela no primeiro quadro (é a capa) -->
+      <div data-hf-id="hf-847i"
+        id="hook"
+        class="clip"
+        data-composition-id="hook"
+        data-composition-src="compositions/hook.html"
+        data-start="0"
+        data-duration="4"
+        data-track-index="2"
+        data-track-kind="graphics"
+        data-width="1080"
+        data-height="1920"
+        style="z-index: 3"
+      ></div>
+      <!-- Selos ❌/✅, marcações dos defeitos e as três etapas do jeito certo -->
+      <div data-hf-id="hf-ja3m"
+        id="labels"
+        class="clip"
+        data-composition-id="labels"
+        data-composition-src="compositions/labels.html"
+        data-start="4"
+        data-duration="11.9"
+        data-track-index="3"
+        data-track-kind="graphics"
+        data-width="1080"
+        data-height="1920"
+        style="z-index: 3"
+      ></div>
+      <div data-hf-id="hf-j14b"
+        id="endcard"
+        class="clip"
+        data-composition-id="endcard"
+        data-composition-src="compositions/endcard.html"
+        data-start="15.9"
+        data-duration="5.1"
+        data-track-index="4"
+        data-track-kind="graphics"
+        data-width="1080"
+        data-height="1920"
+        style="z-index: 4"
+      ></div>
+      <!-- Narração gravada pelo cliente (normalizada em -15 LUFS) -->
+      <audio id="voice" class="clip" src="assets/narracao-voz.wav" data-start="0" data-duration="19.92" data-track-index="10" data-volume="1"></audio>
+      <!-- Efeitos sonoros pré-mixados (tools/build_audio.py), abaixo da voz; sem música, para dar espaço a um áudio em alta -->
+      <audio id="mix" class="clip" src="assets/audio-mix.wav" data-start="0" data-duration="21" data-track-index="11" data-volume="0.4"></audio>
+    </div>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

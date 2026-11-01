@@ -1,0 +1,1897 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: #e9e4dc;
+    }
+    #world-canvas {
+      position: absolute;
+      inset: 0;
+      width: 1080px;
+      height: 1920px;
+    }
+    #world-vignette {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(ellipse 78% 62% at 50% 52%, rgba(0, 0, 0, 0) 58%, rgba(8, 14, 30, 0.34) 100%);
+    }
+    #world-flash {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0;
+      background: radial-gradient(circle at 50% 45%, #ffffff 0%, #d7ecff 45%, #9cc8ff 100%);
+      mix-blend-mode: screen;
+    }
+    #world-lines {
+      position: absolute;
+      inset: 0;
+      width: 1080px;
+      height: 1920px;
+      pointer-events: none;
+    }
+    .world-callout {
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      padding: 12px 20px;
+      border-radius: 12px;
+      background: #ffffff;
+      border: 2px solid #e5e7eb;
+      box-shadow: 0 10px 24px -12px rgba(11, 29, 63, 0.35);
+      color: #0b1d3f;
+      font-family: Poppins, sans-serif;
+      font-weight: 600;
+      font-size: 30px;
+      line-height: 1.15;
+      white-space: nowrap;
+    }
+    .world-callout.is-tech {
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 500;
+    }
+    .world-callout.is-orange {
+      background: #c2410c;
+      border-color: #c2410c;
+      color: #ffffff;
+    }
+    .world-callout.is-red {
+      background: #fdecec;
+      border-color: rgba(211, 47, 47, 0.45);
+      color: #b3261e;
+    }
+    .world-callout.is-green {
+      background: #ecf8f2;
+      border-color: rgba(59, 178, 115, 0.5);
+      color: #1f7a4c;
+    }
+  </style>
+  <div id="root" data-composition-id="world" data-width="1080" data-height="1920" data-layout-allow-overflow>
+    <canvas id="world-canvas" width="1080" height="1920"></canvas>
+    <div id="world-vignette" data-layout-ignore></div>
+    <div id="world-flash" data-layout-ignore></div>
+    <svg id="world-lines" viewBox="0 0 1080 1920" data-layout-ignore></svg>
+    <div id="co-cabo" class="world-callout is-red">cabo sobrecarregado</div>
+    <div id="co-fuga" class="world-callout is-red">fuga de corrente</div>
+    <div id="co-nope" class="world-callout is-red">disjuntor: não percebe</div>
+    <div id="co-noterra" class="world-callout is-red">✕ sem fio terra</div>
+    <div id="co-carc" class="world-callout is-red">carcaça energizada</div>
+    <div id="co-25" class="world-callout is-tech">cabo 2,5 mm² · ~24 A</div>
+    <div id="co-20" class="world-callout is-green is-tech">disjuntor 20 A ✓</div>
+    <div id="co-t" class="world-callout">botão de teste T</div>
+    <div id="co-trip" class="world-callout is-green">DR desarmou ✓</div>
+    <div id="co-terra" class="world-callout is-green">fio terra ✓</div>
+    <div id="co-dps" class="world-callout is-tech">DPS · contra surtos</div>
+    <div id="co-tag" class="world-callout is-green">circuitos identificados ✓</div>
+    <div id="co-40" class="world-callout is-red is-tech">disjuntor 40 A</div>
+    <div id="co-hot" class="world-callout is-red">o cabo vira fusível</div>
+    <div id="co-geral" class="world-callout is-tech">geral desligado</div>
+    <div id="co-det" class="world-callout">teste de ausência de tensão</div>
+    <div id="co-elet" class="world-callout is-orange">eletricista com NR-10</div>
+  </div>
+  <script type="module">
+    import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.184.0/+esm";
+    import { EffectComposer } from "https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/postprocessing/EffectComposer.js/+esm";
+    import { RenderPass } from "https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/postprocessing/RenderPass.js/+esm";
+    import { UnrealBloomPass } from "https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/postprocessing/UnrealBloomPass.js/+esm";
+    import { OutputPass } from "https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/postprocessing/OutputPass.js/+esm";
+    import { RoundedBoxGeometry } from "https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/geometries/RoundedBoxGeometry.js/+esm";
+    import { RoomEnvironment } from "https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/environments/RoomEnvironment.js/+esm";
+    import { Line2 } from "https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/lines/Line2.js/+esm";
+    import { LineMaterial } from "https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/lines/LineMaterial.js/+esm";
+    import { LineGeometry } from "https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/lines/LineGeometry.js/+esm";
+
+    // Tempos ancorados na narração (assets/transcript.json). Fonte única: tools/cues.json
+    /*CUES*/
+    const C = {
+      "hook": 0.0,
+      "cliente": 1.12,
+      "pode": 1.92,
+      "ainda": 3.04,
+      "quadro2": 4.08,
+      "seguro": 6.08,
+      "camadas": 7.68,
+      "problema": 10.56,
+      "cabo": 11.2,
+      "esquenta": 12.48,
+      "pvc": 13.52,
+      "g70": 15.04,
+      "fuga": 16.48,
+      "mili": 17.36,
+      "percebe": 19.2,
+      "semTerra": 20.16,
+      "carcaca": 21.04,
+      "energizada": 22.8,
+      "c1": 23.92,
+      "protecao": 25.12,
+      "escolhido": 26.96,
+      "carga": 28.96,
+      "cabo25": 29.52,
+      "embutido": 30.88,
+      "a24": 32.4,
+      "entao": 33.84,
+      "d20": 35.12,
+      "c2": 35.84,
+      "dr": 37.12,
+      "ma30": 38,
+      "banheiro": 39.28,
+      "cozinha": 39.92,
+      "lavanderia": 40.56,
+      "externa": 41.6,
+      "aperte": 42.72,
+      "teste": 43.76,
+      "desarmou": 44.4,
+      "naoEntrega": 45.52,
+      "c3": 46.56,
+      "fioTerra": 48.64,
+      "circuitos": 50.08,
+      "dps": 50.88,
+      "etiqueta": 52.48,
+      "mito": 54.56,
+      "poe": 56.32,
+      "naoMito": 57.51,
+      "a40": 58.47,
+      "cabo24": 60.79,
+      "dobro": 62.31,
+      "semDesarmar": 63.27,
+      "fusivel": 64.79,
+      "parede": 66.47,
+      "norma": 67.91,
+      "define": 70.39,
+      "nr10": 73.35,
+      "desenergizar": 74.87,
+      "antesNr": 75.91,
+      "curso": 76.63,
+      "cta": 78.47,
+      "treinamento": 78.95,
+      "ecasi": 80.63,
+      "proximo": 82.23,
+      "industria": 83.67,
+      "loop": 86.47,
+      "confira": 87.67,
+      "antes": 89.59,
+      "end": 91.61
+    };
+    /*END-CUES*/
+
+    const W = 1080;
+    const H = 1920;
+    const FPS = 30;
+    const canvas = document.getElementById("world-canvas");
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, preserveDrawingBuffer: true, powerPreference: "high-performance" });
+    renderer.setPixelRatio(1);
+    renderer.setSize(W, H, false);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.0;
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color("#e9e4dc");
+    scene.fog = new THREE.Fog("#e9e4dc", 16, 40);
+    const camera = new THREE.PerspectiveCamera(34, W / H, 0.05, 120);
+
+    // Pós-processamento: render em HDR com MSAA, bloom só no que passa do limiar (energia, arcos, faíscas) e saída ACES
+    const composerRT = new THREE.WebGLRenderTarget(W, H, { type: THREE.HalfFloatType, samples: 4 });
+    const composer = new EffectComposer(renderer, composerRT);
+    composer.setPixelRatio(1);
+    composer.setSize(W, H);
+    composer.addPass(new RenderPass(scene, camera));
+    const bloom = new UnrealBloomPass(new THREE.Vector2(W, H), 0.5, 0.55, 1.0);
+    composer.addPass(bloom);
+    composer.addPass(new OutputPass());
+
+    // Reflexos suaves de um ambiente interno nos metais e plásticos
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    scene.environmentIntensity = 0.42;
+
+    // ---------- Utilidades determinísticas ----------
+    const hash = (n) => {
+      const s = Math.sin(n * 127.1 + 311.7) * 43758.5453;
+      return s - Math.floor(s);
+    };
+    const clamp01 = (x) => Math.min(1, Math.max(0, x));
+    const prog = (t, a, b) => clamp01((t - a) / (b - a));
+    const easeInOut = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+    const easeOut = (x) => 1 - Math.pow(1 - x, 3);
+    const easeOutExpo = (x) => (x >= 1 ? 1 : 1 - Math.pow(2, -10 * x));
+    const lerp = (a, b, x) => a + (b - a) * x;
+    const lerp3 = (a, b, x) => [lerp(a[0], b[0], x), lerp(a[1], b[1], x), lerp(a[2], b[2], x)];
+    const spring = (x) => (x <= 0 ? 0 : 1 - Math.exp(-6 * x) * Math.cos(9 * x));
+    const pulse = (t, a, b) => Math.sin(Math.PI * prog(t, a, b));
+    function track(t, keys) {
+      if (t <= keys[0][0]) return keys[0][1];
+      for (let i = 0; i < keys.length - 1; i++) {
+        const [ta, va] = keys[i];
+        const [tb, vb] = keys[i + 1];
+        if (t <= tb) return tb === ta ? vb : lerp(va, vb, easeInOut((t - ta) / (tb - ta)));
+      }
+      return keys[keys.length - 1][1];
+    }
+    // Integral de uma velocidade por partes (fluxo contínuo mesmo quando a velocidade muda)
+    function integ(t, speedAt) {
+      let s = 0;
+      const dt = 1 / 60;
+      for (let x = 0; x < t; x += dt) s += speedAt(x) * Math.min(dt, t - x);
+      return s;
+    }
+
+    // ---------- Materiais e texturas ----------
+    const std = (color, o = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.6, metalness: 0, ...o });
+    function canvasTex(w, h, draw, rep = [1, 1]) {
+      const cv = document.createElement("canvas");
+      cv.width = w;
+      cv.height = h;
+      draw(cv.getContext("2d"), w, h);
+      const tx = new THREE.CanvasTexture(cv);
+      tx.colorSpace = THREE.SRGBColorSpace;
+      tx.wrapS = tx.wrapT = THREE.RepeatWrapping;
+      tx.repeat.set(rep[0], rep[1]);
+      tx.anisotropy = 8;
+      return tx;
+    }
+    function textTex(lines, { bg = "#ffffff", fg = "#0b1d3f", w = 256, h = 128, size = 56, mono = true, weight = 700 } = {}) {
+      return canvasTex(w, h, (g) => {
+        if (bg) {
+          g.fillStyle = bg;
+          g.fillRect(0, 0, w, h);
+        }
+        g.fillStyle = fg;
+        g.textAlign = "center";
+        g.textBaseline = "middle";
+        g.font = `${weight} ${size}px ${mono ? '"JetBrains Mono", monospace' : "Poppins, sans-serif"}`;
+        lines.forEach((ln, i) => g.fillText(ln, w / 2, h / 2 + (i - (lines.length - 1) / 2) * size * 1.1));
+      });
+    }
+    // Porcelanato 60×60 com veios leves
+    const floorTex = canvasTex(512, 512, (g, w, h) => {
+      for (let ty = 0; ty < 2; ty++) {
+        for (let tx = 0; tx < 2; tx++) {
+          const v = hash(tx * 7 + ty * 13);
+          g.fillStyle = `rgb(${222 + v * 10},${216 + v * 9},${206 + v * 8})`;
+          g.fillRect(tx * 256, ty * 256, 256, 256);
+          for (let i = 0; i < 260; i++) {
+            const k = tx * 1000 + ty * 500 + i;
+            g.fillStyle = `rgba(150,140,125,${0.05 + hash(k) * 0.07})`;
+            g.beginPath();
+            g.arc(tx * 256 + hash(k + 0.1) * 256, ty * 256 + hash(k + 0.2) * 256, 2 + hash(k + 0.3) * 9, 0, Math.PI * 2);
+            g.fill();
+          }
+        }
+      }
+      g.strokeStyle = "#b9b1a4";
+      g.lineWidth = 3;
+      for (let i = 0; i <= 2; i++) {
+        g.beginPath();
+        g.moveTo(i * 256, 0);
+        g.lineTo(i * 256, h);
+        g.moveTo(0, i * 256);
+        g.lineTo(w, i * 256);
+        g.stroke();
+      }
+    }, [14, 14]);
+    // Pintura acrílica da parede (textura fina)
+    const wallTex = canvasTex(512, 512, (g, w, h) => {
+      g.fillStyle = "#f1ece3";
+      g.fillRect(0, 0, w, h);
+      for (let i = 0; i < 5000; i++) {
+        const v = 226 + Math.floor(hash(i) * 22);
+        g.fillStyle = `rgba(${v},${v - 4},${v - 10},0.55)`;
+        g.fillRect(hash(i + 0.4) * w, hash(i + 0.8) * h, 1 + hash(i + 0.6) * 2, 1 + hash(i + 0.2) * 2);
+      }
+    }, [6, 3]);
+    // Revestimento cerâmico 10×20 (metro) até 1 m
+    const tileWallTex = canvasTex(512, 256, (g, w, h) => {
+      g.fillStyle = "#c9c6c0";
+      g.fillRect(0, 0, w, h);
+      for (let r = 0; r < 4; r++) {
+        for (let c = -1; c < 4; c++) {
+          const x = c * 128 + (r % 2 ? 64 : 0);
+          const v = hash(r * 11 + c * 3);
+          const grd = g.createLinearGradient(x, r * 64, x + 128, r * 64 + 64);
+          grd.addColorStop(0, `rgb(${246 - v * 6},${247 - v * 6},${245 - v * 6})`);
+          grd.addColorStop(1, `rgb(${232 - v * 6},${234 - v * 6},${232 - v * 6})`);
+          g.fillStyle = grd;
+          g.fillRect(x + 3, r * 64 + 3, 122, 58);
+        }
+      }
+    }, [12, 2.5]);
+    // Rasgo na parede (tijolo e massa quebrada)
+    const grooveTex = canvasTex(256, 256, (g, w, h) => {
+      g.fillStyle = "#b9aa96";
+      g.fillRect(0, 0, w, h);
+      for (let i = 0; i < 900; i++) {
+        const v = hash(i * 1.3);
+        g.fillStyle = v > 0.6 ? "rgba(176,92,60,0.55)" : `rgba(${120 + v * 60},${110 + v * 50},${95 + v * 40},0.6)`;
+        g.fillRect(hash(i + 0.2) * w, hash(i + 0.5) * h, 2 + hash(i + 0.7) * 6, 2 + hash(i + 0.9) * 6);
+      }
+    }, [1, 8]);
+    // Conduíte corrugado amarelo (anéis ao longo do comprimento)
+    const corrTex = canvasTex(64, 16, (g, w, h) => {
+      const grd = g.createLinearGradient(0, 0, w, 0);
+      grd.addColorStop(0, "#d9a400");
+      grd.addColorStop(0.35, "#ffd84a");
+      grd.addColorStop(0.65, "#ffd84a");
+      grd.addColorStop(1, "#c58f00");
+      g.fillStyle = grd;
+      g.fillRect(0, 0, w, h);
+    });
+    // Fio verde-amarelo (condutor de proteção)
+    const peTex = canvasTex(64, 64, (g, w, h) => {
+      g.fillStyle = "#2f9e44";
+      g.fillRect(0, 0, w, h);
+      g.fillStyle = "#f2d22e";
+      for (let i = -2; i < 4; i++) {
+        g.beginPath();
+        g.moveTo(i * 32, 0);
+        g.lineTo(i * 32 + 16, 0);
+        g.lineTo(i * 32 + 16 + 64, h);
+        g.lineTo(i * 32 + 64, h);
+        g.closePath();
+        g.fill();
+      }
+    });
+    // Faixa refletiva prata com bordas laranja (uniforme)
+    const tapeTex = canvasTex(64, 64, (g, w, h) => {
+      g.fillStyle = "#f08a24";
+      g.fillRect(0, 0, w, h);
+      const grd = g.createLinearGradient(0, 12, 0, 52);
+      grd.addColorStop(0, "#cfd5dc");
+      grd.addColorStop(0.5, "#f4f7fa");
+      grd.addColorStop(1, "#c9cfd6");
+      g.fillStyle = grd;
+      g.fillRect(0, 12, w, 40);
+    });
+    const brushedTex = canvasTex(256, 256, (g, w, h) => {
+      g.fillStyle = "#dcdedb";
+      g.fillRect(0, 0, w, h);
+      for (let i = 0; i < 420; i++) {
+        g.fillStyle = `rgba(${hash(i) > 0.5 ? 255 : 150},${hash(i) > 0.5 ? 255 : 150},${hash(i) > 0.5 ? 255 : 150},0.08)`;
+        g.fillRect(0, hash(i + 0.3) * h, w, 1);
+      }
+    });
+    const softTex = canvasTex(128, 128, (g) => {
+      const r = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+      r.addColorStop(0, "rgba(255,255,255,0.95)");
+      r.addColorStop(0.45, "rgba(255,255,255,0.4)");
+      r.addColorStop(1, "rgba(255,255,255,0)");
+      g.fillStyle = r;
+      g.fillRect(0, 0, 128, 128);
+    });
+    softTex.wrapS = softTex.wrapT = THREE.ClampToEdgeWrapping;
+    const scorchTex = canvasTex(256, 256, (g) => {
+      for (let i = 0; i < 40; i++) {
+        const x = 128 + (hash(i) - 0.5) * 120;
+        const y = 128 + (hash(i + 3) - 0.5) * 50;
+        const r = 20 + hash(i + 7) * 70;
+        const grd = g.createRadialGradient(x, y, 0, x, y, r);
+        grd.addColorStop(0, "rgba(20,14,10,0.55)");
+        grd.addColorStop(1, "rgba(20,14,10,0)");
+        g.fillStyle = grd;
+        g.beginPath();
+        g.arc(x, y, r, 0, Math.PI * 2);
+        g.fill();
+      }
+    });
+    scorchTex.wrapS = scorchTex.wrapT = THREE.ClampToEdgeWrapping;
+
+    const M = {
+      floor: std("#ffffff", { map: floorTex, roughness: 0.32 }),
+      wall: std("#ffffff", { map: wallTex, roughness: 0.92 }),
+      tileWall: std("#ffffff", { map: tileWallTex, roughness: 0.25 }),
+      listel: std("#1f3a6b", { roughness: 0.3 }),
+      groove: std("#ffffff", { map: grooveTex, roughness: 1 }),
+      enc: std("#e2e4e1", { map: brushedTex, roughness: 0.42, metalness: 0.35 }),
+      plate: std("#c3c8ce", { roughness: 0.38, metalness: 0.6 }),
+      rail: std("#d7dbe0", { roughness: 0.25, metalness: 0.85 }),
+      breaker: std("#f4f4f1", { roughness: 0.45 }),
+      breakerDark: std("#3b3f46", { roughness: 0.45 }),
+      screw: std("#d9dde2", { roughness: 0.2, metalness: 0.95 }),
+      brass: std("#c9a14a", { roughness: 0.3, metalness: 0.9 }),
+      copper: std("#c87a45", { roughness: 0.3, metalness: 0.9 }),
+      blueIns: std("#2563eb", { roughness: 0.4 }),
+      greenIns: std("#2f9e44", { roughness: 0.4 }),
+      combCover: std("#9aa1aa", { roughness: 0.5 }),
+      white: std("#f8f8f6", { roughness: 0.35 }),
+      whiteGloss: std("#fbfbf9", { roughness: 0.18 }),
+      chrome: std("#e8ecf0", { roughness: 0.12, metalness: 1 }),
+      dark: std("#23262c", { roughness: 0.45 }),
+      rubber: std("#141518", { roughness: 0.7 }),
+      yellow: std("#facc15", { roughness: 0.45 }),
+      pvcBlack: std("#1b1d22", { roughness: 0.35 }),
+      pvcRed: std("#c62828", { roughness: 0.35 }),
+      pvcBlue: std("#4a90e2", { roughness: 0.35 }),
+      wood: std("#a0714a", { roughness: 0.7 }),
+      glass: new THREE.MeshPhysicalMaterial({ color: "#d8ecf7", roughness: 0.05, metalness: 0, transparent: true, opacity: 0.35, clearcoat: 1 }),
+      plant: std("#3f8f4e", { roughness: 0.7 }),
+      plant2: std("#5bab5c", { roughness: 0.7 }),
+      pot: std("#c86f43", { roughness: 0.8 }),
+    };
+    const shade = (m) => {
+      m.castShadow = true;
+      m.receiveShadow = true;
+      return m;
+    };
+    const box = (w, h, d, m) => shade(new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m));
+    const rbox = (w, h, d, r, m, seg = 3) => shade(new THREE.Mesh(new RoundedBoxGeometry(w, h, d, seg, Math.min(r, w / 2, h / 2, d / 2)), m));
+    const cyl = (r, h, m, seg = 16, r2 = r) => shade(new THREE.Mesh(new THREE.CylinderGeometry(r, r2, h, seg), m));
+    const sph = (r, m, seg = 16) => shade(new THREE.Mesh(new THREE.SphereGeometry(r, seg, Math.max(8, Math.round(seg * 0.75))), m));
+    const plane = (w, h, mt) => new THREE.Mesh(new THREE.PlaneGeometry(w, h), mt);
+    const decal = (w, h, tex, o = {}) => plane(w, h, new THREE.MeshStandardMaterial({ map: tex, roughness: 0.6, transparent: true, ...o }));
+
+    // Caminho com cantos arredondados (fios dobrados de verdade)
+    function bendPath(pts, r = 0.02) {
+      const P = pts.map((p) => new THREE.Vector3(...p));
+      const path = new THREE.CurvePath();
+      let cur = P[0].clone();
+      for (let i = 1; i < P.length - 1; i++) {
+        const a = P[i - 1];
+        const b = P[i];
+        const c = P[i + 1];
+        const l1 = b.distanceTo(a);
+        const l2 = c.distanceTo(b);
+        const rr = Math.min(r, l1 / 2, l2 / 2);
+        const p1 = b.clone().addScaledVector(b.clone().sub(a).normalize(), -rr);
+        const p2 = b.clone().addScaledVector(c.clone().sub(b).normalize(), rr);
+        if (cur.distanceTo(p1) > 1e-5) path.add(new THREE.LineCurve3(cur.clone(), p1));
+        path.add(new THREE.QuadraticBezierCurve3(p1, b.clone(), p2));
+        cur = p2;
+      }
+      path.add(new THREE.LineCurve3(cur, P[P.length - 1]));
+      return path;
+    }
+    function wire(pts, m, r = 0.0058, bend = 0.018) {
+      const path = bendPath(pts, bend);
+      const L = path.getLength();
+      const geo = new THREE.TubeGeometry(path, Math.max(24, Math.round(L * 180)), r, 8, false);
+      if (m.map) {
+        m = m.clone();
+        m.map = m.map.clone();
+        m.map.repeat.set(L / 0.035, 1);
+        m.map.needsUpdate = true;
+      }
+      const mesh = shade(new THREE.Mesh(geo, m));
+      scene.add(mesh);
+      return { mesh, path, geo, L, r };
+    }
+
+    // ---------- Energia: tubo de fluxo (pulsos que correm pelo fio, com brilho) ----------
+    const FLOW_VS = `varying vec2 vUv; varying vec3 vN; varying vec3 vV;
+      void main(){ vUv = uv; vec4 mv = modelViewMatrix * vec4(position, 1.0); vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz); gl_Position = projectionMatrix * mv; }`;
+    const FLOW_FS = `uniform float uT; uniform float uI; uniform float uDens; uniform float uLen; uniform vec3 uColor; uniform float uHead; uniform float uHeadI; uniform float uDraw; uniform float uBase;
+      varying vec2 vUv; varying vec3 vN; varying vec3 vV;
+      void main(){
+        if (vUv.x > uDraw) discard;
+        float s = vUv.x * uLen;
+        float f = fract(s * uDens - uT);
+        float dash = smoothstep(0.0, 0.1, f) * (1.0 - smoothstep(0.28, 0.55, f));
+        float facing = abs(dot(normalize(vN), normalize(vV)));
+        float body = 0.3 + 0.7 * facing;
+        float head = uHeadI * exp(-pow((s - uHead) / 0.06, 2.0));
+        float e = uI * (uBase + dash) * body + head * (0.5 + 0.5 * facing);
+        gl_FragColor = vec4(uColor * e, 1.0);
+      }`;
+    const flows = [];
+    function flowOn(w, color, k = 3.2, dens = 9, scaleR = 1.55) {
+      const geo = new THREE.TubeGeometry(w.path, w.geo.parameters.tubularSegments, w.r * scaleR, 8, false);
+      const mt = new THREE.ShaderMaterial({
+        uniforms: {
+          uT: { value: 0 },
+          uI: { value: 0 },
+          uDens: { value: dens },
+          uLen: { value: w.L },
+          uColor: { value: new THREE.Color(color).multiplyScalar(k) },
+          uHead: { value: -9 },
+          uHeadI: { value: 0 },
+          uDraw: { value: 1 },
+          uBase: { value: 0.12 },
+        },
+        vertexShader: FLOW_VS,
+        fragmentShader: FLOW_FS,
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+      });
+      const mesh = new THREE.Mesh(geo, mt);
+      mesh.renderOrder = 6;
+      mesh.frustumCulled = false;
+      scene.add(mesh);
+      const f = { mesh, u: mt.uniforms, L: w.L, k, set(i, T, col) {
+        mesh.visible = i > 0.002 || mt.uniforms.uHeadI.value > 0.002;
+        mt.uniforms.uI.value = i;
+        mt.uniforms.uT.value = T;
+        if (col) mt.uniforms.uColor.value.set(col).multiplyScalar(k);
+      } };
+      flows.push(f);
+      return f;
+    }
+
+    // ---------- Energia: superfície eletrificada (linhas que andam sobre a carcaça) ----------
+    const SKIN_FS = `uniform float uT; uniform float uI; uniform vec3 uColor; varying vec3 vP; varying vec3 vN; varying vec3 vV;
+      float h(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+      float n(vec2 p){ vec2 i = floor(p); vec2 f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f);
+        return mix(mix(h(i), h(i + vec2(1.0, 0.0)), u.x), mix(h(i + vec2(0.0, 1.0)), h(i + vec2(1.0, 1.0)), u.x), u.y); }
+      void main(){
+        vec2 p = vP.xy * 7.0 + vP.zy * 5.0 + vP.xz * 3.0;
+        float a = n(p + vec2(uT * 2.3, -uT * 1.7)) * 0.65 + n(p * 2.3 - vec2(uT * 4.1, uT * 2.9)) * 0.35;
+        float lines = 1.0 - smoothstep(0.0, 0.035, abs(a - 0.52));
+        float rim = pow(1.0 - abs(dot(normalize(vN), normalize(vV))), 2.2);
+        float flick = 0.65 + 0.35 * sin(uT * 37.0) * sin(uT * 23.0 + 1.3);
+        gl_FragColor = vec4(uColor * (lines * 2.6 * flick + rim * 0.9) * uI, 1.0);
+      }`;
+    function skinMat(color) {
+      return new THREE.ShaderMaterial({
+        uniforms: { uT: { value: 0 }, uI: { value: 0 }, uColor: { value: new THREE.Color(color) } },
+        vertexShader: `varying vec3 vP; varying vec3 vN; varying vec3 vV;
+          void main(){ vP = position; vec4 mv = modelViewMatrix * vec4(position, 1.0); vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz); gl_Position = projectionMatrix * mv; }`,
+        fragmentShader: SKIN_FS,
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+      });
+    }
+
+    // ---------- Energia: arco elétrico (raio ramificado, núcleo branco e halo azul) ----------
+    const bolts = [];
+    function makeBolt(N, coreW, glowW, glowColor) {
+      const mk = (w, col, op) => {
+        const geo = new LineGeometry();
+        geo.setPositions(new Float32Array(N * 3));
+        const m = new LineMaterial({ color: col, linewidth: w, transparent: true, opacity: op, depthWrite: false, blending: THREE.AdditiveBlending });
+        m.resolution.set(W, H);
+        const l = new Line2(geo, m);
+        l.frustumCulled = false;
+        l.renderOrder = 10;
+        l.visible = false;
+        scene.add(l);
+        return l;
+      };
+      const b = { N, glow: mk(glowW, new THREE.Color(glowColor).multiplyScalar(2.2), 0.6), core: mk(coreW, new THREE.Color(7, 7, 8), 1) };
+      bolts.push(b);
+      return b;
+    }
+    const vA = new THREE.Vector3();
+    const vB = new THREE.Vector3();
+    const vD = new THREE.Vector3();
+    const vU = new THREE.Vector3();
+    const vWp = new THREE.Vector3();
+    const UPV = new THREE.Vector3(0, 1, 0);
+    function setBolt(b, a, c, seed, amp, inten) {
+      if (inten <= 0.01) {
+        b.core.visible = b.glow.visible = false;
+        return;
+      }
+      vA.fromArray(a);
+      vB.fromArray(c);
+      vD.subVectors(vB, vA);
+      vU.crossVectors(vD, Math.abs(vD.y) > 0.9 * vD.length() ? new THREE.Vector3(1, 0, 0) : UPV).normalize();
+      vWp.crossVectors(vD, vU).normalize();
+      const pts = [];
+      for (let i = 0; i < b.N; i++) {
+        const s = i / (b.N - 1);
+        const env = Math.sin(Math.PI * s);
+        // grosso (4 controles interpolados) + fino (por ponto)
+        const cs = s * 4;
+        const ci = Math.floor(cs);
+        const cf = cs - ci;
+        const c1 = lerp(hash(seed + ci * 3.1) - 0.5, hash(seed + (ci + 1) * 3.1) - 0.5, cf);
+        const c2 = lerp(hash(seed + ci * 5.7 + 9) - 0.5, hash(seed + (ci + 1) * 5.7 + 9) - 0.5, cf);
+        const f1 = (hash(seed + i * 7.3 + 1) - 0.5) * 0.45;
+        const f2 = (hash(seed + i * 9.1 + 2) - 0.5) * 0.45;
+        const o1 = (c1 + f1) * amp * env;
+        const o2 = (c2 + f2) * amp * env;
+        pts.push(vA.x + vD.x * s + vU.x * o1 + vWp.x * o2, vA.y + vD.y * s + vU.y * o1 + vWp.y * o2, vA.z + vD.z * s + vU.z * o1 + vWp.z * o2);
+      }
+      for (const l of [b.core, b.glow]) {
+        const arr = l.geometry.attributes.instanceStart.data.array;
+        for (let i = 0; i < b.N - 1; i++) {
+          for (let j = 0; j < 3; j++) {
+            arr[i * 6 + j] = pts[i * 3 + j];
+            arr[i * 6 + 3 + j] = pts[(i + 1) * 3 + j];
+          }
+        }
+        l.geometry.attributes.instanceStart.data.needsUpdate = true;
+        l.visible = true;
+      }
+      b.core.material.opacity = Math.min(1, inten);
+      b.glow.material.opacity = 0.6 * Math.min(1, inten);
+      return pts;
+    }
+
+    // ---------- Energia: faíscas balísticas (determinísticas, quicam no piso) ----------
+    const SPARK_N = 220;
+    const sparks = new THREE.InstancedMesh(new THREE.BoxGeometry(0.0055, 0.0055, 1), new THREE.MeshBasicMaterial({ color: "#ffffff" }), SPARK_N);
+    sparks.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(SPARK_N * 3), 3);
+    sparks.frustumCulled = false;
+    sparks.renderOrder = 9;
+    scene.add(sparks);
+    const BURSTS = [];
+    const dum = new THREE.Object3D();
+    const ZAX = new THREE.Vector3(0, 0, 1);
+    const sV = new THREE.Vector3();
+    const sP = new THREE.Vector3();
+    const sCol = new THREE.Color();
+    function updateSparks(t) {
+      let k = 0;
+      for (const b of BURSTS) {
+        const age = t - b.t0;
+        if (age < 0 || age > b.life + b.stagger + 0.1) continue;
+        const d = new THREE.Vector3(...b.dir).normalize();
+        const u = new THREE.Vector3().crossVectors(d, Math.abs(d.y) > 0.9 ? new THREE.Vector3(1, 0, 0) : UPV).normalize();
+        const w = new THREE.Vector3().crossVectors(d, u);
+        for (let i = 0; i < b.n && k < SPARK_N; i++) {
+          const h1 = hash(b.seed + i * 1.37);
+          const h2 = hash(b.seed + i * 2.71);
+          const h3 = hash(b.seed + i * 4.13);
+          const h4 = hash(b.seed + i * 5.93);
+          const a = age - h4 * b.stagger;
+          const life = b.life * (0.45 + 0.55 * h3);
+          if (a < 0 || a > life) continue;
+          const th = b.spread * Math.sqrt(h1);
+          const ph = 2 * Math.PI * h2;
+          const sp = b.speed * (0.45 + 0.75 * hash(b.seed + i * 7.7));
+          sV.copy(d).multiplyScalar(Math.cos(th)).addScaledVector(u, Math.sin(th) * Math.cos(ph)).addScaledVector(w, Math.sin(th) * Math.sin(ph)).multiplyScalar(sp);
+          sP.set(b.o[0] + sV.x * a, b.o[1] + sV.y * a - 4.9 * a * a, b.o[2] + sV.z * a);
+          let vy = sV.y - 9.8 * a;
+          if (sP.y < 0.004) {
+            // quique simples no piso
+            sP.y = 0.004 + Math.abs(sP.y) * 0.25;
+            vy = Math.abs(vy) * 0.3;
+          }
+          const vel = new THREE.Vector3(sV.x, vy, sV.z);
+          const spd = vel.length();
+          dum.position.copy(sP);
+          dum.quaternion.setFromUnitVectors(ZAX, vel.normalize());
+          dum.scale.set(b.size, b.size, 0.012 + spd * 0.022);
+          dum.updateMatrix();
+          sparks.setMatrixAt(k, dum.matrix);
+          const fade = 1 - a / life;
+          sCol.setRGB(lerp(3.2, 9, fade), lerp(0.9, 6.5, fade * fade), lerp(0.2, 2.6, fade * fade * fade));
+          sparks.setColorAt(k, sCol);
+          k++;
+        }
+      }
+      dum.scale.set(0, 0, 0);
+      dum.updateMatrix();
+      for (; k < SPARK_N; k++) sparks.setMatrixAt(k, dum.matrix);
+      sparks.instanceMatrix.needsUpdate = true;
+      sparks.instanceColor.needsUpdate = true;
+    }
+
+    // ---------- Energia: fumaça (sprites suaves) ----------
+    const smoke = [];
+    for (let k = 0; k < 30; k++) {
+      const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: softTex, color: "#3a3e45", transparent: true, depthWrite: false, opacity: 0 }));
+      s.renderOrder = 7;
+      scene.add(s);
+      smoke.push(s);
+    }
+    function updateSmoke(t, src, amount, spread = 0.5) {
+      smoke.forEach((s, k) => {
+        if (amount <= 0.01) {
+          s.visible = false;
+          return;
+        }
+        const f = (hash(k * 1.7) + t * (0.32 + hash(k * 2.3) * 0.18)) % 1;
+        s.visible = true;
+        s.position.set(
+          src[0] + (hash(k * 3.1) - 0.5) * spread + 0.08 * Math.sin(t * 1.4 + k) * f,
+          src[1] + 0.03 + f * (0.7 + hash(k * 4.4) * 0.4),
+          src[2] + 0.06 + f * 0.25,
+        );
+        s.scale.setScalar(0.1 + f * (0.45 + hash(k) * 0.25));
+        s.material.rotation = hash(k * 5.5) * 6 + t * 0.3;
+        s.material.opacity = amount * 0.5 * (1 - f) * Math.min(1, f * 8);
+      });
+    }
+
+    // ---------- Luz: interna, com janela fria e chave quente ----------
+    const hemi = new THREE.HemisphereLight("#fffaf2", "#b3a690", 0.55);
+    scene.add(hemi);
+    const key = new THREE.DirectionalLight("#fff0dc", 2.3);
+    key.position.set(2.6, 5.4, 4.2);
+    key.target.position.set(-0.3, 1.2, -1.2);
+    key.castShadow = true;
+    key.shadow.mapSize.set(2048, 2048);
+    key.shadow.camera.left = -3.6;
+    key.shadow.camera.right = 3.6;
+    key.shadow.camera.top = 3.6;
+    key.shadow.camera.bottom = -3.6;
+    key.shadow.camera.near = 0.5;
+    key.shadow.camera.far = 16;
+    key.shadow.bias = -0.0004;
+    key.shadow.normalBias = 0.015;
+    scene.add(key, key.target);
+    const fill = new THREE.DirectionalLight("#d6e6ff", 0.55);
+    fill.position.set(-4, 2.6, 2.5);
+    scene.add(fill);
+    const arcLight = new THREE.PointLight("#cfe8ff", 0, 5, 2);
+    const fireLight = new THREE.PointLight("#ff7a2a", 0, 3.5, 2);
+    const chassisLight = new THREE.PointLight("#ff4d4d", 0, 3, 2);
+    const dpsLight = new THREE.PointLight("#a78bfa", 0, 2.5, 2);
+    scene.add(arcLight, fireLight, chassisLight, dpsLight);
+
+    // ---------- Cenário: área de serviço ----------
+    const WALL_Z = -1.4;
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(22, 22), M.floor);
+    floor.rotation.x = -Math.PI / 2;
+    floor.receiveShadow = true;
+    scene.add(floor);
+    const wall = box(11, 5, 0.2, M.wall);
+    wall.position.set(0, 2.5, WALL_Z - 0.1);
+    scene.add(wall);
+    const tiles = box(11, 1.0, 0.012, M.tileWall);
+    tiles.position.set(0, 0.5, WALL_Z + 0.006);
+    const listel = rbox(11, 0.03, 0.02, 0.006, M.listel);
+    listel.position.set(0, 1.0, WALL_Z + 0.01);
+    scene.add(tiles, listel);
+    // Prateleira com produtos de limpeza
+    const shelf = rbox(0.62, 0.03, 0.22, 0.01, M.wood);
+    shelf.position.set(-2.05, 1.55, WALL_Z + 0.11);
+    scene.add(shelf);
+    [["#2f80ed", 0.07, 0.24], ["#f2994a", 0.06, 0.2], ["#27ae60", 0.055, 0.27], ["#eb5757", 0.065, 0.18]].forEach(([c, r, hgt], i) => {
+      const b = cyl(r * 0.6, hgt, std(c, { roughness: 0.3 }), 16);
+      b.position.set(-2.28 + i * 0.15, 1.565 + hgt / 2, WALL_Z + 0.11);
+      const capB = cyl(r * 0.25, 0.04, M.white, 12);
+      capB.position.set(b.position.x, 1.565 + hgt + 0.02, WALL_Z + 0.11);
+      scene.add(b, capB);
+    });
+    // Vaso com planta e quadrinho à direita
+    const pot = cyl(0.14, 0.3, M.pot, 20, 0.11);
+    pot.position.set(1.6, 0.15, WALL_Z + 0.32);
+    scene.add(pot);
+    for (let i = 0; i < 9; i++) {
+      const lf = sph(0.07, i % 2 ? M.plant : M.plant2, 12);
+      const a = (i / 9) * Math.PI * 2;
+      lf.scale.set(0.55, 2.4, 0.3);
+      lf.position.set(1.6 + Math.cos(a) * 0.08, 0.5 + hash(i) * 0.12, WALL_Z + 0.32 + Math.sin(a) * 0.08);
+      lf.rotation.set(Math.sin(a) * 0.5, 0, -Math.cos(a) * 0.5);
+      scene.add(lf);
+    }
+    const artTex = canvasTex(256, 192, (g, w, h) => {
+      g.fillStyle = "#f6efe2";
+      g.fillRect(0, 0, w, h);
+      g.fillStyle = "#e9a46b";
+      g.beginPath();
+      g.arc(90, 110, 52, 0, Math.PI * 2);
+      g.fill();
+      g.fillStyle = "#1f3a6b";
+      g.fillRect(130, 40, 70, 110);
+      g.fillStyle = "#7fb59a";
+      g.fillRect(40, 140, 170, 18);
+    });
+    const frame = rbox(0.4, 0.31, 0.025, 0.006, M.dark);
+    frame.position.set(1.48, 1.78, WALL_Z + 0.013);
+    const art = plane(0.36, 0.27, new THREE.MeshStandardMaterial({ map: artTex, roughness: 0.8 }));
+    art.position.set(1.48, 1.78, WALL_Z + 0.027);
+    scene.add(frame, art);
+    // Interruptor
+    const sw = rbox(0.075, 0.12, 0.012, 0.006, M.white);
+    sw.position.set(-0.42, 1.2, WALL_Z + 0.006);
+    const swKey = rbox(0.045, 0.07, 0.01, 0.005, M.whiteGloss);
+    swKey.position.set(-0.42, 1.2, WALL_Z + 0.016);
+    scene.add(sw, swKey);
+
+    // ---------- Quadro de distribuição (de sobrepor, com tampa) ----------
+    const QD = new THREE.Vector3(0.35, 1.5, WALL_Z);
+    const QW = 0.72;
+    const QH = 0.92;
+    const QDP = 0.2;
+    const QF = WALL_Z + QDP;
+    const qBack = box(QW, QH, 0.012, M.enc);
+    qBack.position.set(QD.x, QD.y, WALL_Z + 0.006);
+    scene.add(qBack);
+    for (const s of [-1, 1]) {
+      const sd = rbox(0.016, QH, QDP, 0.004, M.enc);
+      sd.position.set(QD.x + s * (QW / 2 - 0.008), QD.y, WALL_Z + QDP / 2);
+      const tb = rbox(QW, 0.016, QDP, 0.004, M.enc);
+      tb.position.set(QD.x, QD.y + s * (QH / 2 - 0.008), WALL_Z + QDP / 2);
+      scene.add(sd, tb);
+    }
+    const mplate = rbox(QW - 0.06, QH - 0.06, 0.006, 0.003, M.plate);
+    mplate.position.set(QD.x, QD.y, WALL_Z + 0.018);
+    scene.add(mplate);
+    const RAIL_Z = WALL_Z + 0.03;
+    const CZ = RAIL_Z + 0.03;
+    const WZ = WALL_Z + 0.025;
+    const ROW_A = QD.y + 0.2;
+    const ROW_B = QD.y - 0.08;
+    for (const y of [ROW_A, ROW_B]) {
+      const rail = rbox(0.6, 0.035, 0.008, 0.002, M.rail);
+      rail.position.set(QD.x, y, RAIL_Z - 0.004);
+      const lipT = box(0.6, 0.004, 0.012, M.rail);
+      lipT.position.set(QD.x, y + 0.0175, RAIL_Z - 0.002);
+      const lipB = lipT.clone();
+      lipB.position.y = y - 0.0175;
+      scene.add(rail, lipT, lipB);
+    }
+
+    // Disjuntor DIN: corpo, frente, alavanca com pivô, janela ON/OFF, etiqueta e parafusos dos bornes
+    const MOD = 0.068;
+    const ON_ROT = 0.42;
+    const OFF_ROT = Math.PI - 0.42;
+    const indOn = new THREE.MeshStandardMaterial({ color: "#e53935", roughness: 0.4 });
+    const indOff = new THREE.MeshStandardMaterial({ color: "#43a047", roughness: 0.4 });
+    function makeBreaker({ x, y, poles = 1, label = "", leverColor = "#1f2328", body = M.breaker, labelBg = "#ffffff", labelFg = "#0b1d3f" }) {
+      const g = new THREE.Group();
+      g.position.set(x, y, RAIL_Z);
+      const w = MOD * poles - 0.003;
+      const base = rbox(w, 0.19, 0.05, 0.006, body);
+      base.position.z = 0.025;
+      const nose = rbox(w, 0.085, 0.04, 0.007, body);
+      nose.position.z = 0.068;
+      g.add(base, nose);
+      const terms = [];
+      for (let p = 0; p < poles; p++) {
+        const px = -w / 2 + MOD * (p + 0.5) - 0.0015;
+        for (const sy of [1, -1]) {
+          const sc = cyl(0.0095, 0.008, M.screw, 14);
+          sc.rotation.x = Math.PI / 2;
+          sc.position.set(px, sy * 0.075, 0.051);
+          const slot = box(0.013, 0.0022, 0.003, M.dark);
+          slot.position.set(px, sy * 0.075, 0.0555);
+          slot.rotation.z = 0.6;
+          g.add(sc, slot);
+        }
+        terms.push(px);
+      }
+      const pivot = new THREE.Group();
+      pivot.position.set(0, 0.008, 0.088);
+      const lw = poles === 1 ? 0.026 : w * 0.78;
+      const lev = rbox(lw, 0.05, 0.017, 0.005, std(leverColor, { roughness: 0.4 }));
+      lev.position.y = 0.024;
+      pivot.add(lev);
+      pivot.rotation.x = ON_ROT;
+      g.add(pivot);
+      const ind = plane(0.012, 0.007, indOn);
+      ind.position.set(w / 2 - 0.012, 0.03, 0.0885);
+      g.add(ind);
+      let face = null;
+      if (label) {
+        face = plane(Math.min(w * 0.88, 0.12), 0.026, new THREE.MeshStandardMaterial({ map: textTex([label], { bg: labelBg, fg: labelFg, w: 256, h: 64, size: 44 }), roughness: 0.5 }));
+        face.position.set(0, -0.058, 0.0505);
+        g.add(face);
+      }
+      scene.add(g);
+      const top = (p = 0) => [x + terms[p], y + 0.095, CZ];
+      const bot = (p = 0) => [x + terms[p], y - 0.095, CZ];
+      return { g, pivot, lev, ind, face, x, y, w, top, bot, set(on) {
+        pivot.rotation.x = lerp(OFF_ROT, ON_ROT, on);
+        ind.material = on > 0.5 ? indOn : indOff;
+      } };
+    }
+    const GERAL = makeBreaker({ x: QD.x - 0.215, y: ROW_A, poles: 2, label: "C50 GERAL" });
+    const DR = makeBreaker({ x: QD.x - 0.059, y: ROW_A, poles: 2, label: "DR 30mA", leverColor: "#1d4ed8" });
+    const drBtn = cyl(0.011, 0.012, M.yellow, 16);
+    drBtn.rotation.x = Math.PI / 2;
+    drBtn.position.set(DR.w / 2 - 0.02, -0.025, 0.09);
+    DR.g.add(drBtn);
+    const drT = plane(0.012, 0.012, new THREE.MeshBasicMaterial({ map: textTex(["T"], { bg: "#facc15", fg: "#0b1d3f", w: 64, h: 64, size: 50 }) }));
+    drT.position.set(DR.w / 2 - 0.02, -0.025, 0.0965);
+    DR.g.add(drT);
+    const DR_BTN_Z = 0.09;
+    const DPS = [0, 1].map((i) => makeBreaker({ x: QD.x + 0.059 + i * MOD, y: ROW_A, label: "DPS", body: M.breakerDark, labelBg: "#3b3f46", labelFg: "#ffffff", leverColor: "#3b3f46" }));
+    const dpsWinMat = new THREE.MeshStandardMaterial({ color: "#22c55e", emissive: "#22c55e", emissiveIntensity: 0.4, roughness: 0.3 });
+    DPS.forEach((d) => {
+      d.lev.visible = false;
+      d.ind.visible = false;
+      const win = rbox(0.03, 0.03, 0.006, 0.004, dpsWinMat);
+      win.position.set(0, 0.012, 0.09);
+      d.g.add(win);
+      d.win = win;
+    });
+    const CIRC = [
+      ["C10", "ILUMIN."],
+      ["C20", "TOMADAS"],
+      ["C20", "COZINHA"],
+      ["C20", "LAVAND."],
+    ].map(([amp, name], i) => {
+      const m = makeBreaker({ x: QD.x - 0.21 + i * MOD, y: ROW_B, label: amp });
+      const tag = plane(0.064, 0.028, new THREE.MeshStandardMaterial({ map: textTex([name], { bg: "#fff7ed", fg: "#c2410c", w: 256, h: 112, size: 50, mono: false }), roughness: 0.6 }));
+      tag.position.set(m.x, ROW_B - 0.128, CZ + 0.002);
+      scene.add(tag);
+      m.tag = tag;
+      return m;
+    });
+    const LAV = CIRC[3];
+    const TEX20 = LAV.face.material.map;
+    const TEX40 = textTex(["C40"], { bg: "#fdecec", fg: "#b3261e", w: 256, h: 64, size: 44 });
+    // Tampas cegas no resto do trilho
+    for (let i = 0; i < 2; i++) {
+      const bl = rbox(MOD - 0.003, 0.085, 0.02, 0.004, M.combCover);
+      bl.position.set(QD.x - 0.21 + (4 + i) * MOD, ROW_B, RAIL_Z + 0.06);
+      scene.add(bl);
+    }
+    // Barramento tipo pente sobre os disjuntores de circuito
+    const comb = rbox(MOD * 4, 0.02, 0.022, 0.005, M.combCover);
+    comb.position.set(QD.x - 0.21 + 1.5 * MOD, ROW_B + 0.106, CZ);
+    scene.add(comb);
+    // Barras de neutro (isoladores azuis) e de terra (verdes)
+    const BAR_Y = QD.y - 0.33;
+    function makeBar(cx, ins) {
+      const bar = rbox(0.2, 0.018, 0.014, 0.003, M.brass);
+      bar.position.set(cx, BAR_Y, CZ - 0.006);
+      scene.add(bar);
+      for (const s of [-1, 1]) {
+        const st = rbox(0.024, 0.03, 0.022, 0.004, ins);
+        st.position.set(cx + s * 0.085, BAR_Y, RAIL_Z - 0.004);
+        scene.add(st);
+      }
+      for (let i = 0; i < 6; i++) {
+        const sc = cyl(0.0065, 0.008, M.screw, 12);
+        sc.position.set(cx - 0.065 + i * 0.026, BAR_Y + 0.012, CZ - 0.006);
+        scene.add(sc);
+      }
+    }
+    const NB_X = QD.x - 0.14;
+    const PB_X = QD.x + 0.14;
+    makeBar(NB_X, M.blueIns);
+    makeBar(PB_X, M.greenIns);
+
+    // Tampa com dobradiça à direita, fecho, adesivo de risco e quadro de cargas por dentro
+    const lid = new THREE.Group();
+    lid.position.set(QD.x + QW / 2, QD.y, QF + 0.002);
+    const lidP = new THREE.Group();
+    lid.add(lidP);
+    const lidPanel = rbox(QW, QH, 0.016, 0.01, M.enc);
+    lidPanel.position.set(-QW / 2, 0, 0.008);
+    const lidLock = cyl(0.016, 0.012, M.chrome, 20);
+    lidLock.rotation.x = Math.PI / 2;
+    lidLock.position.set(-QW + 0.05, 0, 0.022);
+    const lidKey = box(0.004, 0.018, 0.004, M.dark);
+    lidKey.position.set(-QW + 0.05, 0, 0.029);
+    const warnTex = canvasTex(256, 256, (g, w, h) => {
+      g.fillStyle = "#facc15";
+      g.beginPath();
+      g.moveTo(w / 2, 14);
+      g.lineTo(w - 12, h - 30);
+      g.lineTo(12, h - 30);
+      g.closePath();
+      g.fill();
+      g.lineWidth = 12;
+      g.strokeStyle = "#0b1d3f";
+      g.stroke();
+      g.fillStyle = "#0b1d3f";
+      g.beginPath();
+      g.moveTo(140, 70);
+      g.lineTo(100, 150);
+      g.lineTo(130, 150);
+      g.lineTo(112, 205);
+      g.lineTo(160, 125);
+      g.lineTo(130, 125);
+      g.closePath();
+      g.fill();
+    });
+    warnTex.wrapS = warnTex.wrapT = THREE.ClampToEdgeWrapping;
+    const warn = decal(0.14, 0.14, warnTex);
+    warn.position.set(-QW / 2, 0.24, 0.0165);
+    const warnTxt = plane(0.3, 0.06, new THREE.MeshStandardMaterial({ map: textTex(["PERIGO · RISCO DE", "CHOQUE ELÉTRICO"], { bg: "#facc15", fg: "#0b1d3f", w: 512, h: 112, size: 40, mono: false }), roughness: 0.6 }));
+    warnTxt.position.set(-QW / 2, 0.12, 0.0165);
+    const legend = plane(0.5, 0.62, new THREE.MeshStandardMaterial({
+      map: canvasTex(400, 500, (g, w, h) => {
+        g.fillStyle = "#ffffff";
+        g.fillRect(0, 0, w, h);
+        g.fillStyle = "#0b1d3f";
+        g.font = "700 30px Poppins, sans-serif";
+        g.fillText("QUADRO DE CARGAS", 30, 50);
+        g.font = "500 22px 'JetBrains Mono', monospace";
+        ["GERAL   C50  10mm²", "DR      30mA", "DPS     20kA", "1 ILUM  C10 1,5mm²", "2 TOMAD C20 2,5mm²", "3 COZIN C20 2,5mm²", "4 LAVAN C20 2,5mm²"].forEach((l, i) => {
+          g.fillText(l, 30, 110 + i * 48);
+          g.fillRect(30, 122 + i * 48, w - 60, 2);
+        });
+      }),
+      roughness: 0.7,
+    }));
+    legend.rotation.y = Math.PI;
+    legend.position.set(-QW / 2, 0, -0.001);
+    lidP.add(lidPanel, lidLock, lidKey, warn, warnTxt, legend);
+    scene.add(lid);
+    const hinge = cyl(0.008, QH * 0.9, M.chrome, 12);
+    hinge.position.set(QD.x + QW / 2, QD.y, QF + 0.004);
+    scene.add(hinge);
+
+    // ---------- Tomada (padrão brasileiro) e máquina de lavar ----------
+    const OUT = new THREE.Vector3(-1.25, 1.05, WALL_Z);
+    const outPlate = rbox(0.08, 0.125, 0.014, 0.008, M.white);
+    outPlate.position.set(OUT.x, OUT.y, WALL_Z + 0.007);
+    const outWell = cyl(0.026, 0.012, std("#e9e9e6", { roughness: 0.5 }), 24);
+    outWell.rotation.x = Math.PI / 2;
+    outWell.position.set(OUT.x, OUT.y, WALL_Z + 0.012);
+    const plugBody = cyl(0.022, 0.035, M.rubber, 20);
+    plugBody.rotation.x = Math.PI / 2;
+    plugBody.position.set(OUT.x, OUT.y, WALL_Z + 0.032);
+    const plugGrip = cyl(0.014, 0.03, M.rubber, 16);
+    plugGrip.position.set(OUT.x, OUT.y - 0.03, WALL_Z + 0.04);
+    scene.add(outPlate, outWell, plugBody, plugGrip);
+    const MAQ = new THREE.Vector3(-1.25, 0.43, WALL_Z + 0.42);
+    const chassisMat = std("#f7f7f4", { roughness: 0.22, emissive: "#ff3b3b", emissiveIntensity: 0 });
+    const chassis = rbox(0.6, 0.85, 0.6, 0.035, chassisMat, 4);
+    chassis.position.copy(MAQ);
+    scene.add(chassis);
+    const panelStrip = rbox(0.58, 0.11, 0.03, 0.01, M.white);
+    panelStrip.position.set(MAQ.x, MAQ.y + 0.355, MAQ.z + 0.29);
+    const drawer = rbox(0.17, 0.07, 0.02, 0.008, std("#e9eaec", { roughness: 0.3 }));
+    drawer.position.set(MAQ.x - 0.18, MAQ.y + 0.355, MAQ.z + 0.31);
+    const dispTex = textTex(["40° · 1:12"], { bg: "#0b1220", fg: "#5eead4", w: 256, h: 96, size: 46 });
+    const dispMat = new THREE.MeshStandardMaterial({ color: "#0b1220", emissive: "#ffffff", emissiveMap: dispTex, emissiveIntensity: 1.6, roughness: 0.2 });
+    const disp = plane(0.12, 0.045, dispMat);
+    disp.position.set(MAQ.x + 0.03, MAQ.y + 0.355, MAQ.z + 0.3055);
+    const knob = cyl(0.035, 0.03, M.chrome, 24);
+    knob.rotation.x = Math.PI / 2;
+    knob.position.set(MAQ.x + 0.19, MAQ.y + 0.355, MAQ.z + 0.31);
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.19, 0.028, 16, 48), M.chrome);
+    ring.position.set(MAQ.x, MAQ.y - 0.05, MAQ.z + 0.305);
+    ring.castShadow = true;
+    const drum = cyl(0.17, 0.02, M.dark, 32);
+    drum.rotation.x = Math.PI / 2;
+    drum.position.set(MAQ.x, MAQ.y - 0.05, MAQ.z + 0.295);
+    const clothes = [];
+    ["#e76f51", "#2a9d8f", "#f4a261", "#457b9d"].forEach((c, i) => {
+      const cl = sph(0.07, std(c, { roughness: 0.9 }), 12);
+      cl.scale.set(1.2, 0.7, 0.4);
+      clothes.push(cl);
+      scene.add(cl);
+    });
+    const door = new THREE.Mesh(new THREE.SphereGeometry(0.17, 32, 12, 0, Math.PI * 2, 0, 0.6), M.glass);
+    door.rotation.x = Math.PI / 2;
+    door.position.set(MAQ.x, MAQ.y - 0.05, MAQ.z + 0.165);
+    scene.add(panelStrip, drawer, disp, knob, ring, drum, door);
+    for (const s of [-1, 1]) {
+      const ft = cyl(0.025, 0.02, M.rubber, 12);
+      ft.position.set(MAQ.x + s * 0.24, 0.01, MAQ.z + 0.24);
+      scene.add(ft);
+    }
+    // Pele eletrificada da carcaça (fuga sem terra)
+    const chassisSkinMat = skinMat("#ff5a5a");
+    const chassisSkin = new THREE.Mesh(new RoundedBoxGeometry(0.62, 0.87, 0.62, 4, 0.04), chassisSkinMat);
+    chassisSkin.position.copy(MAQ);
+    chassisSkin.renderOrder = 8;
+    scene.add(chassisSkin);
+
+    // ---------- Fiação: entrada, ligações internas, circuito da lavanderia e terra ----------
+    const ENT_X = QD.x - 0.218;
+    const TOPY = QD.y + QH / 2;
+    const RUN_Y = 2.38;
+    const CH_X = QD.x + 0.25;
+    // Entrada (vinda de cima) em conduíte
+    const F1 = wire([[ENT_X - 0.008, 3.4, WZ], [ENT_X - 0.008, TOPY + 0.02, WZ], [ENT_X - 0.008, TOPY - 0.06, CZ], GERAL.top(0)], M.pvcBlack);
+    const F2 = wire([[ENT_X + 0.012, 3.4, WZ], [ENT_X + 0.012, TOPY + 0.02, WZ], [ENT_X + 0.012, TOPY - 0.06, CZ], GERAL.top(1)], M.pvcRed);
+    wire([[ENT_X - 0.026, 3.4, WZ], [ENT_X - 0.026, TOPY + 0.02, WZ], [QD.x - 0.33, TOPY - 0.06, CZ], [QD.x - 0.33, BAR_Y + 0.05, CZ], [NB_X - 0.065, BAR_Y + 0.05, CZ], [NB_X - 0.065, BAR_Y + 0.012, CZ]], M.pvcBlue);
+    wire([[ENT_X + 0.028, 3.4, WZ], [ENT_X + 0.028, TOPY + 0.02, WZ], [QD.x - 0.315, TOPY - 0.07, CZ - 0.008], [QD.x - 0.315, BAR_Y - 0.06, CZ - 0.008], [PB_X - 0.065, BAR_Y - 0.06, CZ - 0.008], [PB_X - 0.065, BAR_Y + 0.012, CZ - 0.008]], M.pvcBlack.clone()).mesh.material = std("#ffffff", { map: peTex, roughness: 0.35 });
+    // Geral -> DR (contornam o DR pelo vão entre os módulos e entram por cima)
+    const J1 = wire([GERAL.bot(0), [GERAL.bot(0)[0], ROW_A - 0.13, CZ], [QD.x - 0.142, ROW_A - 0.13, CZ], [QD.x - 0.142, ROW_A + 0.13, CZ], [DR.top(0)[0], ROW_A + 0.13, CZ], DR.top(0)], M.pvcBlack, 0.0058, 0.016);
+    wire([GERAL.bot(1), [GERAL.bot(1)[0], ROW_A - 0.115, CZ + 0.006], [QD.x - 0.136, ROW_A - 0.115, CZ + 0.006], [QD.x - 0.136, ROW_A + 0.145, CZ + 0.006], [DR.top(1)[0], ROW_A + 0.145, CZ + 0.006], DR.top(1)], M.pvcRed, 0.0058, 0.016);
+    // DR -> pente dos circuitos
+    const J2 = wire([DR.bot(0), [DR.bot(0)[0], ROW_A - 0.135, CZ], [QD.x - 0.27, ROW_A - 0.135, CZ], [QD.x - 0.27, ROW_B + 0.106, CZ], [QD.x - 0.245, ROW_B + 0.106, CZ]], M.pvcBlack, 0.0058, 0.016);
+    // Neutro de saída do DR até a barra de neutro
+    wire([DR.bot(1), [DR.bot(1)[0], ROW_A - 0.15, CZ - 0.01], [QD.x + 0.2, ROW_A - 0.15, CZ - 0.01], [QD.x + 0.2, BAR_Y + 0.07, CZ - 0.01], [NB_X + 0.065, BAR_Y + 0.07, CZ - 0.01], [NB_X + 0.065, BAR_Y + 0.012, CZ - 0.01]], M.pvcBlue, 0.0058, 0.016);
+    // DPS: fase até o DPS, DPS até a barra de terra
+    const DPSIN = wire([[ENT_X - 0.008, TOPY - 0.085, CZ - 0.004], [DPS[0].top()[0], TOPY - 0.085, CZ - 0.004], DPS[0].top()], M.pvcBlack, 0.0052, 0.014);
+    wire([[ENT_X + 0.012, TOPY - 0.1, CZ - 0.002], [DPS[1].top()[0], TOPY - 0.1, CZ - 0.002], DPS[1].top()], M.pvcRed, 0.0052, 0.014);
+    const peMat = std("#ffffff", { map: peTex, roughness: 0.35 });
+    const DPSOUT = wire([DPS[0].bot(), [DPS[0].bot()[0], ROW_A - 0.14, CZ], [QD.x + 0.195, ROW_A - 0.14, CZ - 0.016], [QD.x + 0.195, BAR_Y + 0.04, CZ - 0.016], [PB_X + 0.039, BAR_Y + 0.04, CZ - 0.016], [PB_X + 0.039, BAR_Y + 0.012, CZ - 0.016]], peMat, 0.0052, 0.014);
+    wire([DPS[1].bot(), [DPS[1].bot()[0], ROW_A - 0.125, CZ], [QD.x + 0.21, ROW_A - 0.125, CZ - 0.02], [QD.x + 0.21, BAR_Y + 0.035, CZ - 0.02], [PB_X + 0.013, BAR_Y + 0.035, CZ - 0.02], [PB_X + 0.013, BAR_Y + 0.012, CZ - 0.02]], peMat, 0.0052, 0.014);
+    // Condutor de aterramento: da barra de terra para baixo, até a haste
+    const EARTH = wire([[PB_X - 0.013, BAR_Y - 0.012, CZ - 0.006], [PB_X - 0.013, QD.y - QH / 2 + 0.02, CZ - 0.006], [PB_X - 0.013, QD.y - QH / 2 - 0.04, WZ], [PB_X - 0.013, -0.2, WZ]], peMat, 0.0065, 0.02);
+    // Saídas dos outros circuitos (descem pelo fundo do quadro)
+    CIRC.slice(0, 3).forEach((m, i) => {
+      wire([m.bot(), [m.bot()[0], QD.y - QH / 2 + 0.05, CZ], [m.bot()[0], QD.y - QH / 2 + 0.005, CZ]], M.pvcBlack, 0.0055);
+      wire([[NB_X - 0.039 + i * 0.026, BAR_Y - 0.012, CZ - 0.004], [NB_X - 0.039 + i * 0.026, QD.y - QH / 2 + 0.005, CZ - 0.004]], M.pvcBlue, 0.0055);
+    });
+    // Circuito da lavanderia: fase, neutro e terra sobem pela lateral, entram no conduíte e descem até a tomada
+    const LAVP = wire([LAV.bot(), [LAV.x, ROW_B - 0.145, CZ], [CH_X, ROW_B - 0.145, CZ], [CH_X, TOPY - 0.03, CZ], [CH_X, TOPY + 0.03, WZ], [CH_X, RUN_Y, WZ], [OUT.x, RUN_Y, WZ], [OUT.x, OUT.y + 0.07, WZ], [OUT.x, OUT.y + 0.03, WALL_Z + 0.012]], std("#1b1d22", { roughness: 0.35, emissive: "#ff4a00", emissiveIntensity: 0 }), 0.0062, 0.03);
+    const phaseMat = LAVP.mesh.material;
+    const LAVN = wire([[NB_X + 0.039, BAR_Y + 0.012, CZ - 0.012], [NB_X + 0.039, BAR_Y + 0.06, CZ - 0.012], [CH_X + 0.022, BAR_Y + 0.06, CZ - 0.012], [CH_X + 0.022, TOPY - 0.03, CZ - 0.012], [CH_X + 0.022, TOPY + 0.03, WZ], [CH_X + 0.022, RUN_Y + 0.022, WZ], [OUT.x - 0.022, RUN_Y + 0.022, WZ], [OUT.x - 0.022, OUT.y + 0.07, WZ], [OUT.x - 0.012, OUT.y + 0.03, WALL_Z + 0.012]], M.pvcBlue, 0.0062, 0.03);
+    const GND = wire([[PB_X + 0.065, BAR_Y + 0.012, CZ - 0.006], [CH_X - 0.022, BAR_Y + 0.03, CZ - 0.006], [CH_X - 0.022, TOPY - 0.03, CZ - 0.006], [CH_X - 0.022, TOPY + 0.03, WZ], [CH_X - 0.022, RUN_Y - 0.022, WZ], [OUT.x + 0.022, RUN_Y - 0.022, WZ], [OUT.x + 0.022, OUT.y + 0.07, WZ], [OUT.x + 0.012, OUT.y + 0.03, WALL_Z + 0.012]], peMat, 0.0062, 0.03);
+    GND.mesh.material = GND.mesh.material.clone();
+    const GND_IDX = GND.geo.index.count;
+    // Conduítes corrugados e os rasgos na parede
+    function conduit(pts, r, L) {
+      const path = bendPath(pts, 0.06);
+      const len = path.getLength();
+      const tx = corrTex.clone();
+      tx.repeat.set(len / 0.014, 1);
+      tx.needsUpdate = true;
+      const m = new THREE.MeshStandardMaterial({ color: "#ffffff", map: tx, roughness: 0.45, transparent: true, opacity: 0.42, depthWrite: false, side: THREE.DoubleSide });
+      const mesh = new THREE.Mesh(new THREE.TubeGeometry(path, Math.round(len * 90), r, 16, false), m);
+      mesh.renderOrder = 4;
+      scene.add(mesh);
+      return mesh;
+    }
+    const condLav = conduit([[CH_X, TOPY, WZ], [CH_X, RUN_Y, WZ], [OUT.x, RUN_Y, WZ], [OUT.x, OUT.y + 0.085, WZ]], 0.036);
+    conduit([[ENT_X, 3.4, WZ], [ENT_X, TOPY, WZ]], 0.034);
+    for (const [x, y, w, h] of [
+      [CH_X, (TOPY + RUN_Y) / 2 + 0.02, 0.1, RUN_Y - TOPY + 0.1],
+      [(CH_X + OUT.x) / 2, RUN_Y, CH_X - OUT.x + 0.1, 0.1],
+      [OUT.x, (RUN_Y + OUT.y) / 2 + 0.04, 0.1, RUN_Y - OUT.y - 0.04],
+      [ENT_X, (TOPY + 3.4) / 2, 0.1, 3.4 - TOPY],
+      [PB_X - 0.013, (QD.y - QH / 2) / 2 + 0.2, 0.06, QD.y - QH / 2],
+    ]) {
+      const gv = new THREE.Mesh(new THREE.PlaneGeometry(w, h), M.groove.clone());
+      gv.material.map = grooveTex.clone();
+      gv.material.map.repeat.set(w / 0.25, h / 0.25);
+      gv.material.map.needsUpdate = true;
+      gv.position.set(x, y, WALL_Z + 0.003);
+      gv.receiveShadow = true;
+      scene.add(gv);
+    }
+    // Cabo de força da máquina (do plugue até a traseira)
+    const CORD = wire([[OUT.x, OUT.y - 0.045, WALL_Z + 0.04], [OUT.x + 0.01, 0.98, WALL_Z + 0.07], [OUT.x + 0.07, 0.9, WALL_Z + 0.11], [OUT.x + 0.1, MAQ.y + 0.36, MAQ.z - 0.3]], M.rubber, 0.009, 0.05);
+    // Marca de queimado na parede (mito)
+    const HOT = new THREE.Vector3(-0.35, RUN_Y, WZ);
+    const scorch = decal(0.75, 0.55, scorchTex, { depthWrite: false, opacity: 0 });
+    scorch.position.set(HOT.x, HOT.y + 0.05, WALL_Z + 0.006);
+    scene.add(scorch);
+
+    // Fluxos de energia
+    const fF1 = flowOn(F1, "#ffd24a");
+    const fF2 = flowOn(F2, "#ffd24a");
+    const fJ1 = flowOn(J1, "#ffd24a");
+    const fJ2 = flowOn(J2, "#ffd24a");
+    const fLav = flowOn(LAVP, "#ffd24a", 3.4, 8);
+    const fCord = flowOn(CORD, "#ffd24a", 3, 7, 1.25);
+    const fLeak = flowOn(CORD, "#ff3b3b", 4, 6, 1.45);
+    const fGnd = flowOn(GND, "#4ade80", 3.4, 8);
+    const fDpsIn = flowOn(DPSIN, "#c4b5fd", 4);
+    const fDpsOut = flowOn(DPSOUT, "#4ade80", 4);
+    const fEarth = flowOn(EARTH, "#4ade80", 4);
+    const fNeu = flowOn(LAVN, "#7cc4ff", 2.2, 8);
+
+    // ---------- Detector de tensão ----------
+    function makeDetector() {
+      const g = new THREE.Group();
+      const body = cyl(0.017, 0.15, M.yellow, 20);
+      body.position.y = -0.07;
+      const grip = cyl(0.0185, 0.05, M.rubber, 20);
+      grip.position.y = -0.02;
+      const nose = cyl(0.012, 0.03, M.dark, 16, 0.006);
+      nose.position.y = -0.16;
+      const tip = cyl(0.003, 0.045, M.chrome, 8);
+      tip.position.y = -0.195;
+      const ledMat = new THREE.MeshStandardMaterial({ color: "#16a34a", emissive: "#22c55e", emissiveIntensity: 2.5 });
+      const led = cyl(0.012, 0.02, ledMat, 16);
+      led.position.y = 0.014;
+      g.add(body, grip, nose, tip, led);
+      g.userData = { led: ledMat };
+      return g;
+    }
+
+    // ---------- Eletricista ECASI: uniforme antichama azul-marinho, faixas refletivas, logo nas costas ----------
+    function makeElectrician(backTex, symTex) {
+      const SKIN = std("#d8a07b", { roughness: 0.72 });
+      const shirt = std("#1d2e52", { roughness: 0.92 });
+      const pantsM = std("#16233f", { roughness: 0.92 });
+      const bootM = std("#17181b", { roughness: 0.5 });
+      const soleM = std("#3a2f25", { roughness: 0.9 });
+      const gloveM = std("#c85a2c", { roughness: 0.62 });
+      const tapeM = new THREE.MeshStandardMaterial({ map: tapeTex, roughness: 0.3, metalness: 0.15, emissive: "#ffffff", emissiveMap: tapeTex, emissiveIntensity: 0.1 });
+      const cap = (r, len, m) => shade(new THREE.Mesh(new THREE.CapsuleGeometry(r, len, 8, 18), m));
+      const band = (r, h, sx = 1, sz = 1) => {
+        const mesh = shade(new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, 32, 1, true), tapeM));
+        mesh.scale.set(sx, 1, sz);
+        return mesh;
+      };
+      const g = new THREE.Group();
+      const hips = new THREE.Group();
+      hips.position.y = 0.92;
+      g.add(hips);
+      // Pernas com joelho, faixa na canela e botina
+      const legs = [];
+      for (const s of [-1, 1]) {
+        const thigh = new THREE.Group();
+        thigh.position.set(s * 0.1, 0, 0);
+        const th = cap(0.077, 0.3, pantsM);
+        th.position.y = -0.22;
+        thigh.add(th);
+        const knee = new THREE.Group();
+        knee.position.y = -0.45;
+        const sh = cap(0.066, 0.27, pantsM);
+        sh.position.y = -0.18;
+        const tb = band(0.0675, 0.034);
+        tb.position.y = -0.17;
+        const shaft = cyl(0.067, 0.1, bootM, 20, 0.07);
+        shaft.position.y = -0.36;
+        const foot = shade(new THREE.Mesh(new THREE.CapsuleGeometry(0.06, 0.15, 6, 14), bootM));
+        foot.rotation.x = Math.PI / 2;
+        foot.position.set(0, -0.4, 0.05);
+        const toe = sph(0.062, bootM, 16);
+        toe.scale.set(1, 0.75, 1);
+        toe.position.set(0, -0.415, 0.14);
+        const sole = rbox(0.135, 0.026, 0.3, 0.01, soleM);
+        sole.position.set(0, -0.457, 0.055);
+        knee.add(sh, tb, shaft, foot, toe, sole);
+        thigh.add(knee);
+        hips.add(thigh);
+        legs.push({ thigh, knee });
+      }
+      // Tronco, cinto de ferramentas e faixa refletiva
+      const torso = cap(0.17, 0.3, shirt);
+      torso.scale.set(1.18, 1, 0.78);
+      torso.position.y = 0.32;
+      hips.add(torso);
+      const belt = cyl(0.19, 0.06, std("#3b2a1d", { roughness: 0.6 }), 24);
+      belt.scale.set(1.06, 1, 0.76);
+      belt.position.y = 0.06;
+      const buckle = rbox(0.05, 0.04, 0.012, 0.006, M.chrome);
+      buckle.position.set(0, 0.06, 0.148);
+      const pouch = rbox(0.09, 0.13, 0.07, 0.015, std("#5a3d27", { roughness: 0.65 }));
+      pouch.position.set(-0.215, -0.02, 0.03);
+      const pl1 = cyl(0.009, 0.1, std("#d32f2f", { roughness: 0.5 }), 10);
+      pl1.position.set(-0.205, 0.07, 0.04);
+      pl1.rotation.z = 0.15;
+      const pl2 = cyl(0.009, 0.1, std("#facc15", { roughness: 0.5 }), 10);
+      pl2.position.set(-0.228, 0.065, 0.02);
+      pl2.rotation.z = -0.1;
+      hips.add(belt, buckle, pouch, pl1, pl2);
+      const tBand = band(0.1712, 0.042, 1.18, 0.78);
+      tBand.position.y = 0.21;
+      hips.add(tBand);
+      // Logo grande do Grupo ECASI estampado nas costas (segue a curva do tronco)
+      const print = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.1727, 0.1727, 0.15, 32, 1, true, Math.PI - 0.82, 1.64),
+        new THREE.MeshStandardMaterial({ map: backTex, transparent: true, alphaTest: 0.25, roughness: 0.75 }),
+      );
+      print.scale.set(1.18, 1, 0.78);
+      print.position.y = 0.385;
+      hips.add(print);
+      // Frente: vista com botões, bolsos, símbolo no peito e crachá
+      const placket = box(0.014, 0.33, 0.004, std("#17264a", { roughness: 0.9 }));
+      placket.position.set(0, 0.36, 0.1345);
+      hips.add(placket);
+      for (let i = 0; i < 4; i++) {
+        const bt = sph(0.0055, std("#0e1830", { roughness: 0.4 }), 8);
+        bt.position.set(0, 0.25 + i * 0.075, 0.138);
+        hips.add(bt);
+      }
+      for (const s of [-1, 1]) {
+        const pk = rbox(0.085, 0.085, 0.01, 0.008, shirt);
+        pk.position.set(s * 0.085, 0.37, 0.1335);
+        const flap = rbox(0.09, 0.028, 0.014, 0.006, std("#22355d", { roughness: 0.9 }));
+        flap.position.set(s * 0.085, 0.415, 0.136);
+        hips.add(pk, flap);
+      }
+      const chestLogo = new THREE.Mesh(new THREE.CircleGeometry(0.03, 32), new THREE.MeshBasicMaterial({ map: symTex, transparent: true }));
+      chestLogo.position.set(0.085, 0.37, 0.1395);
+      hips.add(chestLogo);
+      const badge = rbox(0.045, 0.062, 0.004, 0.004, M.white);
+      badge.position.set(-0.085, 0.36, 0.142);
+      const badgeTx = plane(0.04, 0.05, new THREE.MeshStandardMaterial({ map: textTex(["ECASI", "NR-10"], { bg: "#ffffff", fg: "#0b1d3f", w: 128, h: 160, size: 34, mono: false }), roughness: 0.6 }));
+      badgeTx.position.set(-0.085, 0.358, 0.1445);
+      hips.add(badge, badgeTx);
+      const collar = new THREE.Mesh(new THREE.TorusGeometry(0.072, 0.02, 10, 28), std("#22355d", { roughness: 0.9 }));
+      collar.rotation.x = Math.PI / 2;
+      collar.scale.set(1, 0.85, 1);
+      collar.position.y = 0.6;
+      hips.add(collar);
+      // Pescoço e cabeça com rosto, barba curta, capacete com jugular e óculos de segurança
+      const neck = cyl(0.05, 0.1, SKIN, 14);
+      neck.position.y = 0.63;
+      hips.add(neck);
+      const head = new THREE.Group();
+      head.position.y = 0.8;
+      hips.add(head);
+      const skull = sph(0.145, SKIN, 32);
+      skull.scale.set(1, 1.08, 0.98);
+      head.add(skull);
+      const eyes = [];
+      const eyeMat = std("#1b1b1f", { roughness: 0.25 });
+      for (const s of [-1, 1]) {
+        const e = sph(0.02, eyeMat, 14);
+        e.position.set(s * 0.052, 0.015, 0.127);
+        const hl = sph(0.0065, new THREE.MeshBasicMaterial({ color: "#ffffff" }), 8);
+        hl.position.set(0.006, 0.007, 0.017);
+        e.add(hl);
+        head.add(e);
+        eyes.push(e);
+        const brow = rbox(0.05, 0.013, 0.012, 0.005, std("#3b2618"));
+        brow.position.set(s * 0.053, 0.062, 0.13);
+        brow.rotation.z = -s * 0.1;
+        head.add(brow);
+        const ear = sph(0.03, SKIN, 12);
+        ear.scale.set(0.6, 1, 0.8);
+        ear.position.set(s * 0.145, 0, 0);
+        head.add(ear);
+      }
+      const nose = sph(0.021, SKIN, 12);
+      nose.position.set(0, -0.012, 0.145);
+      head.add(nose);
+      const mouth = new THREE.Mesh(new THREE.TorusGeometry(0.028, 0.006, 6, 16, Math.PI), std("#8a3b2e"));
+      mouth.rotation.z = Math.PI;
+      mouth.position.set(0, -0.052, 0.127);
+      head.add(mouth);
+      const beardM = std("#3b2618", { roughness: 0.95 });
+      const beard = shade(new THREE.Mesh(new THREE.SphereGeometry(0.1475, 28, 14, Math.PI / 2 - 1.15, 2.3, 1.95, 0.75), beardM));
+      beard.scale.set(1, 1.08, 0.98);
+      head.add(beard);
+      const hair = shade(new THREE.Mesh(new THREE.SphereGeometry(0.149, 24, 10, Math.PI + 0.35, Math.PI - 0.7, 0.9, 0.7), beardM));
+      hair.scale.set(1, 1.08, 0.98);
+      head.add(hair);
+      const helmetM = std("#fbfbf8", { roughness: 0.28 });
+      const helmet = new THREE.Group();
+      helmet.position.y = 0.03;
+      head.add(helmet);
+      const dome = shade(new THREE.Mesh(new THREE.SphereGeometry(0.168, 36, 16, 0, Math.PI * 2, 0, Math.PI / 2), helmetM));
+      dome.scale.set(1, 0.95, 1.1);
+      const ridge = shade(new THREE.Mesh(new THREE.TorusGeometry(0.163, 0.011, 8, 28, Math.PI), helmetM));
+      ridge.rotation.y = Math.PI / 2;
+      ridge.scale.set(1, 0.95, 1.1);
+      const rim = shade(new THREE.Mesh(new THREE.TorusGeometry(0.168, 0.008, 8, 40), helmetM));
+      rim.rotation.x = Math.PI / 2;
+      rim.scale.set(1, 1.1, 1);
+      const peak = shade(new THREE.Mesh(new THREE.CylinderGeometry(0.235, 0.235, 0.012, 32, 1, false, -0.85, 1.7), helmetM));
+      peak.position.set(0, 0.0, 0.0);
+      peak.rotation.x = 0.1;
+      const sticker = new THREE.Mesh(new THREE.CircleGeometry(0.032, 28), new THREE.MeshBasicMaterial({ map: symTex, transparent: true }));
+      sticker.position.set(0, 0.085, 0.16);
+      sticker.rotation.x = -0.55;
+      helmet.add(dome, ridge, rim, peak, sticker);
+      const strap = new THREE.Mesh(new THREE.TorusGeometry(0.142, 0.0045, 6, 30, Math.PI), std("#2b2f36"));
+      strap.rotation.set(0.35, 0, Math.PI);
+      strap.position.set(0, 0.0, 0.02);
+      head.add(strap);
+      const lens = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.155, 0.155, 0.048, 32, 1, true, -0.78, 1.56),
+        new THREE.MeshPhysicalMaterial({ color: "#d8f0ff", roughness: 0.05, transparent: true, opacity: 0.32, clearcoat: 1, side: THREE.DoubleSide }),
+      );
+      lens.scale.set(1, 1, 0.98);
+      lens.position.y = 0.015;
+      lens.renderOrder = 3;
+      const lensBar = new THREE.Mesh(new THREE.CylinderGeometry(0.157, 0.157, 0.009, 32, 1, true, -0.8, 1.6), std("#2b2f36", { roughness: 0.4 }));
+      lensBar.scale.set(1, 1, 0.98);
+      lensBar.position.y = 0.042;
+      head.add(lens, lensBar);
+      for (const s of [-1, 1]) {
+        const temple = box(0.006, 0.008, 0.13, std("#2b2f36"));
+        temple.position.set(s * 0.148, 0.04, 0.04);
+        head.add(temple);
+      }
+      // Braços com manga longa, faixas, cotovelo e luva isolante
+      const arms = [];
+      for (const s of [-1, 1]) {
+        const shoulder = new THREE.Group();
+        shoulder.position.set(s * 0.235, 0.52, 0);
+        const ball = sph(0.07, shirt, 18);
+        const upper = cap(0.062, 0.2, shirt);
+        upper.position.y = -0.15;
+        const ub = band(0.0635, 0.03);
+        ub.position.y = -0.17;
+        shoulder.add(ball, upper, ub);
+        const elbow = new THREE.Group();
+        elbow.position.y = -0.29;
+        const fore = cap(0.056, 0.17, shirt);
+        fore.position.y = -0.11;
+        const fb = band(0.0575, 0.028);
+        fb.position.y = -0.1;
+        elbow.add(fore, fb);
+        const hand = new THREE.Group();
+        hand.position.y = -0.27;
+        const gaunt = cyl(0.064, 0.09, gloveM, 20, 0.048);
+        gaunt.position.y = 0.055;
+        const palm = sph(0.05, gloveM, 16);
+        palm.scale.set(0.88, 1.05, 0.64);
+        const fingers = rbox(0.072, 0.055, 0.032, 0.014, gloveM);
+        fingers.position.set(0, -0.055, 0.006);
+        fingers.rotation.x = 0.25;
+        const thumb = cap(0.017, 0.03, gloveM);
+        thumb.position.set(-s * 0.04, -0.005, 0.022);
+        thumb.rotation.z = s * 0.6;
+        hand.add(gaunt, palm, fingers, thumb);
+        elbow.add(hand);
+        shoulder.add(elbow);
+        hips.add(shoulder);
+        arms.push({ shoulder, elbow, hand, side: s });
+      }
+      g.userData = { hips, torso, head, eyes, legs, arms };
+      g.traverse((o) => {
+        if (o.isMesh) o.castShadow = true;
+      });
+      return g;
+    }
+
+    // ---------- IK de dois ossos (ombro e cotovelo) com polo; parte da pose atual ----------
+    const L1 = 0.29;
+    const L2 = 0.27;
+    const DOWN = new THREE.Vector3(0, -1, 0);
+    const qU = new THREE.Quaternion();
+    const qF = new THREE.Quaternion();
+    function reach(who, arm, targetW, k, pole = null) {
+      if (k <= 0.001) return;
+      const { shoulder, elbow, side } = arm;
+      who.updateMatrixWorld(true);
+      const T = who.userData.hips.worldToLocal(new THREE.Vector3(...targetW));
+      const S = shoulder.position.clone();
+      const v = T.clone().sub(S);
+      const d = Math.min(L1 + L2 - 0.003, Math.max(0.08, v.length()));
+      const dir = v.normalize();
+      const pl = (pole || new THREE.Vector3(side * 0.7, -1, -0.5)).clone().normalize();
+      const n = new THREE.Vector3().crossVectors(dir, pl);
+      if (n.lengthSq() < 1e-6) n.set(1, 0, 0);
+      n.normalize();
+      const a = Math.acos(Math.min(1, Math.max(-1, (L1 * L1 + d * d - L2 * L2) / (2 * L1 * d))));
+      const upperDir = dir.clone().applyAxisAngle(n, a);
+      qU.setFromUnitVectors(DOWN, upperDir);
+      const E = S.clone().addScaledVector(upperDir, L1);
+      const Td = S.clone().addScaledVector(dir, d);
+      const foreDir = Td.sub(E).normalize().applyQuaternion(qU.clone().invert());
+      qF.setFromUnitVectors(DOWN, foreDir);
+      shoulder.quaternion.slerp(qU, k);
+      elbow.quaternion.slerp(qF, k);
+    }
+    function animateBody(who, t, walk, seed) {
+      const u = who.userData;
+      const ph = t * 8.5 + seed;
+      const sw = Math.sin(ph) * walk;
+      u.legs.forEach((l, i) => {
+        const s = i === 0 ? sw : -sw;
+        l.thigh.rotation.x = 0.5 * s;
+        l.knee.rotation.x = walk * 0.75 * Math.max(0, Math.sin(ph + (i === 0 ? 0.9 : 0.9 + Math.PI)));
+      });
+      u.hips.position.y = 0.92 + 0.025 * Math.abs(Math.sin(ph)) * walk;
+      u.torso.scale.y = 1 + 0.012 * Math.sin(t * 2.1 + seed);
+      const bl = (t + seed * 0.37) % 3.4 < 0.13 ? 0.12 : 1;
+      u.eyes.forEach((e) => (e.scale.y = bl));
+      return sw;
+    }
+    function idleArms(who, sw, bend = 0.25) {
+      who.userData.arms.forEach((a, i) => {
+        a.shoulder.quaternion.setFromEuler(new THREE.Euler((i === 0 ? -sw : sw) * 0.45, 0, a.side * 0.1));
+        a.elbow.quaternion.setFromEuler(new THREE.Euler(-bend - 0.2 * Math.abs(sw), 0, 0));
+      });
+    }
+
+    // ---------- Montagem (depois de carregar o logo e o símbolo da ECASI) ----------
+    function build(backTex, symTex) {
+      const elet = makeElectrician(backTex, symTex);
+      scene.add(elet);
+      const [armR, armL] = elet.userData.arms;
+      const det = makeDetector();
+      det.position.set(0, -0.03, 0.01);
+      armR.hand.add(det);
+
+      // NEAR: de frente para o quadro, alcança a tampa, o DR e o geral. FAR: um passo atrás, para os planos abertos.
+      const NEAR = [0.0, 0, -0.98];
+      const FAR = [-0.62, 0, -0.5];
+      const POS = [
+        [0, 0], [C.quadro2 - 0.1, 0], [C.quadro2 + 0.8, 1], [C.aperte - 0.8, 1], [C.aperte - 0.1, 0], [C.naoEntrega + 1.0, 0], [C.naoEntrega + 1.9, 1],
+        [C.desenergizar - 0.9, 1], [C.desenergizar - 0.2, 0], [C.curso + 0.9, 0], [C.cta + 0.2, 1], [C.loop + 0.2, 1], [C.loop + 1.2, 0],
+      ];
+      const posAt = (t) => lerp3(NEAR, FAR, track(t, POS));
+      const yawTo = (p) => Math.atan2(QD.x - 0.1 - p[0], WALL_Z + 0.1 - p[2]);
+      const yawPanel = yawTo(NEAR);
+      const yawCam = 0.38;
+      const yawBack = Math.PI - 0.12;
+
+      // ---------- Câmera: plano-sequência por quadros-chave ----------
+      const DIR = [0.42, 0.12, 1];
+      const shot = (q, d, dir = DIR) => {
+        const n = Math.hypot(...dir);
+        return { q, p: q.map((v, i) => v + (dir[i] / n) * d) };
+      };
+      const OPEN = shot([-0.15, 1.6, -1.0], 6.4);
+      const PANEL = (d = 3.5, dy = 0.24, dx = 0.08, dir = DIR) => shot([QD.x + dx, QD.y + dy, QD.z + 0.08], d, dir);
+      const WALLW = shot([-0.42, 1.86, -1.3], 7.4);
+      const SIDE = [1.0, 0.18, 0.7];
+      const K = [
+        { t: 0, ...OPEN },
+        { t: C.pode, ...shot([-0.08, 1.58, -1.0], 5.8) },
+        { t: C.quadro2 + 0.6, ...PANEL(4.4) },
+        { t: C.seguro + 0.6, ...PANEL(3.6, 0.1, 0.06) },
+        { t: C.camadas + 0.4, ...PANEL(4.8) },
+        { t: C.problema + 0.5, ...WALLW },
+        { t: C.g70 + 0.5, ...shot([-0.5, 1.84, -1.3], 7.1) },
+        { t: C.energizada + 0.5, ...shot([-0.75, 1.3, -1.2], 5.4) },
+        { t: C.c1 + 0.7, ...PANEL(4.5, 0.3) },
+        { t: C.cabo25 + 0.3, ...PANEL(4.8, 0.42, -0.1) },
+        { t: C.d20 - 0.2, ...PANEL(3.2, 0.0, 0.08) },
+        { t: C.c2 + 0.6, ...PANEL(3.6, 0.2) },
+        { t: C.aperte, ...PANEL(3.0, 0.16, 0.0, SIDE) },
+        { t: C.naoEntrega, ...PANEL(3.1, 0.16, 0.0, SIDE) },
+        { t: C.c3 + 0.5, ...WALLW },
+        { t: C.circuitos + 0.3, ...shot([-0.45, 1.84, -1.3], 7.2) },
+        { t: C.dps, ...PANEL(3.4, 0.12) },
+        { t: C.etiqueta + 0.3, ...PANEL(3.0, -0.02) },
+        { t: C.mito + 0.6, ...shot([0.0, 2.2, -1.3], 6.8) },
+        { t: C.a40 - 0.6, ...PANEL(3.0, -0.02) },
+        { t: C.a40 + 1.2, ...PANEL(3.2, 0.0) },
+        { t: C.dobro, ...shot([-0.1, 2.3, -1.3], 5.8) },
+        { t: C.fusivel, ...shot([-0.25, 2.4, -1.3], 4.6) },
+        { t: C.parede + 0.3, ...shot([-0.3, 2.42, -1.3], 4.0) },
+        { t: C.norma + 0.7, ...shot([0.0, 2.05, -1.0], 7.4) },
+        { t: C.desenergizar - 0.4, ...PANEL(3.6, 0.1, -0.05, SIDE) },
+        { t: C.curso + 0.6, ...PANEL(3.4, 0.0, -0.05, SIDE) },
+        { t: C.cta + 0.7, ...shot([-0.1, 3.05, -0.8], 10.4) },
+        { t: C.loop, ...shot([-0.1, 3.02, -0.8], 10.0) },
+        { t: C.loop + 1.4, ...shot([-0.1, 1.68, -1.0], 6.8) },
+        { t: C.end, ...OPEN },
+      ];
+      function cameraAt(t) {
+        if (t <= K[0].t) return K[0];
+        for (let i = 0; i < K.length - 1; i++) {
+          const a = K[i];
+          const b = K[i + 1];
+          if (t <= b.t) {
+            const x = easeInOut((t - a.t) / (b.t - a.t));
+            return { p: lerp3(a.p, b.p, x), q: lerp3(a.q, b.q, x) };
+          }
+        }
+        return K[K.length - 1];
+      }
+
+      // ---------- Callouts presos a pontos 3D ----------
+      const svg = document.getElementById("world-lines");
+      const SVGNS = "http://www.w3.org/2000/svg";
+      function worldOf(obj, x, y, z) {
+        obj.updateMatrixWorld(true);
+        return obj.localToWorld(new THREE.Vector3(x, y, z)).toArray();
+      }
+      const LAV_P = () => worldOf(LAV.g, 0, 0, 0.09);
+      const CTA_BOX = { top: 1320, bottom: 1600 };
+      const CALLOUTS = [
+        { id: "co-cabo", a: C.esquenta, b: C.fuga, at: () => [-0.2, RUN_Y, WZ], dx: 60, dy: 190, top: 640 },
+        { id: "co-fuga", a: C.fuga + 0.2, b: C.semTerra, at: () => [OUT.x + 0.04, OUT.y - 0.06, WALL_Z + 0.06], dx: 120, dy: -130, top: 640 },
+        { id: "co-nope", a: C.mili + 0.4, b: C.semTerra, at: LAV_P, dx: 80, dy: 150, top: 640 },
+        { id: "co-noterra", a: C.semTerra + 0.2, b: C.c1, at: () => [OUT.x + 0.022, OUT.y + 0.22, WZ], dx: 120, dy: -150, top: 640 },
+        { id: "co-carc", a: C.carcaca, b: C.c1, at: () => [MAQ.x + 0.2, MAQ.y + 0.15, MAQ.z + 0.3], dx: 140, dy: 110, top: 640 },
+        { id: "co-25", a: C.cabo25 + 0.2, b: C.entao, at: () => [CH_X, TOPY + 0.2, WZ], dx: 90, dy: -40, top: 640 },
+        { id: "co-20", a: C.entao, b: C.c2 + 0.3, at: LAV_P, dx: 110, dy: 180, top: 640 },
+        { id: "co-t", a: C.aperte - 0.3, b: C.teste + 0.5, at: () => worldOf(drBtn, 0, 0, 0.01), dx: 120, dy: -120, top: 640 },
+        { id: "co-trip", a: C.teste + 0.5, b: C.c3, at: () => worldOf(DR.g, 0, 0.02, 0.09), dx: 120, dy: -130, top: 640 },
+        { id: "co-terra", a: C.fioTerra + 0.6, b: C.dps, at: () => [OUT.x + 0.022, 1.7, WZ], dx: 110, dy: 20, top: 760 },
+        { id: "co-dps", a: C.dps + 0.1, b: C.etiqueta, at: () => worldOf(DPS[0].g, 0, 0.012, 0.09), dx: 110, dy: 160, top: 860 },
+        { id: "co-tag", a: C.etiqueta + 0.5, b: C.mito, at: () => [LAV.x, ROW_B - 0.128, CZ], dx: 110, dy: 120, top: 960 },
+        { id: "co-40", a: C.a40, b: C.norma, at: LAV_P, dx: 110, dy: 120, top: 960 },
+        { id: "co-hot", a: C.fusivel + 0.1, b: C.norma, at: () => HOT.toArray(), dx: -80, dy: 140, top: 960 },
+        { id: "co-geral", a: C.desenergizar + 0.6, b: C.cta, at: () => worldOf(GERAL.g, 0, 0.03, 0.09), dx: 120, dy: 90, top: 1020 },
+        { id: "co-det", a: C.antesNr + 0.3, b: C.cta, at: () => worldOf(det, 0, 0.014, 0), dx: -120, dy: 90, top: 1020 },
+        { id: "co-elet", ...CTA_BOX, a: C.treinamento + 0.4, b: C.loop, at: () => worldOf(elet.userData.hips, 0, 1.08, 0), dx: 110, dy: -60 },
+      ];
+      for (const c of CALLOUTS) {
+        c.el = document.getElementById(c.id);
+        c.bw = c.el.offsetWidth;
+        c.bh = c.el.offsetHeight;
+        c.line = document.createElementNS(SVGNS, "line");
+        c.line.setAttribute("stroke", "#0b1d3f");
+        c.line.setAttribute("stroke-width", "3");
+        c.dot = document.createElementNS(SVGNS, "circle");
+        c.dot.setAttribute("r", "8");
+        c.dot.setAttribute("fill", "#f97316");
+        c.dot.setAttribute("stroke", "#ffffff");
+        c.dot.setAttribute("stroke-width", "3");
+        svg.append(c.line, c.dot);
+      }
+      const proj = new THREE.Vector3();
+      function placeCallouts(t) {
+        for (const c of CALLOUTS) {
+          const fadeIn = prog(t, c.a, c.a + 0.25);
+          const fadeOut = 1 - prog(t, c.b - 0.2, c.b);
+          const o = Math.min(fadeIn, fadeOut);
+          if (o <= 0.001) {
+            c.el.style.opacity = "0";
+            c.line.setAttribute("opacity", "0");
+            c.dot.setAttribute("opacity", "0");
+            continue;
+          }
+          proj.fromArray(c.at()).project(camera);
+          const px = (proj.x * 0.5 + 0.5) * W;
+          const py = (-proj.y * 0.5 + 0.5) * H;
+          let bx = px + c.dx - (c.dx < 0 ? c.bw : 0);
+          let by = py + c.dy - c.bh / 2;
+          bx = Math.min(W - 54 - c.bw, Math.max(54, bx));
+          by = Math.min((c.bottom ?? 1160) - c.bh, Math.max(c.top ?? 330, by));
+          const lift = 14 * (1 - easeOutExpo(fadeIn));
+          c.el.style.opacity = String(o);
+          c.el.style.transform = `translate(${bx}px, ${by + lift}px)`;
+          const lx = bx + (c.dx < 0 ? c.bw : 0);
+          const ly = by + c.bh / 2;
+          const grow = easeOut(fadeIn);
+          c.line.setAttribute("x1", String(px));
+          c.line.setAttribute("y1", String(py));
+          c.line.setAttribute("x2", String(lerp(px, lx, grow)));
+          c.line.setAttribute("y2", String(lerp(py, ly, grow)));
+          c.line.setAttribute("opacity", String(o));
+          c.dot.setAttribute("cx", String(px));
+          c.dot.setAttribute("cy", String(py));
+          c.dot.setAttribute("opacity", String(o));
+        }
+      }
+
+      // ---------- Estados ao longo do tempo ----------
+      // Tampa: entreaberta no início (o eletricista fecha), aberta das camadas até o loop, e ele fecha de novo no fim
+      const LID = [[0, 0.45], [0.25, 0.45], [1.0, 0], [C.quadro2, 0], [C.quadro2 + 0.3, 0.5], [C.quadro2 + 0.85, 2.25], [C.loop + 0.6, 2.25], [C.end - 0.9, 0.5], [C.end - 0.15, 0.45]];
+      // Geral: desligado para a NR-10 (desenergizar) e religado depois do teste
+      const GER = [[0, 1], [C.desenergizar + 0.15, 1], [C.desenergizar + 0.35, 0], [C.curso + 0.4, 0], [C.curso + 0.55, 1]];
+      // DR: desarma no teste e o eletricista religa
+      const DRL = [[0, 1], [C.teste + 0.05, 1], [C.teste + 0.17, 0], [C.naoEntrega + 0.55, 0], [C.naoEntrega + 0.75, 1]];
+      // Calor do cabo: sobrecarga (problema) e disjuntor de 40 A (mito)
+      const HEAT = [[0, 0], [C.cabo, 0], [C.esquenta + 0.6, 0.7], [C.g70 + 0.8, 0.75], [C.fuga, 0], [C.a40 + 0.5, 0], [C.dobro, 0.55], [C.semDesarmar + 0.6, 0.85], [C.fusivel, 1.05], [C.parede, 1.4], [C.norma, 1.4], [C.norma + 0.7, 0]];
+      // Fio terra da lavanderia: some em "sem terra" e é refeito na camada 3
+      const GRD = [[0, 1], [C.semTerra, 1], [C.semTerra + 0.45, 0], [C.fioTerra, 0], [C.fioTerra + 1.3, 1]];
+      // Etiquetas nos disjuntores
+      const TAGS = [[0, 0], [C.etiqueta, 0], [C.etiqueta + 0.6, 1], [C.loop + 1.2, 1], [C.loop + 1.5, 0]];
+      // Faíscas: carcaça (sem terra), DPS (surto) e cabo dentro da parede (mito)
+      const CH = (dx, dy) => [MAQ.x + dx, MAQ.y + dy, MAQ.z + 0.31];
+      BURSTS.push(
+        { t0: C.carcaca + 0.15, o: CH(0.28, 0.2), dir: [1, 0.4, 0.5], spread: 0.9, speed: 1.6, n: 14, life: 0.5, stagger: 0.05, seed: 11, size: 0.8 },
+        { t0: C.energizada + 0.05, o: CH(-0.28, 0.32), dir: [-1, 0.5, 0.5], spread: 0.9, speed: 1.7, n: 14, life: 0.5, stagger: 0.05, seed: 23, size: 0.8 },
+        { t0: C.energizada + 0.75, o: CH(0.15, -0.36), dir: [0.4, 0.6, 1], spread: 0.8, speed: 1.6, n: 12, life: 0.45, stagger: 0.05, seed: 37, size: 0.8 },
+        { t0: C.dps + 0.32, o: [DPS[0].x, ROW_A + 0.01, RAIL_Z + 0.095], dir: [0.3, 0.6, 1], spread: 0.8, speed: 1.5, n: 16, life: 0.45, stagger: 0.04, seed: 51, size: 0.75 },
+        { t0: C.fusivel + 0.15, o: [HOT.x, HOT.y, WZ + 0.04], dir: [0, 0.4, 1], spread: 0.9, speed: 2.2, n: 26, life: 0.75, stagger: 0.1, seed: 63, size: 0.9 },
+        { t0: C.fusivel + 0.9, o: [HOT.x + 0.08, HOT.y, WZ + 0.04], dir: [0.2, 0.3, 1], spread: 0.9, speed: 2.0, n: 20, life: 0.7, stagger: 0.1, seed: 71, size: 0.9 },
+        { t0: C.parede - 0.05, o: [HOT.x, HOT.y, WZ + 0.05], dir: [0, 0.25, 1], spread: 1.1, speed: 3.4, n: 70, life: 1.1, stagger: 0.12, seed: 83, size: 1.1 },
+        { t0: C.parede + 0.5, o: [HOT.x - 0.06, HOT.y, WZ + 0.05], dir: [-0.2, 0.3, 1], spread: 1.0, speed: 2.6, n: 36, life: 0.9, stagger: 0.15, seed: 97, size: 1.0 },
+      );
+      const bChassisA = makeBolt(14, 2.5, 9, "#ff6b6b");
+      const bChassisB = makeBolt(12, 2.2, 8, "#93c5fd");
+      const bArc = makeBolt(18, 3.5, 16, "#7cc4ff");
+      const bArc2 = makeBolt(14, 2.6, 11, "#a5b4fc");
+      const SPEED = (lo, hi, keys) => (x) => lerp(lo, hi, track(x, keys));
+      const lavSpeed = SPEED(0.45, 1.6, [[0, 0], [C.esquenta, 0], [C.esquenta + 0.6, 0.6], [C.fuga, 0.6], [C.fuga + 0.4, 0], [C.dobro - 0.2, 0], [C.dobro + 0.6, 0.85], [C.fusivel, 1], [C.norma + 0.4, 1], [C.norma + 0.9, 0]]);
+      const flowT0 = new Map();
+
+      // Pontos-alvo das mãos
+      const handleW = () => worldOf(lidPanel, -QW / 2 + 0.05, 0, 0.03);
+      const toward = (from, to, back) => {
+        const a = new THREE.Vector3(...from);
+        const b = new THREE.Vector3(...to);
+        return b.clone().addScaledVector(b.sub(a).normalize(), -back).toArray();
+      };
+      const shoulderW = (arm) => worldOf(arm.shoulder, 0, 0, 0);
+      const hipsW = (x, y, z) => worldOf(elet.userData.hips, x, y, z);
+
+      // ---------- Render de um quadro a partir de t ----------
+      return function render(t) {
+        const cam = cameraAt(t);
+        // Tremor curto no arco do mito
+        const shake = 0.012 * pulse(t, C.parede - 0.05, C.parede + 0.5);
+        camera.position.set(cam.p[0] + shake * Math.sin(t * 91), cam.p[1] + shake * Math.sin(t * 77 + 1), cam.p[2]);
+        camera.lookAt(cam.q[0], cam.q[1], cam.q[2]);
+        camera.updateMatrixWorld(true);
+
+        // Tampa, geral e DR
+        lid.rotation.y = track(t, LID);
+        const ger = track(t, GER);
+        const drl = track(t, DRL);
+        GERAL.set(ger);
+        DR.set(drl);
+        drBtn.position.z = DR_BTN_Z - 0.007 * (t >= C.teste - 0.15 && t < C.teste + 0.15 ? 1 : 0);
+        const gerOn = ger > 0.5 ? 1 : 0;
+        const live = gerOn && drl > 0.5 ? 1 : 0;
+
+        // Troca do disjuntor (prática errada, sozinha): o de 20 A sai, entra o de 40 A, e volta ao certo na norma
+        const swapOut = prog(t, C.a40 - 0.7, C.a40 - 0.35);
+        const swapIn = prog(t, C.a40 - 0.3, C.a40 + 0.1);
+        const swapBack = prog(t, C.norma + 0.2, C.norma + 0.6);
+        const swapped = t >= C.a40 - 0.35 && t < C.norma + 0.4;
+        LAV.face.material.map = swapped ? TEX40 : TEX20;
+        const outZ = swapped ? 0.18 * (1 - easeOut(swapIn)) + 0.1 * swapBack : 0.18 * easeInOut(swapOut) * (t < C.a40 ? 1 : 0);
+        LAV.g.position.z = RAIL_Z + outZ;
+        LAV.set(1);
+        // "Sem desarmar": a alavanca treme mas não cai
+        if (t > C.semDesarmar - 0.2 && t < C.semDesarmar + 0.9) LAV.pivot.rotation.x = ON_ROT + 0.08 * Math.sin(t * 40) * pulse(t, C.semDesarmar - 0.2, C.semDesarmar + 0.9);
+
+        // Destaques (camada 1)
+        const sel = track(t, [[C.cabo25, 0], [C.cabo25 + 0.4, 1], [C.d20 - 0.3, 1], [C.d20 + 0.2, 0]]);
+        const sel20 = track(t, [[C.d20 - 0.3, 0], [C.d20 + 0.1, 1], [C.c2, 1], [C.c2 + 0.3, 0]]);
+        LAV.face.material.emissive = LAV.face.material.emissive || new THREE.Color();
+        LAV.face.material.emissive.set(swapped ? "#ff3030" : "#22c55e");
+        LAV.face.material.emissiveIntensity = swapped ? 0.6 + 0.4 * Math.sin(t * 10) : 1.4 * sel20;
+
+        // Calor do cabo
+        const heat = track(t, HEAT);
+        const hot = Math.min(1, heat);
+        const cBase = new THREE.Color("#1b1d22");
+        phaseMat.color.copy(cBase).lerp(new THREE.Color(heat > 1 ? "#5a1d0c" : "#8a3b12"), hot * 0.8);
+        phaseMat.emissive.set(sel > 0.02 && heat < 0.05 ? "#4aa3ff" : heat > 1 ? "#ff2a00" : "#ff5a00");
+        phaseMat.emissiveIntensity = heat > 0.02 ? 0.6 + 2.6 * hot + 1.6 * Math.max(0, heat - 1) + 0.3 * Math.sin(t * 9) * hot : 1.1 * sel;
+        condLav.material.emissive = condLav.material.emissive || new THREE.Color();
+        condLav.material.emissive.set("#ff6a1a");
+        condLav.material.emissiveIntensity = 0.5 * Math.max(0, heat - 0.9);
+        fireLight.position.set(HOT.x, HOT.y, WZ + 0.25);
+        fireLight.intensity = 2.2 * Math.max(0, heat - 0.5) * (0.85 + 0.15 * Math.sin(t * 23));
+        scorch.material.opacity = 0.9 * prog(heat, 1.1, 1.4) * (1 - prog(t, C.norma + 0.2, C.norma + 0.9));
+
+        // Fluxo de energia (velocidade integrada no tempo)
+        const T = (spd) => spd * 9;
+        const sLav = integ(t, lavSpeed);
+        const emph = 0.55 + 0.45 * track(t, [[C.seguro - 0.2, 0], [C.seguro + 0.3, 1], [C.camadas, 1], [C.camadas + 0.5, 0], [C.cabo - 0.2, 0], [C.cabo + 0.3, 1], [C.fuga, 1], [C.fuga + 0.4, 0], [C.dobro - 0.3, 0], [C.dobro + 0.3, 1], [C.norma, 1], [C.norma + 0.5, 0]]);
+        const lavColor = heat > 0.98 ? "#ff3b1a" : heat > 0.35 ? "#ff8a1a" : sel > 0.3 ? "#7cc4ff" : "#ffd24a";
+        fF1.set(0.55 * emph, T(t * 0.45));
+        fF2.set(0.55 * emph, T(t * 0.45 + 0.3));
+        fJ1.set(0.55 * emph * gerOn, T(t * 0.45));
+        fJ2.set(0.55 * emph * live, T(t * 0.45));
+        fLav.set((0.6 * emph + 0.5 * hot) * live, sLav * 8, lavColor);
+        fCord.set(0.45 * emph * live, T(t * 0.4));
+        fNeu.set(0.35 * emph * live * track(t, [[C.c1, 0], [C.c1 + 0.3, 0], [C.cabo25, 0], [C.cabo25 + 0.4, 1], [C.d20, 1], [C.d20 + 0.3, 0]]), -T(t * 0.4));
+
+        // Fuga para a carcaça (sem terra) e pele eletrificada
+        const leak = track(t, [[C.fuga, 0], [C.fuga + 0.3, 1], [C.c1 - 0.2, 1], [C.c1 + 0.1, 0]]);
+        fLeak.set(1.1 * leak, T(t * 0.6));
+        const carc = track(t, [[C.fuga + 0.2, 0], [C.fuga + 0.8, 0.35], [C.carcaca - 0.2, 0.4], [C.carcaca + 0.3, 1], [C.c1 - 0.2, 1], [C.c1 + 0.1, 0]]);
+        chassisSkinMat.uniforms.uT.value = t;
+        chassisSkinMat.uniforms.uI.value = carc * (0.75 + 0.25 * Math.sin(t * 13));
+        chassisSkin.visible = carc > 0.01;
+        chassisMat.emissiveIntensity = 0.18 * carc * (0.6 + 0.4 * Math.abs(Math.sin(t * 6)));
+        chassisLight.position.set(MAQ.x + 0.2, MAQ.y + 0.3, MAQ.z + 0.7);
+        chassisLight.intensity = 1.2 * carc * (0.7 + 0.3 * Math.sin(t * 17));
+        // Arcos curtos pulando na carcaça (mudam 15 vezes por segundo)
+        const cs = Math.floor(t * 15);
+        const crack = carc > 0.6 ? 1 : 0;
+        const onA = crack && hash(cs * 1.3) > 0.35;
+        const onB = crack && hash(cs * 2.7 + 5) > 0.5;
+        const pt = (s) => CH((hash(s) - 0.5) * 0.52, (hash(s + 1) - 0.5) * 0.74);
+        setBolt(bChassisA, pt(cs * 3.1), pt(cs * 3.1 + 7), cs * 1.7, 0.06, onA ? 1 : 0);
+        setBolt(bChassisB, pt(cs * 4.3 + 2), pt(cs * 4.3 + 11), cs * 2.9 + 4, 0.05, onB ? 0.9 : 0);
+
+        // Máquina: tambor girando e painel aceso só com energia
+        const spin = integ(t, (x) => (track(x, DRL) > 0.5 && track(x, GER) > 0.5 ? 6 : 0));
+        clothes.forEach((cl, i) => {
+          const a = spin + (i / clothes.length) * Math.PI * 2;
+          cl.position.set(MAQ.x + Math.cos(a) * 0.09, MAQ.y - 0.05 + Math.sin(a) * 0.09 - 0.03, MAQ.z + 0.25);
+          cl.rotation.z = a;
+        });
+        dispMat.emissiveIntensity = live ? 1.6 : 0.05;
+
+        // Fio terra: some e volta crescendo; fluxo verde depois de refeito
+        const grd = track(t, GRD);
+        GND.geo.setDrawRange(0, Math.floor((GND_IDX * grd) / 6) * 6);
+        GND.mesh.visible = grd > 0.002;
+        GND.mesh.material.emissive = GND.mesh.material.emissive || new THREE.Color();
+        GND.mesh.material.emissive.set("#22c55e");
+        GND.mesh.material.emissiveIntensity = t >= C.fioTerra && t < C.dps ? 0.8 * (1 - prog(t, C.circuitos, C.dps)) : 0;
+        fGnd.u.uDraw.value = grd;
+        const gOn = track(t, [[C.fioTerra + 0.9, 0], [C.fioTerra + 1.4, 1], [C.dps - 0.3, 1], [C.dps, 0]]);
+        fGnd.set(1.0 * gOn, -T(t * 0.5));
+
+        // DPS: surto chega pela entrada, o DPS conduz para a barra de terra e para a haste
+        const s0 = C.dps - 0.15;
+        const headIn = prog(t, s0, s0 + 0.32);
+        fF1.u.uHead.value = headIn * F1.L;
+        fF1.u.uHeadI.value = 9 * pulse(t, s0 - 0.02, s0 + 0.36);
+        fF1.u.uColor.value.set("#ffd24a").multiplyScalar(fF1.k);
+        fDpsIn.set(0, 0);
+        fDpsIn.u.uHead.value = prog(t, s0 + 0.3, s0 + 0.45) * DPSIN.L;
+        fDpsIn.u.uHeadI.value = 9 * pulse(t, s0 + 0.28, s0 + 0.48);
+        fDpsIn.mesh.visible = fDpsIn.u.uHeadI.value > 0.01;
+        const after = track(t, [[s0 + 0.45, 0], [s0 + 0.6, 1], [C.etiqueta - 0.4, 1], [C.etiqueta, 0]]);
+        fDpsOut.set(1.2 * after, -T(t * 0.6));
+        fDpsOut.u.uHead.value = prog(t, s0 + 0.45, s0 + 0.65) * DPSOUT.L;
+        fDpsOut.u.uHeadI.value = 8 * pulse(t, s0 + 0.43, s0 + 0.68);
+        fDpsOut.mesh.visible = after > 0.01 || fDpsOut.u.uHeadI.value > 0.01;
+        fEarth.set(1.2 * after, T(t * 0.6));
+        fEarth.u.uHead.value = prog(t, s0 + 0.62, s0 + 1.0) * EARTH.L;
+        fEarth.u.uHeadI.value = 8 * pulse(t, s0 + 0.6, s0 + 1.05);
+        fEarth.mesh.visible = after > 0.01 || fEarth.u.uHeadI.value > 0.01;
+        const dpsHit = pulse(t, s0 + 0.4, s0 + 0.75);
+        dpsWinMat.color.set(dpsHit > 0.2 ? "#ffffff" : "#22c55e");
+        dpsWinMat.emissive.set(dpsHit > 0.2 ? "#c4b5fd" : "#22c55e");
+        dpsWinMat.emissiveIntensity = 0.4 + 6 * dpsHit + (t > s0 && t < C.etiqueta ? 1.2 : 0);
+        dpsLight.position.set(DPS[0].x, ROW_A, RAIL_Z + 0.3);
+        dpsLight.intensity = 3 * dpsHit;
+
+        // Etiquetas
+        const tags = track(t, TAGS);
+        CIRC.forEach((m, i) => {
+          const k = clamp01(tags * 1.6 - i * 0.2);
+          m.tag.visible = k > 0.01;
+          m.tag.scale.setScalar(Math.max(0.01, spring(k)));
+        });
+
+        // Arco do mito dentro do conduíte (fase-neutro) e no DPS
+        const ms = Math.floor(t * 18);
+        const arcI = Math.max(
+          t > C.fusivel && t < C.parede ? (hash(ms * 1.9) > 0.45 ? 0.8 : 0) : 0,
+          t >= C.parede - 0.08 && t < C.parede + 1.6 ? (hash(ms * 2.3) > 0.2 ? 1 : 0.3) * (1 - prog(t, C.parede + 0.6, C.parede + 1.6)) : 0,
+        );
+        const big = t >= C.parede - 0.08 && t < C.parede + 1.6;
+        const ax = HOT.x + (hash(ms) - 0.5) * 0.08;
+        setBolt(bArc, [ax - (big ? 0.16 : 0.07), RUN_Y - 0.002, WZ + 0.01], [ax + (big ? 0.16 : 0.07), RUN_Y + 0.022, WZ + 0.01], ms * 1.3, big ? 0.16 : 0.06, arcI);
+        setBolt(bArc2, [ax, RUN_Y + 0.01, WZ + 0.02], [ax + (hash(ms * 3.3) - 0.5) * 0.3, RUN_Y + 0.12 + hash(ms * 4.1) * 0.12, WZ + 0.05], ms * 2.1 + 3, 0.1, big ? arcI * 0.8 : 0);
+        if (dpsHit > 0.3) {
+          const tp = DPS[0].top();
+          setBolt(bArc, [tp[0], tp[1] - 0.02, tp[2] + 0.07], [tp[0] + 0.01, tp[1] - 0.17, tp[2] + 0.07], ms * 5.1, 0.03, dpsHit);
+        }
+        arcLight.position.set(dpsHit > 0.3 ? DPS[0].x : HOT.x, dpsHit > 0.3 ? ROW_A : RUN_Y, WZ + 0.35);
+        arcLight.intensity = 9 * Math.max(arcI, dpsHit * 0.6);
+        const flash = Math.max(0.8 * pulse(t, C.parede - 0.08, C.parede + 0.25), 0.25 * (big && hash(ms * 7.7) > 0.7 ? 1 : 0));
+        document.getElementById("world-flash").style.opacity = String(flash);
+        bloom.strength = 0.5 + 0.6 * Math.max(arcI, dpsHit) + 0.4 * carc;
+        updateSmoke(t, [HOT.x, HOT.y, WZ], Math.max(0.35 * prog(heat, 0.45, 0.75), prog(heat, 0.95, 1.3)) * (1 - prog(t, C.norma + 0.3, C.norma + 1.2)), 0.45);
+        updateSparks(t);
+
+        // ---------- Eletricista ----------
+        const ep = posAt(t);
+        const yp = yawTo(ep);
+        const yaw = t >= C.quadro2 + 0.5 && t < C.cta ? yp : track(t, [
+          [0, yawPanel], [C.cliente + 0.3, yawPanel], [C.pode + 0.1, yawCam], [C.quadro2 - 0.3, yawCam], [C.quadro2 + 0.5, yawTo(posAt(C.quadro2 + 0.5))],
+          [C.cta, yawTo(FAR)], [C.cta + 0.7, yawCam], [C.ecasi - 0.2, yawCam], [C.ecasi + 0.6, yawBack],
+          [C.loop, yawBack], [C.loop + 1.2, yawPanel],
+        ]);
+        elet.position.fromArray(ep);
+        elet.rotation.y = yaw;
+        const ep2 = posAt(t - 0.05);
+        const walk = Math.min(1, Math.hypot(ep[0] - ep2[0], ep[2] - ep2[2]) / 0.03);
+        const sw = animateBody(elet, t, walk, 0.7);
+        idleArms(elet, sw);
+        const head = elet.userData.head;
+        // "Ainda não": balança a cabeça; acompanha a câmera na chamada final
+        head.rotation.y = 0.32 * Math.sin((t - C.ainda) * 14) * pulse(t, C.ainda, C.ainda + 0.9);
+        head.rotation.x = -0.05 * pulse(t, C.pode, C.ainda);
+
+        // Mão esquerda: fecha e abre a tampa, desliga e religa o geral, acena na chamada final
+        const lidK = Math.max(track(t, [[0, 1], [1.05, 1], [1.4, 0]]), track(t, [[C.quadro2 - 0.25, 0], [C.quadro2 + 0.05, 1], [C.quadro2 + 0.32, 1], [C.quadro2 + 0.55, 0]]), track(t, [[C.end - 1.4, 0], [C.end - 1.0, 1], [C.end, 1]]));
+        const gK = Math.max(
+          track(t, [[C.desenergizar - 0.35, 0], [C.desenergizar + 0.12, 1], [C.desenergizar + 0.45, 1], [C.desenergizar + 0.85, 0]]),
+          track(t, [[C.curso, 0], [C.curso + 0.38, 1], [C.curso + 0.62, 1], [C.curso + 0.95, 0]]),
+        );
+        const waveK = track(t, [[C.treinamento, 0], [C.treinamento + 0.45, 1], [C.ecasi - 0.4, 1], [C.ecasi + 0.1, 0]]);
+        const shrug = track(t, [[C.pode + 0.05, 0], [C.pode + 0.4, 1], [C.ainda - 0.1, 1], [C.ainda + 0.35, 0]]);
+        if (lidK > 0.001) reach(elet, armL, toward(shoulderW(armL), handleW(), 0.04), lidK);
+        else if (gK > 0.001) reach(elet, armL, toward(shoulderW(armL), worldOf(GERAL.lev, 0, 0.02, 0.01), 0.045), gK);
+        else if (waveK > 0.001) reach(elet, armL, hipsW(0.36 + 0.05 * Math.sin(t * 9), 0.98, 0.14), waveK);
+        if (shrug > 0.001) {
+          reach(elet, armL, hipsW(0.38, 0.3, 0.24), shrug, new THREE.Vector3(1, -0.6, -1));
+          reach(elet, armR, hipsW(-0.38, 0.3, 0.24), shrug, new THREE.Vector3(-1, -0.6, -1));
+        }
+        // Mão direita: aperta o T e religa o DR; depois segura o detector de tensão
+        const tK = track(t, [[C.aperte - 0.25, 0], [C.aperte + 0.45, 1], [C.teste + 0.3, 1], [C.desarmou + 0.25, 0]]);
+        const rK = track(t, [[C.naoEntrega + 0.05, 0], [C.naoEntrega + 0.5, 1], [C.naoEntrega + 0.8, 1], [C.naoEntrega + 1.15, 0]]);
+        const detShow = track(t, [[C.desenergizar + 0.2, 0], [C.desenergizar + 0.7, 1], [C.cta + 0.1, 1], [C.cta + 0.5, 0]]);
+        det.visible = detShow > 0.01;
+        det.scale.setScalar(Math.max(0.001, spring(detShow)));
+        const dK = track(t, [[C.antesNr - 0.3, 0], [C.antesNr + 0.25, 1], [C.curso + 0.5, 1], [C.cta - 0.2, 0]]);
+        const pressIn = t >= C.teste - 0.15 && t < C.teste + 0.15 ? 0.012 : -0.035;
+        if (tK > 0.001) reach(elet, armR, toward(shoulderW(armR), worldOf(drBtn, 0, 0, 0.012), 0.05 + pressIn), tK);
+        else if (rK > 0.001) reach(elet, armR, toward(shoulderW(armR), worldOf(DR.lev, 0, 0.02, 0.01), 0.045), rK);
+        else if (dK > 0.001) reach(elet, armR, toward(shoulderW(armR), worldOf(LAV.g, LAV.w / 2 - 0.02, -0.075, 0.056), 0.2), dK);
+        // Detector: sem tensão (geral desligado) o LED fica verde
+        det.userData.led.emissive.set("#22c55e");
+        det.userData.led.emissiveIntensity = dK > 0.9 ? 3.5 + 1.5 * Math.sin(t * 12) : 1.5;
+
+        composer.render(1 / FPS);
+        placeCallouts(t);
+      };
+    }
+
+    // Relógio: um tween do GSAP alimenta render(t). A linha do tempo só é registrada depois que as fontes e os
+    // logos da ECASI carregaram, para o uniforme nunca aparecer sem o logo.
+    const loader = new THREE.TextureLoader();
+    Promise.all([document.fonts.ready, loader.loadAsync("assets/brand/logo-fundo-escuro.png"), loader.loadAsync("assets/brand/simbolo-ecasi.png")]).then(([, backTex, symTex]) => {
+      for (const tx of [backTex, symTex]) {
+        tx.colorSpace = THREE.SRGBColorSpace;
+        tx.anisotropy = 8;
+      }
+      const render = build(backTex, symTex);
+      const state = { t: 0 };
+      const tl = gsap.timeline({ paused: true });
+      tl.to(state, { t: C.end, duration: C.end, ease: "none", onUpdate: () => render(state.t) }, 0);
+      render(0);
+      window.__timelines["world"] = tl;
+    });
+  </script>
+</template>
