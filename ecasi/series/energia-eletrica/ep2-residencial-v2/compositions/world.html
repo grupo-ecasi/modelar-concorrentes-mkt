@@ -863,7 +863,7 @@
       }
       const pivot = new THREE.Group();
       pivot.position.set(0, 0.008, 0.088);
-      const lw = poles === 1 ? 0.026 : w * 0.78;
+      const lw = poles === 1 ? 0.026 : 0.058;
       const lev = rbox(lw, 0.05, 0.017, 0.005, std(leverColor, { roughness: 0.4 }));
       lev.position.y = 0.024;
       pivot.add(lev);
@@ -890,10 +890,10 @@
     const DR = makeBreaker({ x: QD.x - 0.059, y: ROW_A, poles: 2, label: "DR 30mA", leverColor: "#1d4ed8" });
     const drBtn = cyl(0.011, 0.012, M.yellow, 16);
     drBtn.rotation.x = Math.PI / 2;
-    drBtn.position.set(DR.w / 2 - 0.02, -0.025, 0.09);
+    drBtn.position.set(DR.w / 2 - 0.017, -0.025, 0.09);
     DR.g.add(drBtn);
     const drT = plane(0.012, 0.012, new THREE.MeshBasicMaterial({ map: textTex(["T"], { bg: "#facc15", fg: "#0b1d3f", w: 64, h: 64, size: 50 }) }));
-    drT.position.set(DR.w / 2 - 0.02, -0.025, 0.0965);
+    drT.position.set(DR.w / 2 - 0.017, -0.025, 0.0965);
     DR.g.add(drT);
     const DR_BTN_Z = 0.09;
     const DPS = [0, 1].map((i) => makeBreaker({ x: QD.x + 0.059 + i * MOD, y: ROW_A, label: "DPS", body: M.breakerDark, labelBg: "#3b3f46", labelFg: "#ffffff", leverColor: "#3b3f46" }));
@@ -1048,9 +1048,9 @@
     const ring = new THREE.Mesh(new THREE.TorusGeometry(0.19, 0.028, 16, 48), M.chrome);
     ring.position.set(MAQ.x, MAQ.y - 0.05, MAQ.z + 0.305);
     ring.castShadow = true;
-    const drum = cyl(0.17, 0.02, M.dark, 32);
+    const drum = cyl(0.17, 0.004, M.dark, 32);
     drum.rotation.x = Math.PI / 2;
-    drum.position.set(MAQ.x, MAQ.y - 0.05, MAQ.z + 0.295);
+    drum.position.set(MAQ.x, MAQ.y - 0.05, MAQ.z + 0.303);
     const clothes = [];
     ["#e76f51", "#2a9d8f", "#f4a261", "#457b9d"].forEach((c, i) => {
       const cl = sph(0.07, std(c, { roughness: 0.9 }), 12);
@@ -1079,22 +1079,22 @@
     const TOPY = QD.y + QH / 2;
     const RUN_Y = 2.38;
     const CH_X = QD.x + 0.25;
+    const peMat = std("#ffffff", { map: peTex, roughness: 0.35 });
     // Entrada (vinda de cima) em conduíte
+    wire([[ENT_X + 0.028, 3.4, WZ], [ENT_X + 0.028, TOPY + 0.02, WZ], [QD.x - 0.315, TOPY - 0.07, CZ - 0.008], [QD.x - 0.315, BAR_Y - 0.06, CZ - 0.02], [PB_X - 0.065, BAR_Y - 0.06, CZ - 0.02], [PB_X - 0.065, BAR_Y - 0.012, CZ - 0.01]], peMat);
     const F1 = wire([[ENT_X - 0.008, 3.4, WZ], [ENT_X - 0.008, TOPY + 0.02, WZ], [ENT_X - 0.008, TOPY - 0.06, CZ], GERAL.top(0)], M.pvcBlack);
     const F2 = wire([[ENT_X + 0.012, 3.4, WZ], [ENT_X + 0.012, TOPY + 0.02, WZ], [ENT_X + 0.012, TOPY - 0.06, CZ], GERAL.top(1)], M.pvcRed);
     wire([[ENT_X - 0.026, 3.4, WZ], [ENT_X - 0.026, TOPY + 0.02, WZ], [QD.x - 0.33, TOPY - 0.06, CZ], [QD.x - 0.33, BAR_Y + 0.05, CZ], [NB_X - 0.065, BAR_Y + 0.05, CZ], [NB_X - 0.065, BAR_Y + 0.012, CZ]], M.pvcBlue);
-    wire([[ENT_X + 0.028, 3.4, WZ], [ENT_X + 0.028, TOPY + 0.02, WZ], [QD.x - 0.315, TOPY - 0.07, CZ - 0.008], [QD.x - 0.315, BAR_Y - 0.06, CZ - 0.008], [PB_X - 0.065, BAR_Y - 0.06, CZ - 0.008], [PB_X - 0.065, BAR_Y + 0.012, CZ - 0.008]], M.pvcBlack.clone()).mesh.material = std("#ffffff", { map: peTex, roughness: 0.35 });
     // Geral -> DR (contornam o DR pelo vão entre os módulos e entram por cima)
     const J1 = wire([GERAL.bot(0), [GERAL.bot(0)[0], ROW_A - 0.13, CZ], [QD.x - 0.142, ROW_A - 0.13, CZ], [QD.x - 0.142, ROW_A + 0.13, CZ], [DR.top(0)[0], ROW_A + 0.13, CZ], DR.top(0)], M.pvcBlack, 0.0058, 0.016);
     wire([GERAL.bot(1), [GERAL.bot(1)[0], ROW_A - 0.115, CZ + 0.006], [QD.x - 0.136, ROW_A - 0.115, CZ + 0.006], [QD.x - 0.136, ROW_A + 0.145, CZ + 0.006], [DR.top(1)[0], ROW_A + 0.145, CZ + 0.006], DR.top(1)], M.pvcRed, 0.0058, 0.016);
     // DR -> pente dos circuitos
     const J2 = wire([DR.bot(0), [DR.bot(0)[0], ROW_A - 0.135, CZ], [QD.x - 0.27, ROW_A - 0.135, CZ], [QD.x - 0.27, ROW_B + 0.106, CZ], [QD.x - 0.245, ROW_B + 0.106, CZ]], M.pvcBlack, 0.0058, 0.016);
     // Neutro de saída do DR até a barra de neutro
-    wire([DR.bot(1), [DR.bot(1)[0], ROW_A - 0.15, CZ - 0.01], [QD.x + 0.2, ROW_A - 0.15, CZ - 0.01], [QD.x + 0.2, BAR_Y + 0.07, CZ - 0.01], [NB_X + 0.065, BAR_Y + 0.07, CZ - 0.01], [NB_X + 0.065, BAR_Y + 0.012, CZ - 0.01]], M.pvcBlue, 0.0058, 0.016);
+    wire([DR.bot(1), [DR.bot(1)[0], ROW_A - 0.12, CZ - 0.012], [QD.x - 0.3, ROW_A - 0.12, CZ - 0.012], [QD.x - 0.3, BAR_Y + 0.035, CZ - 0.012], [NB_X - 0.039, BAR_Y + 0.035, CZ - 0.012], [NB_X - 0.039, BAR_Y + 0.012, CZ - 0.012]], M.pvcBlue, 0.0058, 0.016);
     // DPS: fase até o DPS, DPS até a barra de terra
     const DPSIN = wire([[ENT_X - 0.008, TOPY - 0.085, CZ - 0.004], [DPS[0].top()[0], TOPY - 0.085, CZ - 0.004], DPS[0].top()], M.pvcBlack, 0.0052, 0.014);
     wire([[ENT_X + 0.012, TOPY - 0.1, CZ - 0.002], [DPS[1].top()[0], TOPY - 0.1, CZ - 0.002], DPS[1].top()], M.pvcRed, 0.0052, 0.014);
-    const peMat = std("#ffffff", { map: peTex, roughness: 0.35 });
     const DPSOUT = wire([DPS[0].bot(), [DPS[0].bot()[0], ROW_A - 0.14, CZ], [QD.x + 0.195, ROW_A - 0.14, CZ - 0.016], [QD.x + 0.195, BAR_Y + 0.04, CZ - 0.016], [PB_X + 0.039, BAR_Y + 0.04, CZ - 0.016], [PB_X + 0.039, BAR_Y + 0.012, CZ - 0.016]], peMat, 0.0052, 0.014);
     wire([DPS[1].bot(), [DPS[1].bot()[0], ROW_A - 0.125, CZ], [QD.x + 0.21, ROW_A - 0.125, CZ - 0.02], [QD.x + 0.21, BAR_Y + 0.035, CZ - 0.02], [PB_X + 0.013, BAR_Y + 0.035, CZ - 0.02], [PB_X + 0.013, BAR_Y + 0.012, CZ - 0.02]], peMat, 0.0052, 0.014);
     // Condutor de aterramento: da barra de terra para baixo, até a haste
@@ -1107,8 +1107,8 @@
     // Circuito da lavanderia: fase, neutro e terra sobem pela lateral, entram no conduíte e descem até a tomada
     const LAVP = wire([LAV.bot(), [LAV.x, ROW_B - 0.145, CZ], [CH_X, ROW_B - 0.145, CZ], [CH_X, TOPY - 0.03, CZ], [CH_X, TOPY + 0.03, WZ], [CH_X, RUN_Y, WZ], [OUT.x, RUN_Y, WZ], [OUT.x, OUT.y + 0.07, WZ], [OUT.x, OUT.y + 0.03, WALL_Z + 0.012]], std("#1b1d22", { roughness: 0.35, emissive: "#ff4a00", emissiveIntensity: 0 }), 0.0062, 0.03);
     const phaseMat = LAVP.mesh.material;
-    const LAVN = wire([[NB_X + 0.039, BAR_Y + 0.012, CZ - 0.012], [NB_X + 0.039, BAR_Y + 0.06, CZ - 0.012], [CH_X + 0.022, BAR_Y + 0.06, CZ - 0.012], [CH_X + 0.022, TOPY - 0.03, CZ - 0.012], [CH_X + 0.022, TOPY + 0.03, WZ], [CH_X + 0.022, RUN_Y + 0.022, WZ], [OUT.x - 0.022, RUN_Y + 0.022, WZ], [OUT.x - 0.022, OUT.y + 0.07, WZ], [OUT.x - 0.012, OUT.y + 0.03, WALL_Z + 0.012]], M.pvcBlue, 0.0062, 0.03);
-    const GND = wire([[PB_X + 0.065, BAR_Y + 0.012, CZ - 0.006], [CH_X - 0.022, BAR_Y + 0.03, CZ - 0.006], [CH_X - 0.022, TOPY - 0.03, CZ - 0.006], [CH_X - 0.022, TOPY + 0.03, WZ], [CH_X - 0.022, RUN_Y - 0.022, WZ], [OUT.x + 0.022, RUN_Y - 0.022, WZ], [OUT.x + 0.022, OUT.y + 0.07, WZ], [OUT.x + 0.012, OUT.y + 0.03, WALL_Z + 0.012]], peMat, 0.0062, 0.03);
+    const LAVN = wire([[NB_X + 0.065, BAR_Y - 0.012, CZ - 0.006], [NB_X + 0.065, BAR_Y - 0.075, CZ - 0.024], [CH_X + 0.022, BAR_Y - 0.075, CZ - 0.024], [CH_X + 0.022, TOPY - 0.03, CZ - 0.024], [CH_X + 0.022, TOPY + 0.03, WZ], [CH_X + 0.022, RUN_Y + 0.022, WZ], [OUT.x - 0.022, RUN_Y + 0.022, WZ], [OUT.x - 0.022, OUT.y + 0.07, WZ], [OUT.x - 0.012, OUT.y + 0.03, WALL_Z + 0.012]], M.pvcBlue, 0.0062, 0.03);
+    const GND = wire([[PB_X + 0.065, BAR_Y - 0.012, CZ - 0.006], [PB_X + 0.065, BAR_Y - 0.05, CZ - 0.014], [CH_X - 0.022, BAR_Y - 0.05, CZ - 0.014], [CH_X - 0.022, TOPY - 0.03, CZ - 0.014], [CH_X - 0.022, TOPY + 0.03, WZ], [CH_X - 0.022, RUN_Y - 0.022, WZ], [OUT.x + 0.022, RUN_Y - 0.022, WZ], [OUT.x + 0.022, OUT.y + 0.07, WZ], [OUT.x + 0.012, OUT.y + 0.03, WALL_Z + 0.012]], peMat, 0.0062, 0.03);
     GND.mesh.material = GND.mesh.material.clone();
     const GND_IDX = GND.geo.index.count;
     // Conduítes corrugados e os rasgos na parede
@@ -1126,6 +1126,7 @@
     }
     const condLav = conduit([[CH_X, TOPY, WZ], [CH_X, RUN_Y, WZ], [OUT.x, RUN_Y, WZ], [OUT.x, OUT.y + 0.085, WZ]], 0.036);
     conduit([[ENT_X, 3.4, WZ], [ENT_X, TOPY, WZ]], 0.034);
+    conduit([[PB_X - 0.013, QD.y - QH / 2, WZ], [PB_X - 0.013, -0.05, WZ]], 0.018);
     for (const [x, y, w, h] of [
       [CH_X, (TOPY + RUN_Y) / 2 + 0.02, 0.1, RUN_Y - TOPY + 0.1],
       [(CH_X + OUT.x) / 2, RUN_Y, CH_X - OUT.x + 0.1, 0.1],
@@ -1326,7 +1327,7 @@
       mouth.position.set(0, -0.052, 0.127);
       head.add(mouth);
       const beardM = std("#3b2618", { roughness: 0.95 });
-      const beard = shade(new THREE.Mesh(new THREE.SphereGeometry(0.1475, 28, 14, Math.PI / 2 - 1.15, 2.3, 1.95, 0.75), beardM));
+      const beard = shade(new THREE.Mesh(new THREE.SphereGeometry(0.1475, 28, 14, Math.PI / 2 - 1.15, 2.3, 2.12, 0.6), beardM));
       beard.scale.set(1, 1.08, 0.98);
       head.add(beard);
       const hair = shade(new THREE.Mesh(new THREE.SphereGeometry(0.149, 24, 10, Math.PI + 0.35, Math.PI - 0.7, 0.9, 0.7), beardM));
@@ -1334,13 +1335,13 @@
       head.add(hair);
       const helmetM = std("#fbfbf8", { roughness: 0.28 });
       const helmet = new THREE.Group();
-      helmet.position.y = 0.03;
+      helmet.position.y = 0.058;
       head.add(helmet);
       const dome = shade(new THREE.Mesh(new THREE.SphereGeometry(0.168, 36, 16, 0, Math.PI * 2, 0, Math.PI / 2), helmetM));
       dome.scale.set(1, 0.95, 1.1);
       const ridge = shade(new THREE.Mesh(new THREE.TorusGeometry(0.163, 0.011, 8, 28, Math.PI), helmetM));
       ridge.rotation.y = Math.PI / 2;
-      ridge.scale.set(1, 0.95, 1.1);
+      ridge.scale.set(1.1, 0.95, 1);
       const rim = shade(new THREE.Mesh(new THREE.TorusGeometry(0.168, 0.008, 8, 40), helmetM));
       rim.rotation.x = Math.PI / 2;
       rim.scale.set(1, 1.1, 1);
@@ -1353,7 +1354,7 @@
       helmet.add(dome, ridge, rim, peak, sticker);
       const strap = new THREE.Mesh(new THREE.TorusGeometry(0.142, 0.0045, 6, 30, Math.PI), std("#2b2f36"));
       strap.rotation.set(0.35, 0, Math.PI);
-      strap.position.set(0, 0.0, 0.02);
+      strap.position.set(0, 0.02, 0.02);
       head.add(strap);
       const lens = new THREE.Mesh(
         new THREE.CylinderGeometry(0.155, 0.155, 0.048, 32, 1, true, -0.78, 1.56),
@@ -1680,6 +1681,7 @@
         GERAL.set(ger);
         DR.set(drl);
         drBtn.position.z = DR_BTN_Z - 0.007 * (t >= C.teste - 0.15 && t < C.teste + 0.15 ? 1 : 0);
+        drT.position.z = drBtn.position.z + 0.0065;
         const gerOn = ger > 0.5 ? 1 : 0;
         const live = gerOn && drl > 0.5 ? 1 : 0;
 
@@ -1752,7 +1754,7 @@
         const spin = integ(t, (x) => (track(x, DRL) > 0.5 && track(x, GER) > 0.5 ? 6 : 0));
         clothes.forEach((cl, i) => {
           const a = spin + (i / clothes.length) * Math.PI * 2;
-          cl.position.set(MAQ.x + Math.cos(a) * 0.09, MAQ.y - 0.05 + Math.sin(a) * 0.09 - 0.03, MAQ.z + 0.25);
+          cl.position.set(MAQ.x + Math.cos(a) * 0.08, MAQ.y - 0.05 + Math.sin(a) * 0.08 - 0.03, MAQ.z + 0.318);
           cl.rotation.z = a;
         });
         dispMat.emissiveIntensity = live ? 1.6 : 0.05;
@@ -1868,7 +1870,7 @@
         const pressIn = t >= C.teste - 0.15 && t < C.teste + 0.15 ? 0.012 : -0.035;
         if (tK > 0.001) reach(elet, armR, toward(shoulderW(armR), worldOf(drBtn, 0, 0, 0.012), 0.05 + pressIn), tK);
         else if (rK > 0.001) reach(elet, armR, toward(shoulderW(armR), worldOf(DR.lev, 0, 0.02, 0.01), 0.045), rK);
-        else if (dK > 0.001) reach(elet, armR, toward(shoulderW(armR), worldOf(LAV.g, LAV.w / 2 - 0.02, -0.075, 0.056), 0.2), dK);
+        else if (dK > 0.001) reach(elet, armR, toward(shoulderW(armR), worldOf(LAV.g, 0, -0.075, 0.056), 0.2), dK);
         // Detector: sem tensão (geral desligado) o LED fica verde
         det.userData.led.emissive.set("#22c55e");
         det.userData.led.emissiveIntensity = dK > 0.9 ? 3.5 + 1.5 * Math.sin(t * 12) : 1.5;
