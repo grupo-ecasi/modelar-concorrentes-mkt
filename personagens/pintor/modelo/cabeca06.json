@@ -1,0 +1,19 @@
+{
+  "entrada": "modelo/pintor_tex_v6.glb",
+  "offset_normalizacao": [
+    -1.0654330253601074e-05,
+    0.4996483027935028,
+    -0.0017282962799072266
+  ],
+  "escala_normalizacao": 120.07797058889838,
+  "altura_normalizada": 120.0,
+  "fator_cabeca": 0.6,
+  "pivo": [
+    3.1104069067741866,
+    78.60000000000001,
+    4.10370481075098
+  ],
+  "y_inicio_faixa": 75.0,
+  "y_queixo": 78.60000000000001,
+  "como_desfazer": "para cada vértice (nas unidades normalizadas): t = smoothstep((y - y_ini)/(y_queixo - y_ini)) calculado na posição ENCOLHIDA aproximada; s = 1 - (1-fator)*t; p_original = piv + (p - piv)/s. Alinhar o GLB do Mixamo a estas unidades pela caixa do corpo (pés aos ombros) antes."
+}

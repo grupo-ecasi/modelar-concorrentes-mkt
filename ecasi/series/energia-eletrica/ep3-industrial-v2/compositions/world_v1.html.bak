@@ -1,0 +1,1247 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: #eef1f6;
+    }
+    #world-canvas {
+      position: absolute;
+      inset: 0;
+      width: 1080px;
+      height: 1920px;
+    }
+    #world-lines {
+      position: absolute;
+      inset: 0;
+      width: 1080px;
+      height: 1920px;
+      pointer-events: none;
+    }
+    .world-callout {
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      padding: 12px 20px;
+      border-radius: 12px;
+      background: #ffffff;
+      border: 2px solid #e5e7eb;
+      box-shadow: 0 10px 24px -12px rgba(11, 29, 63, 0.35);
+      color: #0b1d3f;
+      font-family: Poppins, sans-serif;
+      font-weight: 600;
+      font-size: 30px;
+      line-height: 1.15;
+      white-space: nowrap;
+    }
+    .world-callout.is-tech {
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 500;
+    }
+    .world-callout.is-orange {
+      background: #c2410c;
+      border-color: #c2410c;
+      color: #ffffff;
+    }
+    .world-callout.is-red {
+      background: #fdecec;
+      border-color: rgba(211, 47, 47, 0.45);
+      color: #b3261e;
+    }
+    .world-callout.is-green {
+      background: #ecf8f2;
+      border-color: rgba(59, 178, 115, 0.5);
+      color: #1f7a4c;
+    }
+  </style>
+  <div id="root" data-composition-id="world" data-width="1080" data-height="1920" data-layout-allow-overflow>
+    <canvas id="world-canvas" width="1080" height="1920"></canvas>
+    <svg id="world-lines" viewBox="0 0 1080 1920" data-layout-ignore></svg>
+    <div id="co-xray" class="world-callout is-tech">porta em raio-x</div>
+    <div id="co-cap" class="world-callout is-red">capacitores carregados</div>
+    <div id="co-part" class="world-callout is-red">partida remota</div>
+    <div id="co-arco" class="world-callout is-red">arco elétrico</div>
+    <div id="co-cg" class="world-callout is-green is-tech">chave geral · O ✓</div>
+    <div id="co-cmd" class="world-callout is-green is-tech">comando 220 V · O ✓</div>
+    <div id="co-lock" class="world-callout is-orange">um cadeado por pessoa</div>
+    <div id="co-wait" class="world-callout is-tech">⚠ aguarde 10 min</div>
+    <div id="co-try" class="world-callout is-green">não gira ✓</div>
+    <div id="co-0v" class="world-callout is-green is-tech">0 V ✓</div>
+    <div id="co-dsp" class="world-callout is-tech">display apagado</div>
+    <div id="co-bus" class="world-callout is-red">barramento ainda carregado</div>
+    <div id="co-epi" class="world-callout">luvas isolantes · roupa FR</div>
+    <div id="co-elet" class="world-callout is-orange">eletricista com NR-10</div>
+  </div>
+  <script type="module">
+    import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js";
+
+    // Tempos ancorados na narração (assets/transcript.json). Fonte única: tools/cues.json
+    /*CUES*/
+    const C = {
+      "hook": 0.0,
+      "inversor": 0.8,
+      "motor": 1.44,
+      "pode": 2.24,
+      "abrir": 2.48,
+      "nao": 3.68,
+      "desligar": 4.4,
+      "desenergizar": 5.6,
+      "camadas": 7.76,
+      "problema": 10.56,
+      "painel2": 11.52,
+      "v380": 12.16,
+      "capacitores": 15.52,
+      "barramento": 16.8,
+      "v540": 18.16,
+      "minutos": 19.84,
+      "alguem": 21.76,
+      "partida": 22.72,
+      "curto": 24.96,
+      "arco": 26.48,
+      "c1": 27.76,
+      "planejar": 28.8,
+      "analise": 29.92,
+      "permissao": 31.28,
+      "diagrama": 32.88,
+      "c2": 34.96,
+      "bloquear": 36.24,
+      "todas": 37.2,
+      "fontes": 37.76,
+      "chave": 39.04,
+      "cada": 40.24,
+      "proprio": 42,
+      "cadeado": 42.32,
+      "tira": 44.08,
+      "c3": 44.88,
+      "testar": 46.16,
+      "espere": 47.04,
+      "etiqueta": 48.08,
+      "tente": 49.52,
+      "partida2": 50.16,
+      "meca": 51.36,
+      "barramento2": 52.88,
+      "instrumento": 53.92,
+      "depois": 55.6,
+      "mito": 56.63,
+      "apagou": 57.11,
+      "descarregou": 58.23,
+      "naoMito": 59.43,
+      "display2": 60.15,
+      "apaga": 60.71,
+      "centenas": 62.55,
+      "v540b": 64.23,
+      "nr10": 65.99,
+      "baixa": 67.51,
+      "mas": 68.71,
+      "risco": 71.43,
+      "norma": 72.07,
+      "prontuario": 73.83,
+      "pie": 74.79,
+      "kw": 76.15,
+      "nr12": 78.23,
+      "bloqueio": 79.75,
+      "nr1": 81.59,
+      "pgr": 83.67,
+      "cta": 84.79,
+      "treinamento": 85.35,
+      "ecasi": 87.11,
+      "proximo": 88.87,
+      "cabine": 90.23,
+      "basta": 93.43,
+      "loop": 94.15,
+      "confira": 95.75,
+      "antes": 97.75,
+      "end": 99.61
+    };
+    /*END-CUES*/
+
+    const W = 1080;
+    const H = 1920;
+    const canvas = document.getElementById("world-canvas");
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
+    renderer.setPixelRatio(1);
+    renderer.setSize(W, H, false);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFShadowMap;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color("#eef1f6");
+    scene.fog = new THREE.Fog("#eef1f6", 16, 38);
+
+    const camera = new THREE.PerspectiveCamera(34, W / H, 0.05, 100);
+
+    // ---------- Luz: chave quente, preenchimento frio ----------
+    scene.add(new THREE.HemisphereLight("#ffffff", "#c3c7cc", 1.35));
+    const key = new THREE.DirectionalLight("#fff4e6", 2.0);
+    key.position.set(4, 7, 6);
+    key.castShadow = true;
+    key.shadow.mapSize.set(2048, 2048);
+    key.shadow.camera.left = -5;
+    key.shadow.camera.right = 5;
+    key.shadow.camera.top = 5;
+    key.shadow.camera.bottom = -5;
+    key.shadow.bias = -0.0006;
+    scene.add(key);
+    const rim = new THREE.DirectionalLight("#dbe8ff", 0.6);
+    rim.position.set(-5, 4, 3);
+    scene.add(rim);
+
+    // ---------- Materiais (paleta ECASI) ----------
+    const mat = (color, extra = {}) =>
+      new THREE.MeshStandardMaterial({ color, flatShading: true, roughness: 0.85, metalness: 0, ...extra });
+    function tileTex(base, line, repX, repY) {
+      const cv = document.createElement("canvas");
+      cv.width = cv.height = 256;
+      const g = cv.getContext("2d");
+      g.fillStyle = base;
+      g.fillRect(0, 0, 256, 256);
+      g.strokeStyle = line;
+      g.lineWidth = 4;
+      for (let i = 0; i <= 2; i++) {
+        const p = i * 128;
+        g.beginPath();
+        g.moveTo(p, 0);
+        g.lineTo(p, 256);
+        g.moveTo(0, p);
+        g.lineTo(256, p);
+        g.stroke();
+      }
+      const tx = new THREE.CanvasTexture(cv);
+      tx.wrapS = tx.wrapT = THREE.RepeatWrapping;
+      tx.repeat.set(repX, repY);
+      tx.colorSpace = THREE.SRGBColorSpace;
+      return tx;
+    }
+    function hazardTex() {
+      const cv = document.createElement("canvas");
+      cv.width = 256;
+      cv.height = 128;
+      const g = cv.getContext("2d");
+      g.fillStyle = "#facc15";
+      g.fillRect(0, 0, 256, 128);
+      g.fillStyle = "#1f2937";
+      for (let x = -128; x < 256; x += 48) {
+        g.beginPath();
+        g.moveTo(x, 128);
+        g.lineTo(x + 24, 128);
+        g.lineTo(x + 152, 0);
+        g.lineTo(x + 128, 0);
+        g.fill();
+      }
+      const tx = new THREE.CanvasTexture(cv);
+      tx.colorSpace = THREE.SRGBColorSpace;
+      return tx;
+    }
+    // Etiqueta/face de componente com texto (canvas, determinístico)
+    function textTex(lines, { bg = "#ffffff", fg = "#0b1d3f", w = 128, h = 128, size = 44, mono = true } = {}) {
+      const cv = document.createElement("canvas");
+      cv.width = w;
+      cv.height = h;
+      const g = cv.getContext("2d");
+      g.fillStyle = bg;
+      g.fillRect(0, 0, w, h);
+      g.fillStyle = fg;
+      g.textAlign = "center";
+      g.textBaseline = "middle";
+      g.font = `700 ${size}px ${mono ? '"JetBrains Mono", monospace' : "Poppins, sans-serif"}`;
+      lines.forEach((ln, i) => g.fillText(ln, w / 2, h / 2 + (i - (lines.length - 1) / 2) * size * 1.1));
+      const tx = new THREE.CanvasTexture(cv);
+      tx.colorSpace = THREE.SRGBColorSpace;
+      tx.anisotropy = 4;
+      return tx;
+    }
+    const M = {
+      wall: mat("#e9ecef"),
+      wallLow: mat("#cdd3db"),
+      floor: mat("#ffffff", { map: tileTex("#d5d8dc", "#c3c7cc", 8, 8) }),
+      steel: mat("#5b6474", { roughness: 0.55 }),
+      steelLight: mat("#c9ced6", { roughness: 0.6 }),
+      cabinet: mat("#d6dae0", { roughness: 0.6 }),
+      plate: mat("#eef0f2"),
+      duct: mat("#9ca3af"),
+      navy: mat("#0b1d3f"),
+      navyLight: mat("#142b52"),
+      orange: mat("#f97316"),
+      white: mat("#f8f8f6"),
+      skin: mat("#d9a074"),
+      glove: mat("#1f2937", { roughness: 0.5 }),
+      boot: mat("#2a2f38"),
+      reflect: mat("#dfe3e8", { roughness: 0.35, emissive: "#ffffff", emissiveIntensity: 0.12 }),
+      red: mat("#d32f2f"),
+      green: mat("#3bb273"),
+      yellow: mat("#facc15"),
+      dark: mat("#1f2937"),
+      blue: mat("#2563eb"),
+      belt: mat("#4a3426"),
+      motor: mat("#3b6ea8", { roughness: 0.6 }),
+      pump: mat("#6b7280", { roughness: 0.6 }),
+      paper: mat("#ffffff"),
+      board: mat("#8b5a2b"),
+    };
+
+    const box = (w, h, d, m) => {
+      const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      return mesh;
+    };
+    const cyl = (r, h, m, seg = 10) => {
+      const mesh = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, seg), m);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      return mesh;
+    };
+    const plane = (w, h, tex) => new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: tex }));
+    function wirePath(pts) {
+      const path = new THREE.CurvePath();
+      for (let i = 0; i < pts.length - 1; i++) path.add(new THREE.LineCurve3(new THREE.Vector3(...pts[i]), new THREE.Vector3(...pts[i + 1])));
+      return path;
+    }
+    const tube = (pts, r, m, seg = 120) => {
+      const mesh = new THREE.Mesh(new THREE.TubeGeometry(wirePath(pts), seg, r, 6, false), m);
+      mesh.castShadow = true;
+      return mesh;
+    };
+
+    // ---------- Cenário: chão de fábrica ----------
+    const WALL_Z = -1.4;
+    const WZ = WALL_Z + 0.04;
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(16, 16), M.floor);
+    floor.rotation.x = -Math.PI / 2;
+    floor.receiveShadow = true;
+    scene.add(floor);
+    const wall = box(9, 3.4, 0.2, M.wall);
+    wall.position.set(0, 1.7, WALL_Z - 0.1);
+    const wallLow = box(9, 1.0, 0.02, M.wallLow);
+    wallLow.position.set(0, 0.5, WALL_Z + 0.005);
+    scene.add(wall, wallLow);
+    // Faixas amarelas de circulação no piso
+    const lineMat = mat("#facc15");
+    for (const [x, z, w, d] of [
+      [0, 0.75, 9, 0.07],
+      [1.75, -0.95, 1.9, 0.05],
+      [1.75, -0.05, 1.9, 0.05],
+      [0.8, -0.5, 0.05, 0.95],
+      [2.7, -0.5, 0.05, 0.95],
+    ]) {
+      const l = box(w, 0.004, d, lineMat);
+      l.receiveShadow = true;
+      l.castShadow = false;
+      l.position.set(x, 0.002, z);
+      scene.add(l);
+    }
+
+    // ---------- Painel de comando (CCM) com inversor de frequência ----------
+    const PN = new THREE.Vector3(0.35, 1.1, -1.15);
+    const PW = 1.0;
+    const PH = 2.0;
+    const PD = 0.5;
+    const FZ = PN.z + PD / 2; // face frontal
+    const plinth = box(PW, 0.1, PD, M.dark);
+    plinth.position.set(PN.x, 0.05, PN.z);
+    scene.add(plinth);
+    for (const [w, h, d, x, y, z] of [
+      [PW, PH, 0.02, PN.x, PN.y, PN.z - PD / 2 + 0.01],
+      [0.02, PH, PD, PN.x - PW / 2 + 0.01, PN.y, PN.z],
+      [0.02, PH, PD, PN.x + PW / 2 - 0.01, PN.y, PN.z],
+      [PW, 0.02, PD, PN.x, PN.y + PH / 2 - 0.01, PN.z],
+      [PW, 0.02, PD, PN.x, PN.y - PH / 2 + 0.01, PN.z],
+    ]) {
+      const b = box(w, h, d, M.cabinet);
+      b.position.set(x, y, z);
+      scene.add(b);
+    }
+    const PLATE_Z = PN.z - PD / 2 + 0.03;
+    const mplate = box(PW - 0.08, PH - 0.1, 0.01, M.plate);
+    mplate.position.set(PN.x, PN.y, PLATE_Z);
+    scene.add(mplate);
+    // Canaletas
+    for (const [w, h, x, y] of [
+      [PW - 0.1, 0.06, PN.x, 1.98],
+      [PW - 0.1, 0.06, PN.x, 1.36],
+      [PW - 0.1, 0.06, PN.x, 0.42],
+      [0.06, 1.55, PN.x - 0.42, 1.2],
+      [0.06, 1.55, PN.x + 0.42, 1.2],
+    ]) {
+      const d = box(w, h, 0.06, M.duct);
+      d.position.set(x, y, PLATE_Z + 0.035);
+      scene.add(d);
+    }
+    // Disjuntor geral interno
+    const MB = box(0.16, 0.2, 0.12, M.dark);
+    MB.position.set(PN.x + 0.24, 1.75, PLATE_Z + 0.07);
+    const mbLever = box(0.04, 0.05, 0.03, M.navy);
+    mbLever.position.set(PN.x + 0.24, 1.77, PLATE_Z + 0.145);
+    scene.add(MB, mbLever);
+    // Fonte 24 V
+    const psu = box(0.14, 0.16, 0.1, M.white);
+    psu.position.set(PN.x + 0.24, 1.3, PLATE_Z + 0.06);
+    scene.add(psu);
+    // Inversor (caixa translúcida para mostrar os capacitores do barramento CC)
+    const INV = new THREE.Vector3(PN.x - 0.13, 0.92, PLATE_Z + 0.12);
+    const invMat = new THREE.MeshStandardMaterial({ color: "#1f2937", transparent: true, opacity: 0.55, roughness: 0.5, depthWrite: false, flatShading: true });
+    const inv = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.6, 0.2), invMat);
+    inv.position.copy(INV);
+    scene.add(inv);
+    const invEdges = new THREE.LineSegments(new THREE.EdgesGeometry(inv.geometry), new THREE.LineBasicMaterial({ color: "#0b1d3f" }));
+    invEdges.position.copy(INV);
+    scene.add(invEdges);
+    const invLabel = plane(0.24, 0.06, textTex(["INVERSOR"], { w: 256, h: 64, size: 34, bg: "#0b1d3f", fg: "#ffffff" }));
+    invLabel.position.set(INV.x, INV.y + 0.24, INV.z + 0.101);
+    scene.add(invLabel);
+    const capMat = new THREE.MeshStandardMaterial({ color: "#1e3a8a", emissive: "#ff7a1a", emissiveIntensity: 0, flatShading: true });
+    const caps = [-0.1, 0, 0.1].map((dx) => {
+      const c = cyl(0.04, 0.16, capMat, 12);
+      c.position.set(INV.x + dx, INV.y - 0.06, INV.z);
+      scene.add(c);
+      return c;
+    });
+    const CAP_P = new THREE.Vector3(INV.x, INV.y - 0.02, INV.z + 0.05);
+    // Bornes do barramento CC
+    const DCP = new THREE.Vector3(INV.x - 0.06, INV.y - 0.27, INV.z + 0.1);
+    const DCN = new THREE.Vector3(INV.x + 0.06, INV.y - 0.27, INV.z + 0.1);
+    const dcp = box(0.04, 0.04, 0.03, M.red);
+    dcp.position.copy(DCP);
+    const dcn = box(0.04, 0.04, 0.03, M.dark);
+    dcn.position.copy(DCN);
+    scene.add(dcp, dcn);
+    const dcLabel = plane(0.2, 0.04, textTex(["DC+   DC−"], { w: 256, h: 52, size: 30 }));
+    dcLabel.position.set(INV.x, INV.y - 0.21, INV.z + 0.101);
+    scene.add(dcLabel);
+    // Régua de bornes
+    for (let i = 0; i < 6; i++) {
+      const b = box(0.028, 0.09, 0.06, i % 3 === 2 ? M.blue : M.steelLight);
+      b.position.set(PN.x + 0.12 + i * 0.05, 0.8, PLATE_Z + 0.04);
+      scene.add(b);
+    }
+    // Cabos internos: entrada -> disjuntor -> inversor -> bornes -> saída
+    const cableMat = M.dark;
+    scene.add(
+      tube([[PN.x + 0.24, 2.1, PLATE_Z + 0.07], [PN.x + 0.24, 1.85, PLATE_Z + 0.07]], 0.014, cableMat, 20),
+      tube([[PN.x + 0.12, 1.75, PLATE_Z + 0.07], [INV.x + 0.12, 1.75, PLATE_Z + 0.07], [INV.x + 0.12, INV.y + 0.3, PLATE_Z + 0.07]], 0.012, cableMat, 40),
+      tube([[INV.x, INV.y - 0.3, PLATE_Z + 0.06], [INV.x, 0.1, PLATE_Z + 0.06]], 0.014, cableMat, 30),
+      tube([[PN.x + 0.2, 0.75, PLATE_Z + 0.06], [PN.x + 0.2, 0.1, PLATE_Z + 0.06]], 0.01, cableMat, 20),
+    );
+
+    // Porta com dobradiça à direita (abre na direção da câmera). Fica em raio-x durante a explicação.
+    const door = new THREE.Group();
+    door.position.set(PN.x + PW / 2, PN.y, FZ);
+    const doorMat = mat("#d6dae0", { roughness: 0.6, transparent: true, opacity: 1 });
+    const doorPanel = box(PW, PH, 0.03, doorMat);
+    doorPanel.position.set(-PW / 2, 0, 0.015);
+    const doorEdges = new THREE.LineSegments(new THREE.EdgesGeometry(doorPanel.geometry), new THREE.LineBasicMaterial({ color: "#5b6474", transparent: true, opacity: 0 }));
+    doorEdges.position.copy(doorPanel.position);
+    const handle = box(0.03, 0.18, 0.04, M.steel);
+    handle.position.set(-PW + 0.07, 0.0, 0.05);
+    door.add(doorPanel, doorEdges, handle);
+    // Botoeira (I verde, O vermelho), display do inversor, placa de 380 V e etiqueta de tempo de descarga
+    const BTN_I_L = new THREE.Vector3(-0.82, 0.42, 0.05);
+    const BTN_O_L = new THREE.Vector3(-0.82, 0.28, 0.05);
+    const btnI = cyl(0.035, 0.03, M.green, 12);
+    btnI.rotation.x = Math.PI / 2;
+    btnI.position.copy(BTN_I_L);
+    const btnO = cyl(0.035, 0.03, M.red, 12);
+    btnO.rotation.x = Math.PI / 2;
+    btnO.position.copy(BTN_O_L);
+    const btnLab = plane(0.07, 0.2, textTex(["I", "", "O"], { w: 64, h: 192, size: 40, bg: "#e5e7eb" }));
+    btnLab.position.set(-0.9, 0.35, 0.031);
+    door.add(btnI, btnO, btnLab);
+    const DSP_RUN = textTex(["60,0 Hz", "RUN"], { w: 256, h: 160, size: 46, bg: "#06281a", fg: "#4ade80" });
+    const DSP_STOP = textTex(["0,0 Hz", "STOP"], { w: 256, h: 160, size: 46, bg: "#06281a", fg: "#4ade80" });
+    const DSP_OFF = textTex([""], { w: 256, h: 160, size: 46, bg: "#111827", fg: "#111827" });
+    const dspFrame = box(0.25, 0.18, 0.02, M.dark);
+    dspFrame.position.set(-0.52, 0.42, 0.035);
+    const dsp = plane(0.21, 0.13, DSP_RUN);
+    dsp.position.set(-0.52, 0.42, 0.046);
+    door.add(dspFrame, dsp);
+    const sign = plane(0.24, 0.2, textTex(["⚡", "380 V"], { w: 192, h: 160, size: 52, bg: "#facc15", fg: "#0b1d3f", mono: false }));
+    sign.position.set(-0.52, 0.72, 0.031);
+    const waitLab = plane(0.25, 0.09, textTex(["⚠ AGUARDE", "10 MIN"], { w: 256, h: 92, size: 30, bg: "#fde047", fg: "#0b1d3f" }));
+    waitLab.position.set(-0.52, 0.24, 0.031);
+    door.add(sign, waitLab);
+    scene.add(door);
+
+    // ---------- Chave geral (seccionadora) e alimentação do comando, na parede à esquerda ----------
+    const CG = new THREE.Vector3(-0.95, 1.45, WALL_Z + 0.1);
+    const cgBox = box(0.36, 0.46, 0.18, M.cabinet);
+    cgBox.position.copy(CG);
+    const cgPlate = box(0.2, 0.2, 0.01, M.yellow);
+    cgPlate.position.set(CG.x, CG.y, CG.z + 0.095);
+    const cgLab = plane(0.2, 0.06, textTex(["CHAVE GERAL"], { w: 256, h: 64, size: 28 }));
+    cgLab.position.set(CG.x, CG.y + 0.17, CG.z + 0.091);
+    scene.add(cgBox, cgPlate, cgLab);
+    const cgHandle = new THREE.Group();
+    cgHandle.position.set(CG.x, CG.y, CG.z + 0.12);
+    const hub = cyl(0.04, 0.03, M.red, 12);
+    hub.rotation.x = Math.PI / 2;
+    const bar = box(0.17, 0.04, 0.035, M.red);
+    bar.position.x = 0.04;
+    cgHandle.add(hub, bar);
+    scene.add(cgHandle);
+    const CMD = new THREE.Vector3(-0.95, 0.88, WALL_Z + 0.08);
+    const cmdBox = box(0.26, 0.3, 0.14, M.cabinet);
+    cmdBox.position.copy(CMD);
+    const cmdLab = plane(0.2, 0.05, textTex(["COMANDO 220V"], { w: 256, h: 64, size: 26 }));
+    cmdLab.position.set(CMD.x, CMD.y + 0.1, CMD.z + 0.071);
+    const cmdLever = box(0.04, 0.06, 0.03, M.navy);
+    cmdLever.position.set(CMD.x, CMD.y, CMD.z + 0.085);
+    scene.add(cmdBox, cmdLab, cmdLever);
+    // Eletrodutos até o painel, com a energia passando
+    const mainPath = wirePath([[CG.x, CG.y + 0.23, WZ], [CG.x, 2.3, WZ], [PN.x - 0.3, 2.3, WZ], [PN.x - 0.3, 2.1, PN.z]]);
+    const cmdPath = wirePath([[CMD.x + 0.13, CMD.y, WZ], [-0.68, CMD.y, WZ], [-0.68, 2.2, WZ], [PN.x - 0.4, 2.2, WZ], [PN.x - 0.4, 2.1, PN.z]]);
+    const conduitMat = M.steelLight;
+    scene.add(new THREE.Mesh(new THREE.TubeGeometry(mainPath, 120, 0.028, 8, false), conduitMat));
+    scene.add(new THREE.Mesh(new THREE.TubeGeometry(cmdPath, 120, 0.02, 8, false), conduitMat));
+    // Garra de multibloqueio, cadeados e etiquetas "NÃO OPERE"
+    const HASP = new THREE.Vector3(CG.x + 0.03, CG.y - 0.1, CG.z + 0.15);
+    const hasp = new THREE.Group();
+    hasp.position.copy(HASP);
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.03, 0.006, 6, 14), M.steel);
+    const haspPlate = box(0.09, 0.05, 0.008, M.red);
+    haspPlate.position.y = -0.05;
+    hasp.add(ring, haspPlate);
+    scene.add(hasp);
+    function makeLock(color, label) {
+      const g = new THREE.Group();
+      const body = box(0.055, 0.065, 0.03, mat(color));
+      const shackle = new THREE.Mesh(new THREE.TorusGeometry(0.018, 0.005, 6, 12, Math.PI), M.steelLight);
+      shackle.position.y = 0.032;
+      const tag = plane(0.05, 0.07, textTex([label, "NÃO", "OPERE"], { w: 96, h: 136, size: 22, bg: "#d32f2f", fg: "#ffffff" }));
+      tag.position.set(0, -0.08, 0.004);
+      g.add(body, shackle, tag);
+      scene.add(g);
+      return g;
+    }
+    const lockE = makeLock("#f97316", "ECASI");
+    lockE.position.set(HASP.x - 0.03, HASP.y - 0.1, HASP.z + 0.01);
+    const lockC = makeLock("#2563eb", "MANUT.");
+    lockC.position.set(HASP.x + 0.03, HASP.y - 0.1, HASP.z + 0.01);
+    const lockM = makeLock("#f97316", "ECASI");
+    lockM.position.set(CMD.x, CMD.y - 0.06, CMD.z + 0.1);
+
+    // ---------- CLP (sala de controle) que pode dar partida remota ----------
+    const CLP = new THREE.Vector3(1.3, 1.6, WALL_Z + 0.06);
+    const clp = box(0.3, 0.36, 0.1, M.steelLight);
+    clp.position.copy(CLP);
+    const clpLab = plane(0.16, 0.06, textTex(["CLP"], { w: 128, h: 48, size: 36 }));
+    clpLab.position.set(CLP.x, CLP.y + 0.1, CLP.z + 0.051);
+    const clpLedMat = new THREE.MeshBasicMaterial({ color: "#22c55e" });
+    const clpLed = box(0.03, 0.03, 0.01, clpLedMat);
+    clpLed.position.set(CLP.x + 0.08, CLP.y - 0.06, CLP.z + 0.055);
+    scene.add(clp, clpLab, clpLed);
+    const clpPath = wirePath([[CLP.x, CLP.y + 0.18, WZ], [CLP.x, 2.36, WZ], [PN.x + 0.3, 2.36, WZ], [PN.x + 0.3, 2.1, PN.z]]);
+    scene.add(new THREE.Mesh(new THREE.TubeGeometry(clpPath, 120, 0.016, 6, false), M.steelLight));
+
+    // ---------- Motor elétrico e bomba ----------
+    const MOT = new THREE.Vector3(1.55, 0.36, -0.55);
+    const base = box(1.45, 0.08, 0.5, M.dark);
+    base.position.set(MOT.x + 0.38, 0.04, MOT.z);
+    scene.add(base);
+    const housing = cyl(0.24, 0.6, M.motor, 14);
+    housing.rotation.z = Math.PI / 2;
+    housing.position.copy(MOT);
+    scene.add(housing);
+    for (let i = 0; i < 6; i++) {
+      const fin = cyl(0.255, 0.018, M.motor, 14);
+      fin.rotation.z = Math.PI / 2;
+      fin.position.set(MOT.x - 0.24 + i * 0.09, MOT.y, MOT.z);
+      scene.add(fin);
+    }
+    const fanCover = cyl(0.22, 0.12, M.dark, 14);
+    fanCover.rotation.z = Math.PI / 2;
+    fanCover.position.set(MOT.x - 0.36, MOT.y, MOT.z);
+    const tbox = box(0.18, 0.12, 0.18, M.motor);
+    tbox.position.set(MOT.x, MOT.y + 0.29, MOT.z);
+    scene.add(fanCover, tbox);
+    for (const s of [-1, 1]) {
+      const foot = box(0.5, 0.12, 0.08, M.motor);
+      foot.position.set(MOT.x, 0.14, MOT.z + s * 0.17);
+      scene.add(foot);
+    }
+    const shaft = cyl(0.03, 0.2, M.steel, 8);
+    shaft.rotation.z = Math.PI / 2;
+    shaft.position.set(MOT.x + 0.4, MOT.y, MOT.z);
+    scene.add(shaft);
+    // Acoplamento girando (com marca amarela) e a proteção translúcida da NR-12
+    const SPIN = new THREE.Vector3(MOT.x + 0.52, MOT.y, MOT.z);
+    const spin = new THREE.Group();
+    spin.position.copy(SPIN);
+    const coup = cyl(0.1, 0.1, M.steelLight, 14);
+    coup.rotation.z = Math.PI / 2;
+    const mark = box(0.104, 0.05, 0.03, M.yellow);
+    mark.position.y = 0.085;
+    const mark2 = box(0.104, 0.05, 0.03, M.dark);
+    mark2.position.y = -0.085;
+    spin.add(coup, mark, mark2);
+    scene.add(spin);
+    const guard = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.26, 14, 1, true), new THREE.MeshStandardMaterial({ color: "#facc15", transparent: true, opacity: 0.32, side: THREE.DoubleSide, depthWrite: false }));
+    guard.rotation.z = Math.PI / 2;
+    guard.position.copy(SPIN);
+    scene.add(guard);
+    const volute = cyl(0.21, 0.2, M.pump, 16);
+    volute.rotation.x = Math.PI / 2;
+    volute.position.set(MOT.x + 0.86, MOT.y + 0.02, MOT.z);
+    const pumpBody = box(0.2, 0.22, 0.2, M.pump);
+    pumpBody.position.set(MOT.x + 0.7, MOT.y - 0.08, MOT.z);
+    const pipeUp = cyl(0.06, 1.0, M.steelLight, 10);
+    pipeUp.position.set(MOT.x + 0.86, MOT.y + 0.7, MOT.z);
+    const pipeBack = cyl(0.06, 0.85, M.steelLight, 10);
+    pipeBack.rotation.x = Math.PI / 2;
+    pipeBack.position.set(MOT.x + 0.86, MOT.y + 1.2, MOT.z - 0.42);
+    scene.add(volute, pumpBody, pipeUp, pipeBack);
+    // Cabo do motor: sai pelo piso do painel até a caixa de ligação
+    const motorPath = wirePath([[PN.x + 0.3, 0.04, PN.z + 0.1], [PN.x + 0.3, 0.04, MOT.z + 0.32], [MOT.x, 0.04, MOT.z + 0.32], [MOT.x, 0.04, MOT.z + 0.1], [MOT.x, MOT.y + 0.29, MOT.z + 0.1]]);
+    scene.add(new THREE.Mesh(new THREE.TubeGeometry(motorPath, 120, 0.022, 6, false), M.dark));
+
+    // Faixa zebrada no piso em frente ao painel
+    const zebra = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 0.16), new THREE.MeshStandardMaterial({ map: hazardTex() }));
+    zebra.rotation.x = -Math.PI / 2;
+    zebra.position.set(PN.x, 0.003, FZ + 0.15);
+    zebra.receiveShadow = true;
+    scene.add(zebra);
+
+    // ---------- Pulsos de energia, sinal remoto, arco e faíscas ----------
+    function pulseSet(n, color, r = 0.022) {
+      const arr = [];
+      for (let k = 0; k < n; k++) {
+        const p = new THREE.Mesh(new THREE.SphereGeometry(r, 8, 6), new THREE.MeshBasicMaterial({ color }));
+        scene.add(p);
+        arr.push(p);
+      }
+      return arr;
+    }
+    const mainPulses = pulseSet(12, "#fde047");
+    const cmdPulses = pulseSet(8, "#fde047", 0.018);
+    const motorPulses = pulseSet(10, "#fde047");
+    const clpPulses = pulseSet(6, "#60a5fa", 0.026);
+    const ARC = new THREE.Vector3(INV.x, INV.y - 0.27, INV.z + 0.14);
+    const arcMat = new THREE.MeshBasicMaterial({ color: "#e0f2fe", transparent: true, depthWrite: false });
+    const arcBall = new THREE.Mesh(new THREE.IcosahedronGeometry(0.12, 1), arcMat);
+    arcBall.position.copy(ARC);
+    scene.add(arcBall);
+    const arcLight = new THREE.PointLight("#bfdbfe", 0, 4, 1.5);
+    arcLight.position.copy(ARC);
+    scene.add(arcLight);
+    const sparks = [];
+    for (let k = 0; k < 16; k++) {
+      const s = box(0.018, 0.018, 0.018, new THREE.MeshBasicMaterial({ color: k % 2 ? "#fb923c" : "#fde047" }));
+      const a = k * 2.399;
+      s.userData = { vx: Math.cos(a) * (0.6 + (k % 5) * 0.12), vy: 0.5 + (k % 3) * 0.35, vz: 0.4 + (k % 4) * 0.15 };
+      scene.add(s);
+      sparks.push(s);
+    }
+
+    // ---------- Ferramentas na mão: prancheta e multímetro ----------
+    function makeClipboard() {
+      const g = new THREE.Group();
+      const b = box(0.22, 0.012, 0.3, M.board);
+      const p = box(0.19, 0.014, 0.25, M.paper);
+      p.position.z = 0.015;
+      const clip = box(0.08, 0.02, 0.03, M.steel);
+      clip.position.set(0, 0.006, -0.14);
+      g.add(b, p, clip);
+      return g;
+    }
+    function makeMeter() {
+      const g = new THREE.Group();
+      const body = box(0.1, 0.16, 0.04, M.yellow);
+      const scr = plane(0.07, 0.04, textTex(["0 V"], { w: 128, h: 72, size: 46, bg: "#d9f99d", fg: "#0b1d3f" }));
+      scr.position.set(0, 0.04, 0.021);
+      g.add(body, scr);
+      return g;
+    }
+    const UP = new THREE.Vector3(0, 1, 0);
+    function makeProbe(color) {
+      const m = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.006, 1, 6), new THREE.MeshBasicMaterial({ color }));
+      scene.add(m);
+      return m;
+    }
+    function setProbe(m, a, b) {
+      const d = new THREE.Vector3().subVectors(b, a);
+      const len = d.length();
+      m.position.copy(a).addScaledVector(d, 0.5);
+      m.scale.set(1, Math.max(0.001, len), 1);
+      m.quaternion.setFromUnitVectors(UP, d.normalize());
+    }
+
+    // ---------- Trabalhador low-poly: colete com faixas, capacete e óculos (logo ECASI nas costas, se houver) ----------
+    function makeWorker({ logoTex = null, vest = M.orange, vestDark = "#ea6a0c", helmet = M.white, hand = M.skin, shirt = M.navyLight, pants = M.navy } = {}) {
+      const g = new THREE.Group();
+      const hips = new THREE.Group();
+      hips.position.y = 0.9;
+      g.add(hips);
+      const legs = [];
+      for (const s of [-1, 1]) {
+        const leg = new THREE.Group();
+        leg.position.set(s * 0.13, 0, 0);
+        const thigh = box(0.22, 0.82, 0.26, pants);
+        thigh.position.y = -0.41;
+        const boot = box(0.24, 0.13, 0.36, M.boot);
+        boot.position.set(0, -0.84, 0.05);
+        leg.add(thigh, boot);
+        hips.add(leg);
+        legs.push(leg);
+      }
+      const torso = box(0.56, 0.68, 0.32, shirt);
+      torso.position.y = 0.34;
+      hips.add(torso);
+      const V = new THREE.Group();
+      V.position.y = 0.36;
+      hips.add(V);
+      const back = box(0.6, 0.56, 0.035, vest);
+      back.position.z = -0.175;
+      V.add(back);
+      for (const s of [-1, 1]) {
+        const front = box(0.2, 0.56, 0.035, vest);
+        front.position.set(s * 0.2, 0, 0.175);
+        const side = box(0.035, 0.5, 0.36, vest);
+        side.position.set(s * 0.3, -0.03, 0);
+        const strap = box(0.15, 0.035, 0.38, vest);
+        strap.position.set(s * 0.19, 0.3, 0);
+        const vStripe = box(0.05, 0.57, 0.04, M.reflect);
+        vStripe.position.set(s * 0.2, 0, 0.18);
+        const vBack = box(0.05, 0.57, 0.04, M.reflect);
+        vBack.position.set(s * 0.255, 0, -0.18);
+        V.add(front, side, strap, vStripe, vBack);
+        for (const y of [-0.17, -0.04]) {
+          const hf = box(0.205, 0.045, 0.04, M.reflect);
+          hf.position.set(s * 0.2, y, 0.18);
+          const hs = box(0.04, 0.045, 0.37, M.reflect);
+          hs.position.set(s * 0.305, y, 0);
+          V.add(hf, hs);
+        }
+      }
+      for (const y of [-0.17, -0.04]) {
+        const hb = box(0.61, 0.045, 0.04, M.reflect);
+        hb.position.set(0, y, -0.18);
+        V.add(hb);
+      }
+      if (logoTex) {
+        // Símbolo do Grupo ECASI nas costas, numa etiqueta branca
+        const patch = box(0.4, 0.27, 0.012, M.white);
+        patch.position.set(0, 0.13, -0.196);
+        V.add(patch);
+        const logo = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 0.3), new THREE.MeshBasicMaterial({ map: logoTex, transparent: true }));
+        logo.position.set(0, 0.13, -0.203);
+        logo.rotation.y = Math.PI;
+        V.add(logo);
+      }
+      const pocket = box(0.12, 0.1, 0.02, mat(vestDark));
+      pocket.position.set(-0.2, 0.1, 0.2);
+      const pen = cyl(0.012, 0.09, M.yellow, 6);
+      pen.position.set(-0.17, 0.16, 0.205);
+      V.add(pocket, pen);
+      const beltBand = box(0.62, 0.07, 0.36, M.belt);
+      beltBand.position.y = 0.03;
+      const pouch = box(0.1, 0.16, 0.12, M.belt);
+      pouch.position.set(0.33, -0.06, 0.06);
+      const h1 = cyl(0.014, 0.12, M.yellow, 6);
+      h1.position.set(0.32, 0.06, 0.04);
+      const h2 = cyl(0.014, 0.1, M.red, 6);
+      h2.position.set(0.345, 0.05, 0.09);
+      hips.add(beltBand, pouch, h1, h2);
+      const arms = [];
+      const hands = [];
+      for (const s of [-1, 1]) {
+        const arm = new THREE.Group();
+        arm.position.set(s * 0.36, 0.64, 0);
+        const upper = box(0.16, 0.6, 0.18, shirt);
+        upper.position.y = -0.3;
+        arm.add(upper);
+        const hnd = box(0.14, 0.14, 0.14, hand);
+        hnd.position.y = -0.66;
+        arm.add(hnd);
+        if (hand !== M.skin) {
+          const cuff = box(0.17, 0.06, 0.19, hand);
+          cuff.position.y = -0.57;
+          arm.add(cuff);
+        }
+        hips.add(arm);
+        arms.push(arm);
+        hands.push(hnd);
+      }
+      const head = new THREE.Mesh(new THREE.IcosahedronGeometry(0.19, 0), M.skin);
+      head.position.y = 0.9;
+      head.castShadow = true;
+      hips.add(head);
+      const hel = new THREE.Mesh(new THREE.SphereGeometry(0.215, 8, 4, 0, Math.PI * 2, 0, Math.PI / 2), helmet);
+      hel.position.y = 0.95;
+      hel.castShadow = true;
+      const brim = cyl(0.25, 0.03, helmet, 10);
+      brim.position.set(0, 0.95, 0.03);
+      const glasses = box(0.27, 0.05, 0.03, mat("#1f2937", { roughness: 0.3 }));
+      glasses.position.set(0, 0.9, 0.17);
+      hips.add(hel, brim, glasses);
+      g.userData = { hips, arms, hands, legs };
+      return g;
+    }
+
+    // ---------- Utilidades de tempo ----------
+    const clamp01 = (x) => Math.min(1, Math.max(0, x));
+    const prog = (t, a, b) => clamp01((t - a) / (b - a));
+    const easeInOut = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+    const easeOut = (x) => 1 - Math.pow(1 - x, 3);
+    const easeOutExpo = (x) => (x >= 1 ? 1 : 1 - Math.pow(2, -10 * x));
+    const lerp = (a, b, x) => a + (b - a) * x;
+    const lerp3 = (a, b, x) => [lerp(a[0], b[0], x), lerp(a[1], b[1], x), lerp(a[2], b[2], x)];
+    const spring = (x) => (x <= 0 ? 0 : 1 - Math.exp(-6 * x) * Math.cos(9 * x));
+    function track(t, keys) {
+      if (t <= keys[0][0]) return keys[0][1];
+      for (let i = 0; i < keys.length - 1; i++) {
+        const [ta, va] = keys[i];
+        const [tb, vb] = keys[i + 1];
+        if (t <= tb) return tb === ta ? vb : lerp(va, vb, easeInOut((t - ta) / (tb - ta)));
+      }
+      return keys[keys.length - 1][1];
+    }
+    // Posição por quadros-chave com pontos 3D
+    function track3(t, keys) {
+      if (t <= keys[0][0]) return keys[0][1];
+      for (let i = 0; i < keys.length - 1; i++) {
+        const [ta, va] = keys[i];
+        const [tb, vb] = keys[i + 1];
+        if (t <= tb) return tb === ta ? vb : lerp3(va, vb, easeInOut((t - ta) / (tb - ta)));
+      }
+      return keys[keys.length - 1][1];
+    }
+
+    // ---------- Montagem (depois de carregar o símbolo da ECASI) ----------
+    function build(logoTex) {
+      const elet = makeWorker({ logoTex, hand: M.glove });
+      const col = makeWorker({ vest: M.blue, vestDark: "#1d4ed8", helmet: M.blue, shirt: mat("#4b5563"), pants: mat("#374151") });
+      scene.add(elet, col);
+      const [armA, armB] = elet.userData.arms;
+      const [colA] = col.userData.arms;
+      const clip = makeClipboard();
+      clip.position.set(0, -0.72, 0.1);
+      clip.rotation.x = Math.PI / 2 - 0.3;
+      armA.add(clip);
+      const meter = makeMeter();
+      meter.position.set(0, -0.76, 0.06);
+      meter.rotation.x = -0.4;
+      armB.add(meter);
+      const probeR = makeProbe("#dc2626");
+      const probeK = makeProbe("#111827");
+
+      // ---------- Posições ----------
+      const P_PANEL = [PN.x - 0.68, 0, FZ + 0.55];
+      const P_WORK = [PN.x - 0.45, 0, FZ + 0.52];
+      const P_FAR = [PN.x - 1.25, 0, FZ + 0.95];
+      const P_CG = [CG.x - 0.3, 0, WALL_Z + 0.8];
+      const P_WAIT = [PN.x - 1.1, 0, FZ + 1.0];
+      const P_COL = [CG.x - 0.95, 0, WALL_Z + 0.95];
+      const OFF_COL = [-3.6, 0, 0.4];
+      const POS = [
+        [0, P_PANEL], [C.desligar - 0.2, P_PANEL], [C.desligar + 0.9, P_FAR],
+        [C.c2 - 0.1, P_FAR], [C.bloquear - 0.25, P_CG],
+        [C.c3 + 0.3, P_CG], [C.espere + 0.9, P_WORK],
+        [C.mito - 0.2, P_WORK], [C.mito + 0.7, P_WAIT],
+        [C.norma - 0.3, P_WAIT], [C.norma + 0.5, P_WORK],
+        [C.cta + 1.2, P_WORK], [C.ecasi + 0.6, P_CG],
+        [C.loop + 0.2, P_CG], [C.loop + 1.8, P_PANEL],
+      ];
+      const COLPOS = [[0, OFF_COL], [C.c2 + 1.4, OFF_COL], [C.cada - 0.1, P_COL], [C.nr1 + 0.7, P_COL], [C.nr1 + 2.6, OFF_COL]];
+      const posAt = (t) => track3(t, POS);
+      const colAt = (t) => track3(t, COLPOS);
+      const yawTo = (p, q) => Math.atan2(q[0] - p[0], q[2] - p[2]);
+      const yawCam = 0.38;
+
+      // ---------- Câmera: plano-sequência por quadros-chave ----------
+      // q = alvo, d = distância, dir = direção da câmera (da cena para ela)
+      const DIR = [0.42, 0.12, 1];
+      const shot = (q, d, dir = DIR) => {
+        const n = Math.hypot(...dir);
+        return { q, p: q.map((v, i) => v + (dir[i] / n) * d) };
+      };
+      const OPEN = shot([0.15, 1.7, -0.8], 7.4);
+      const PANELW = (d = 5.4, dy = 0.5) => shot([PN.x, PN.y + dy, PN.z], d);
+      const INVC = (d = 3.2, dy = 0.58) => shot([INV.x, INV.y + dy, INV.z], d);
+      const K = [
+        { t: 0, ...OPEN },
+        { t: C.pode, ...shot([0.12, 1.66, -0.8], 6.8) },
+        { t: C.desligar + 0.8, ...PANELW(5.6) },
+        { t: C.camadas + 0.4, ...PANELW(5.9) },
+        { t: C.capacitores - 0.3, ...INVC(3.4) },
+        { t: C.minutos, ...INVC(3.6, 0.52) },
+        { t: C.alguem + 0.4, ...shot([1.0, 1.65, -0.7], 6.4) },
+        { t: C.curto, ...shot([0.9, 1.6, -0.7], 6.2) },
+        { t: C.arco - 0.2, ...INVC(3.9, 0.5) },
+        { t: C.c1 + 0.6, ...shot([-0.8, 1.95, -0.2], 5.2) },
+        { t: C.diagrama + 0.6, ...shot([-0.78, 1.9, -0.2], 4.8) },
+        { t: C.bloquear, ...shot([CG.x + 0.05, 1.95, -1.0], 4.6) },
+        { t: C.chave + 0.3, ...shot([CG.x - 0.2, 1.9, -0.9], 5.4) },
+        { t: C.proprio, ...shot([CG.x + 0.03, 1.5, CG.z], 3.3, [0.95, 0.12, 1]) },
+        { t: C.tira + 0.4, ...shot([CG.x + 0.03, 1.46, CG.z], 3.2, [0.95, 0.12, 1]) },
+        { t: C.c3 + 0.6, ...PANELW(5.6) },
+        { t: C.etiqueta - 0.2, ...shot([PN.x, 1.75, FZ], 3.0) },
+        { t: C.tente + 0.2, ...shot([0.95, 1.6, -0.75], 6.0) },
+        { t: C.meca + 0.3, ...INVC(3.6, 0.4) },
+        { t: C.depois, ...INVC(3.5, 0.4) },
+        { t: C.mito + 0.4, ...shot([PN.x - 0.1, 1.95, FZ], 3.6) },
+        { t: C.display2 + 0.3, ...INVC(3.4, 0.62) },
+        { t: C.v540b, ...shot([0.0, 1.95, -0.6], 6.2) },
+        { t: C.norma + 0.6, ...shot([0.0, 1.95, -0.8], 5.4) },
+        { t: C.nr1, ...shot([0.0, 1.9, -0.8], 5.2) },
+        { t: C.cta + 0.7, ...shot([-0.3, 3.0, -0.6], 9.8) },
+        { t: C.loop, ...shot([-0.3, 2.95, -0.6], 9.4) },
+        { t: C.loop + 1.6, ...shot([0.13, 1.72, -0.8], 7.0) },
+        { t: C.end, ...OPEN },
+      ];
+      function cameraAt(t) {
+        if (t <= K[0].t) return K[0];
+        for (let i = 0; i < K.length - 1; i++) {
+          const a = K[i];
+          const b = K[i + 1];
+          if (t <= b.t) {
+            const x = easeInOut((t - a.t) / (b.t - a.t));
+            return { p: lerp3(a.p, b.p, x), q: lerp3(a.q, b.q, x) };
+          }
+        }
+        return K[K.length - 1];
+      }
+
+      // ---------- Braço apontando para um ponto 3D (IK simples) ----------
+      const DOWN = new THREE.Vector3(0, -1, 0);
+      const qTmp = new THREE.Quaternion();
+      const qHips = new THREE.Quaternion();
+      const IDQ = new THREE.Quaternion();
+      const vS = new THREE.Vector3();
+      function aimArm(who, arm, target, k) {
+        if (k <= 0.001) {
+          arm.quaternion.identity();
+          return;
+        }
+        who.updateMatrixWorld(true);
+        arm.getWorldPosition(vS);
+        const dir = new THREE.Vector3(...target).sub(vS).normalize();
+        who.userData.hips.getWorldQuaternion(qHips);
+        dir.applyQuaternion(qHips.invert());
+        qTmp.setFromUnitVectors(DOWN, dir);
+        arm.quaternion.slerpQuaternions(IDQ, qTmp, k);
+      }
+
+      // ---------- Callouts presos a pontos 3D ----------
+      const svg = document.getElementById("world-lines");
+      const SVGNS = "http://www.w3.org/2000/svg";
+      function worldOf(obj, x, y, z) {
+        obj.updateMatrixWorld(true);
+        return obj.localToWorld(new THREE.Vector3(x, y, z)).toArray();
+      }
+      const CTA_BOX = { top: 1320, bottom: 1600 };
+      const CALLOUTS = [
+        { id: "co-xray", a: C.desligar + 0.9, b: C.problema, at: () => worldOf(doorPanel, 0.3, 0.6, 0.02), dx: 90, dy: -60, top: 640 },
+        { id: "co-cap", a: C.capacitores, b: C.alguem, at: () => CAP_P.toArray(), dx: 140, dy: 150, top: 640 },
+        { id: "co-part", a: C.alguem + 0.7, b: C.arco - 0.2, at: () => SPIN.toArray(), dx: -60, dy: -170, top: 640 },
+        { id: "co-arco", a: C.arco, b: C.c1, at: () => ARC.toArray(), dx: 150, dy: 140, top: 640 },
+        { id: "co-cg", a: C.bloquear + 0.5, b: C.cada, at: () => cgHandle.position.toArray(), dx: 130, dy: -120, top: 760 },
+        { id: "co-cmd", a: C.fontes + 0.6, b: C.cada, at: () => cmdLever.position.toArray(), dx: 130, dy: 130, top: 760 },
+        { id: "co-lock", a: C.cadeado + 0.6, b: C.c3 + 0.2, at: () => [HASP.x, HASP.y - 0.1, HASP.z + 0.03], dx: 130, dy: 120, top: 860 },
+        { id: "co-wait", a: C.etiqueta, b: C.tente, at: () => worldOf(waitLab, 0, 0, 0), dx: 130, dy: 110, top: 960 },
+        { id: "co-try", a: C.partida2 + 0.5, b: C.meca, at: () => SPIN.toArray(), dx: -60, dy: -150, top: 960 },
+        { id: "co-0v", a: C.meca + 1.0, b: C.mito, at: () => worldOf(meter, 0, 0.04, 0.03), dx: -110, dy: 120, top: 960 },
+        { id: "co-dsp", a: C.apagou + 0.2, b: C.display2, at: () => worldOf(dsp, 0, 0, 0), dx: 140, dy: 130, top: 860 },
+        { id: "co-bus", a: C.display2 + 0.3, b: C.v540b, at: () => CAP_P.toArray(), dx: 140, dy: 160, top: 860 },
+        { id: "co-epi", a: C.prontuario, b: C.cta, at: () => worldOf(elet.userData.hands[1], 0, 0, 0), dx: -120, dy: 140, top: 1080 },
+        { id: "co-elet", ...CTA_BOX, a: C.treinamento + 0.6, b: C.loop, at: () => worldOf(elet.userData.hips, 0, 1.05, 0), dx: 110, dy: -60 },
+      ];
+      for (const c of CALLOUTS) {
+        c.el = document.getElementById(c.id);
+        c.bw = c.el.offsetWidth;
+        c.bh = c.el.offsetHeight;
+        c.line = document.createElementNS(SVGNS, "line");
+        c.line.setAttribute("stroke", "#0b1d3f");
+        c.line.setAttribute("stroke-width", "3");
+        c.dot = document.createElementNS(SVGNS, "circle");
+        c.dot.setAttribute("r", "8");
+        c.dot.setAttribute("fill", "#f97316");
+        c.dot.setAttribute("stroke", "#ffffff");
+        c.dot.setAttribute("stroke-width", "3");
+        svg.append(c.line, c.dot);
+      }
+      const proj = new THREE.Vector3();
+      function placeCallouts(t) {
+        for (const c of CALLOUTS) {
+          const fadeIn = prog(t, c.a, c.a + 0.25);
+          const fadeOut = 1 - prog(t, c.b - 0.2, c.b);
+          const o = Math.min(fadeIn, fadeOut);
+          if (o <= 0.001) {
+            c.el.style.opacity = "0";
+            c.line.setAttribute("opacity", "0");
+            c.dot.setAttribute("opacity", "0");
+            continue;
+          }
+          proj.fromArray(c.at()).project(camera);
+          const px = (proj.x * 0.5 + 0.5) * W;
+          const py = (-proj.y * 0.5 + 0.5) * H;
+          let bx = px + c.dx - (c.dx < 0 ? c.bw : 0);
+          let by = py + c.dy - c.bh / 2;
+          bx = Math.min(W - 54 - c.bw, Math.max(54, bx));
+          by = Math.min((c.bottom ?? 1160) - c.bh, Math.max(c.top ?? 330, by));
+          const lift = 14 * (1 - easeOutExpo(fadeIn));
+          c.el.style.opacity = String(o);
+          c.el.style.transform = `translate(${bx}px, ${by + lift}px)`;
+          const lx = bx + (c.dx < 0 ? c.bw : 0);
+          const ly = by + c.bh / 2;
+          const grow = easeOut(fadeIn);
+          c.line.setAttribute("x1", String(px));
+          c.line.setAttribute("y1", String(py));
+          c.line.setAttribute("x2", String(lerp(px, lx, grow)));
+          c.line.setAttribute("y2", String(lerp(py, ly, grow)));
+          c.line.setAttribute("opacity", String(o));
+          c.dot.setAttribute("cx", String(px));
+          c.dot.setAttribute("cy", String(py));
+          c.dot.setAttribute("opacity", String(o));
+        }
+      }
+
+      // ---------- Estados ao longo do tempo ----------
+      // Motor: para no gancho, parte sozinho pelo CLP no problema, fica parado bloqueado e volta a girar no fim
+      const SPD = [
+        [0, 1], [0.9, 1], [2.4, 0], [C.alguem + 0.7, 0], [C.alguem + 1.7, 1], [C.c1 - 0.4, 1], [C.c1 + 0.6, 0],
+        [C.proximo + 3.2, 0], [C.proximo + 4.6, 1],
+      ];
+      // Chave geral e comando: desligados e bloqueados na camada 2, religados na chamada final
+      const CHV = [[0, 1], [C.bloquear + 0.2, 1], [C.bloquear + 0.35, 0], [C.proximo + 1.0, 0], [C.proximo + 1.15, 1]];
+      const CMDS = [[0, 1], [C.fontes + 0.25, 1], [C.fontes + 0.4, 0], [C.proximo + 2.0, 0], [C.proximo + 2.15, 1]];
+      // Porta: raio-x durante a explicação; aberta só depois de testar (camada 3) e na norma
+      const XR = [[0, 0], [C.desligar - 0.1, 0], [C.desligar + 0.6, 1], [C.cta + 1.2, 1], [C.loop + 0.6, 0]];
+      const DOOR = [[0, 0], [C.meca - 0.6, 0], [C.meca - 0.1, 1.9], [C.mito - 0.05, 1.9], [C.mito + 0.35, 0], [C.norma + 0.1, 0], [C.norma + 0.6, 1.9], [C.cta + 0.4, 1.9], [C.cta + 1.2, 0]];
+      // Tensão do barramento CC (fração de 540 V): cai devagar depois da chave geral; no mito, o "replay" mostra a carga que fica
+      function busAt(t) {
+        const off = C.bloquear + 0.35;
+        if (t < off) return 1;
+        if (t < C.meca) return Math.pow(1 - prog(t, off, C.meca), 2);
+        if (t < C.mito + 0.2) return 0;
+        if (t < C.norma) return 1 - 0.4 * prog(t, C.mito + 0.2, C.norma);
+        if (t < C.proximo + 1.15) return 0;
+        return prog(t, C.proximo + 1.15, C.proximo + 1.5);
+      }
+      // Integral da velocidade para o ângulo do acoplamento (determinístico)
+      function angleAt(t) {
+        let a = 0;
+        const dt = 1 / 30;
+        for (let s = 0; s < t; s += dt) a += track(s, SPD) * dt * 16;
+        return a;
+      }
+
+      // ---------- Render de um quadro a partir de t ----------
+      const tmp = new THREE.Vector3();
+      const vA = new THREE.Vector3();
+      const vB = new THREE.Vector3();
+      return function render(t) {
+        const cam = cameraAt(t);
+        camera.position.fromArray(cam.p);
+        camera.lookAt(cam.q[0], cam.q[1], cam.q[2]);
+        camera.updateMatrixWorld(true);
+
+        // Porta e raio-x
+        door.rotation.y = track(t, DOOR);
+        const xr = track(t, XR);
+        doorMat.opacity = lerp(1, 0.14, xr);
+        doorMat.depthWrite = xr < 0.5;
+        doorEdges.material.opacity = xr;
+
+        // Energia
+        const chv = track(t, CHV);
+        const cmds = track(t, CMDS);
+        cgHandle.rotation.z = lerp(Math.PI / 2, 0, chv);
+        cmdLever.position.y = CMD.y + lerp(-0.02, 0.02, cmds);
+        const powered = chv > 0.5;
+        const spd = track(t, SPD);
+        const bus = busAt(t);
+        mainPulses.forEach((p, k) => {
+          p.visible = powered;
+          if (powered) {
+            mainPath.getPointAt((k / mainPulses.length + t * 0.2) % 1, tmp);
+            p.position.copy(tmp);
+            p.position.z += 0.035;
+          }
+        });
+        cmdPulses.forEach((p, k) => {
+          const on = cmds > 0.5;
+          p.visible = on;
+          if (on) {
+            cmdPath.getPointAt((k / cmdPulses.length + t * 0.2) % 1, tmp);
+            p.position.copy(tmp);
+            p.position.z += 0.03;
+          }
+        });
+        motorPulses.forEach((p, k) => {
+          const on = spd > 0.3;
+          p.visible = on;
+          if (on) {
+            motorPath.getPointAt((k / motorPulses.length + t * 0.25) % 1, tmp);
+            p.position.copy(tmp);
+            p.position.y += 0.03;
+          }
+        });
+        // Sinal remoto do CLP (partida inesperada)
+        const remote = t >= C.alguem && t < C.alguem + 1.0;
+        clpPulses.forEach((p, k) => {
+          const f = prog(t, C.alguem, C.alguem + 0.9) * 1.2 - k * 0.06;
+          p.visible = remote && f > 0 && f < 1;
+          if (p.visible) {
+            clpPath.getPointAt(f, tmp);
+            p.position.copy(tmp);
+            p.position.z += 0.03;
+          }
+        });
+        clpLedMat.color.set(remote && Math.sin(t * 30) > 0 ? "#60a5fa" : "#22c55e");
+        spin.rotation.x = angleAt(t);
+
+        // Capacitores do barramento: brilham com a carga
+        capMat.emissiveIntensity = bus * (0.9 + 0.25 * Math.sin(t * 6));
+        capMat.color.set(bus > 0.05 ? "#9a3412" : "#1e3a8a");
+
+        // Display do inversor na porta
+        let dspTex = DSP_OFF;
+        if (t >= C.mito - 0.1 && t < C.norma) dspTex = t < C.apagou ? DSP_STOP : DSP_OFF;
+        else if (spd > 0.5) dspTex = DSP_RUN;
+        else if (powered || bus > 0.8) dspTex = DSP_STOP;
+        dsp.material.map = dspTex;
+        // Botões afundam quando apertados
+        btnO.position.z = BTN_O_L.z - 0.015 * ((t >= 0.6 && t < 0.95) || t >= C.end - 0.2 ? 1 : 0);
+        btnI.position.z = BTN_I_L.z - 0.015 * (t >= C.partida2 - 0.15 && t < C.partida2 + 0.3 ? 1 : 0);
+
+        // Arco elétrico
+        const ak = t >= C.arco - 0.1 ? Math.exp(-(t - (C.arco - 0.1)) * 5) : 0;
+        arcBall.visible = ak > 0.02;
+        arcBall.scale.setScalar(0.4 + 1.4 * (1 - ak));
+        arcMat.opacity = ak;
+        arcLight.intensity = 14 * ak;
+        sparks.forEach((s) => {
+          const dt = t - (C.arco - 0.1);
+          s.visible = dt > 0 && dt < 1.0;
+          if (s.visible) {
+            const u = s.userData;
+            s.position.set(ARC.x + u.vx * dt, ARC.y + u.vy * dt - 1.6 * dt * dt, ARC.z + u.vz * dt);
+          }
+        });
+
+        // Cadeados e garra
+        hasp.visible = t >= C.proprio - 0.2 && t < C.proximo + 0.5;
+        lockE.visible = t >= C.proprio + 0.35 && t < C.proximo + 0.4;
+        lockC.visible = t >= C.cadeado + 0.75 && t < C.nr1 + 0.1;
+        lockM.visible = t >= C.fontes + 0.7 && t < C.proximo + 0.4;
+        for (const [lk, at, sc] of [[lockE, C.proprio + 0.35, 1], [lockC, C.cadeado + 0.75, 1], [lockM, C.fontes + 0.7, 0.8]]) {
+          lk.scale.setScalar(sc * Math.max(0.01, spring(prog(t, at, at + 0.6))));
+        }
+
+        // ---------- Eletricista ECASI ----------
+        const ep = posAt(t);
+        const ep2 = posAt(t - 0.05);
+        const moving = Math.hypot(ep[0] - ep2[0], ep[2] - ep2[2]);
+        const walk = Math.min(1, moving / 0.03);
+        const BO = worldOf(btnO, 0, 0, 0.03);
+        const targetYaw = (() => {
+          if (t < C.pode + 0.2) return yawTo(ep, BO);
+          if (t < C.desligar) return lerp(yawTo(ep, BO), yawCam, prog(t, C.pode + 0.2, C.pode + 0.8));
+          if (t < C.c1) return yawTo(ep, [PN.x, 0, PN.z]);
+          if (t < C.c2) return 0.75;
+          if (t < C.c3 + 0.3) return yawTo(ep, [CG.x, 0, CG.z]);
+          if (t < C.mito) return yawTo(ep, [PN.x, 0, PN.z]);
+          if (t < C.norma) return yawCam;
+          if (t < C.cta + 1.2) return yawTo(ep, [PN.x - 0.1, 0, PN.z]);
+          if (t < C.loop + 0.2) return yawTo(ep, [CG.x, 0, CG.z]);
+          return yawTo(ep, BO);
+        })();
+        // Enquanto anda, olha para onde vai
+        const headingYaw = moving > 0.004 ? Math.atan2(ep[0] - ep2[0], ep[2] - ep2[2]) : targetYaw;
+        elet.position.fromArray(ep);
+        elet.rotation.y = lerp(targetYaw, headingYaw, walk * 0.85);
+        const ph = Math.sin(t * 9) * walk;
+        const [lA, lB] = elet.userData.legs;
+        lA.rotation.x = 0.4 * ph;
+        lB.rotation.x = -0.4 * ph;
+        elet.userData.hips.position.y = 0.9 + 0.02 * Math.abs(ph);
+
+        // Braço A: botão O, chave geral, comando, cadeado, botão I, porta
+        const BI = worldOf(btnI, 0, 0, 0.03);
+        const DH = worldOf(handle, 0, 0, 0.03);
+        const HND = cgHandle.position.toArray();
+        const LEV = cmdLever.position.toArray();
+        const HSP = [HASP.x - 0.03, HASP.y - 0.08, HASP.z + 0.05];
+        const actsA = [
+          [track(t, [[0, 1], [1.0, 1], [1.5, 0], [C.end - 1.2, 0], [C.end - 0.45, 1]]), BO],
+          [track(t, [[C.bloquear - 0.3, 0], [C.bloquear + 0.1, 1], [C.bloquear + 0.6, 1], [C.todas + 0.1, 0]]), HND],
+          [track(t, [[C.fontes - 0.2, 0], [C.fontes + 0.2, 1], [C.fontes + 0.8, 1], [C.chave + 0.2, 0]]), LEV],
+          [track(t, [[C.proprio - 0.4, 0], [C.proprio + 0.2, 1], [C.proprio + 0.8, 1], [C.tira, 0]]), HSP],
+          [track(t, [[C.partida2 - 0.6, 0], [C.partida2 - 0.15, 1], [C.partida2 + 0.35, 1], [C.partida2 + 0.8, 0]]), BI],
+          [track(t, [[C.meca - 1.0, 0], [C.meca - 0.65, 1], [C.meca - 0.2, 1], [C.meca + 0.1, 0]]), DH],
+          [track(t, [[C.norma - 0.1, 0], [C.norma + 0.15, 1], [C.norma + 0.5, 1], [C.norma + 0.8, 0]]), DH],
+          [track(t, [[C.cta + 0.05, 0], [C.cta + 0.35, 1], [C.cta + 1.1, 1], [C.cta + 1.4, 0]]), DH],
+          [track(t, [[C.proximo - 0.3, 0], [C.proximo + 0.15, 1], [C.proximo + 0.45, 1], [C.proximo + 0.7, 0]]), HSP],
+          [track(t, [[C.proximo + 0.6, 0], [C.proximo + 0.9, 1], [C.proximo + 1.3, 1], [C.proximo + 1.6, 0]]), HND],
+          [track(t, [[C.proximo + 1.6, 0], [C.proximo + 1.9, 1], [C.proximo + 2.3, 1], [C.proximo + 2.6, 0]]), LEV],
+        ];
+        const clipK = track(t, [[C.c1 - 0.2, 0], [C.c1 + 0.4, 1], [C.c2 - 0.5, 1], [C.c2 + 0.1, 0]]);
+        const crossK = track(t, [[C.mito + 0.4, 0], [C.mito + 1.0, 1], [C.norma - 0.6, 1], [C.norma - 0.2, 0]]);
+        clip.visible = clipK > 0.05;
+        clip.scale.setScalar(Math.max(0.01, clipK));
+        const actA = actsA.find(([k]) => k > 0.001);
+        if (actA) aimArm(elet, armA, actA[1], actA[0]);
+        else if (clipK > 0.001) armA.quaternion.setFromEuler(new THREE.Euler(-1.25 * clipK, 0, 0.35 * clipK));
+        else if (crossK > 0.001) armA.quaternion.setFromEuler(new THREE.Euler(-1.35 * crossK, 0, -0.95 * crossK));
+        else armA.quaternion.identity();
+
+        // Braço B: multímetro nos bornes DC+ e DC− (camada 3 e norma)
+        const mK = Math.max(
+          track(t, [[C.meca - 0.1, 0], [C.meca + 0.5, 1], [C.mito - 0.3, 1], [C.mito + 0.1, 0]]),
+          track(t, [[C.prontuario - 0.4, 0], [C.prontuario + 0.2, 1], [C.cta - 0.4, 1], [C.cta, 0]]),
+        );
+        const meterOn = mK > 0.02;
+        meter.visible = meterOn;
+        meter.scale.setScalar(meterOn ? Math.max(0.01, spring(mK)) : 0.01);
+        if (mK > 0.001) aimArm(elet, armB, [(DCP.x + DCN.x) / 2 - 0.06, DCP.y - 0.06, DCP.z + 0.12], mK);
+        else if (crossK > 0.001) armB.quaternion.setFromEuler(new THREE.Euler(-1.35 * crossK, 0, 0.95 * crossK));
+        else armB.quaternion.identity();
+        const probes = mK > 0.7;
+        probeR.visible = probeK.visible = probes;
+        if (probes) {
+          elet.updateMatrixWorld(true);
+          meter.localToWorld(vA.set(-0.03, -0.08, 0.02));
+          setProbe(probeR, vA, DCP.clone().add(new THREE.Vector3(0, 0, 0.02)));
+          meter.localToWorld(vB.set(0.03, -0.08, 0.02));
+          setProbe(probeK, vB, DCN.clone().add(new THREE.Vector3(0, 0, 0.02)));
+        }
+
+        // ---------- Colega da manutenção (cadeado azul) ----------
+        const cp = colAt(t);
+        const cp2 = colAt(t - 0.05);
+        const cMove = Math.hypot(cp[0] - cp2[0], cp[2] - cp2[2]);
+        const cWalk = Math.min(1, cMove / 0.03);
+        col.visible = cp[0] > -3.4;
+        col.position.fromArray(cp);
+        col.rotation.y = cMove > 0.004 ? Math.atan2(cp[0] - cp2[0], cp[2] - cp2[2]) : yawTo(cp, [CG.x, 0, CG.z]);
+        const cph = Math.sin(t * 9 + 1) * cWalk;
+        col.userData.legs[0].rotation.x = 0.4 * cph;
+        col.userData.legs[1].rotation.x = -0.4 * cph;
+        col.userData.hips.position.y = 0.9 + 0.02 * Math.abs(cph);
+        const cK = Math.max(
+          track(t, [[C.cadeado - 0.1, 0], [C.cadeado + 0.5, 1], [C.cadeado + 1.1, 1], [C.tira + 0.3, 0]]),
+          track(t, [[C.nr1 - 0.5, 0], [C.nr1 - 0.1, 1], [C.nr1 + 0.3, 1], [C.nr1 + 0.6, 0]]),
+        );
+        aimArm(col, colA, [HASP.x + 0.03, HASP.y - 0.08, HASP.z + 0.05], cK);
+
+        renderer.render(scene, camera);
+        placeCallouts(t);
+      };
+    }
+
+    // Relógio: um tween do GSAP alimenta render(t). A linha do tempo só é registrada depois que as fontes e o
+    // símbolo da ECASI carregaram, para o colete nunca aparecer sem o logo.
+    const logoTex = new THREE.TextureLoader().loadAsync("assets/brand/simbolo-ecasi.png");
+    Promise.all([document.fonts.ready, logoTex]).then(([, tex]) => {
+      tex.colorSpace = THREE.SRGBColorSpace;
+      const render = build(tex);
+      const state = { t: 0 };
+      const tl = gsap.timeline({ paused: true });
+      tl.to(state, { t: C.end, duration: C.end, ease: "none", onUpdate: () => render(state.t) }, 0);
+      render(0);
+      window.__timelines["world"] = tl;
+    });
+  </script>
+</template>

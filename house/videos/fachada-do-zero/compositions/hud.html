@@ -1,0 +1,185 @@
+<template>
+  <style>
+    @font-face { font-family: "Barlow Condensed"; font-weight: 800; src: url("assets/fonts/BarlowCondensed-800.woff2") format("woff2"); }
+    @font-face { font-family: "Barlow Condensed"; font-weight: 900; src: url("assets/fonts/BarlowCondensed-900.woff2") format("woff2"); }
+    @font-face { font-family: "Bricolage Grotesque"; font-weight: 700; src: url("assets/fonts/BricolageGrotesque-700.woff2") format("woff2"); }
+    @font-face { font-family: "Bricolage Grotesque"; font-weight: 500; src: url("assets/fonts/BricolageGrotesque-500.woff2") format("woff2"); }
+    #root { position: absolute; inset: 0; pointer-events: none; font-family: "Bricolage Grotesque", sans-serif; color: #0b1220; }
+    .abs { position: absolute; opacity: 0; }
+    /* abertura */
+    #gancho { left: 60px; right: 60px; top: 230px; text-align: center; }
+    #gancho .k { font-family: "Barlow Condensed"; font-weight: 900; font-size: 150px; line-height: 0.9; color: #fff; text-shadow: 0 8px 30px rgba(11,18,32,.45); letter-spacing: .01em; }
+    #gancho .s { display: inline-block; margin-top: 18px; padding: 10px 26px; border-radius: 14px; background: #2457d6; color: #fff; font-weight: 700; font-size: 44px; }
+    /* selo do degrau */
+    #selo { left: 0; right: 0; top: 150px; text-align: center; opacity: 1; }
+    .selo-p { position: absolute; left: 0; right: 0; margin: 0 auto; width: fit-content; top: 0; opacity: 0; white-space: nowrap; display: inline-flex; align-items: center; gap: 18px;
+      padding: 14px 34px 16px 16px; border-radius: 999px; background: #ffffff; box-shadow: 0 16px 36px -16px rgba(11,18,32,.55);
+      font-family: "Barlow Condensed"; font-weight: 900; font-size: 64px; letter-spacing: .02em; text-transform: uppercase; }
+    .selo-p b { display: inline-flex; align-items: center; justify-content: center; width: 78px; height: 78px; border-radius: 50%; background: #2457d6; color: #fff; font-size: 54px; }
+    #trilha { left: 0; right: 0; top: 268px; display: flex; justify-content: center; gap: 12px; }
+    .pt { width: 44px; height: 10px; border-radius: 6px; background: rgba(255,255,255,.55); box-shadow: 0 2px 8px rgba(11,18,32,.25); }
+    .pt.on { background: #2457d6; }
+    /* etiquetas */
+    .tag { padding: 12px 24px; border-radius: 14px; background: #fff; border: 3px solid #dfe6f1; font-weight: 700; font-size: 42px; white-space: nowrap; box-shadow: 0 12px 28px -12px rgba(11,18,32,.45); }
+    .tag.r { background: #fdecec; border-color: rgba(211,47,47,.5); color: #b3261e; }
+    .tag.g { background: #ecf8f2; border-color: rgba(26,158,75,.55); color: #13733a; }
+    .tag.b { background: #2457d6; border-color: #2457d6; color: #fff; }
+    /* raio-x */
+    #rx { right: 46px; top: 330px; width: 430px; height: 470px; }
+    #rx .lbl { position: absolute; left: 50%; top: -8px; transform: translateX(-50%); z-index: 2; padding: 6px 18px; border-radius: 10px; background: #0b1220; color: #8db4f6; font-family: "Barlow Condensed"; font-weight: 900; font-size: 36px; letter-spacing: .08em; }
+    #rx svg { position: absolute; left: 0; top: 30px; width: 430px; height: 430px; border-radius: 50%; border: 8px solid #0b1220; background: #12203f; box-shadow: 0 24px 50px -20px rgba(11,18,32,.7); }
+    /* HUD do degrau final */
+    #barras { left: 70px; right: 70px; top: 330px; padding: 30px 34px; border-radius: 22px; background: rgba(255,255,255,.95); box-shadow: 0 20px 44px -20px rgba(11,18,32,.6); }
+    .bar { display: grid; grid-template-columns: 210px 1fr 90px; align-items: center; gap: 18px; margin: 10px 0; font-weight: 700; font-size: 40px; }
+    .bar .tr { height: 30px; border-radius: 16px; background: #e6ebf3; overflow: hidden; }
+    .bar .fi { height: 100%; width: 100%; transform-origin: left center; transform: scaleX(0); border-radius: 16px; }
+    .bar .v { text-align: right; font-family: "Barlow Condensed"; font-weight: 900; font-size: 44px; }
+    /* recap e CTA */
+    #recap { left: 60px; right: 60px; top: 330px; text-align: center; }
+    #recap span { display: inline-block; padding: 16px 30px; border-radius: 18px; background: #fff; font-weight: 700; font-size: 50px; box-shadow: 0 16px 36px -16px rgba(11,18,32,.55); }
+    #cta { left: 60px; right: 60px; top: 300px; padding: 30px 34px; border-radius: 26px; background: #0b1220; color: #fff; display: flex; align-items: center; gap: 28px; box-shadow: 0 24px 50px -20px rgba(11,18,32,.7); }
+    #cta img { width: 150px; height: 150px; border-radius: 22px; object-fit: cover; background: #fff; }
+    #cta .t1 { font-family: "Barlow Condensed"; font-weight: 900; font-size: 62px; line-height: 1; text-transform: uppercase; }
+    #cta .t2 { margin-top: 10px; font-size: 38px; color: #8db4f6; }
+  </style>
+  <div id="root" data-composition-id="hud" data-width="1080" data-height="1920">
+    <div id="gancho" class="abs"><div class="k">FACHADA<br />DO ZERO</div><div class="s">sol e chuva sem estragar</div></div>
+
+    <div id="selo" class="abs">
+      <div id="s1" class="selo-p"><b>1</b>Cal</div>
+      <div id="s2" class="selo-p"><b>2</b>Tinta PVA</div>
+      <div id="s3" class="selo-p"><b>3</b>Tinta acrílica</div>
+      <div id="s4" class="selo-p"><b>4</b>Lixa e selador</div>
+      <div id="s5" class="selo-p"><b>5</b>Trincas vedadas</div>
+      <div id="s6" class="selo-p"><b>6</b>Elastomérica</div>
+      <div id="s7" class="selo-p"><b>7</b>Projeto da fachada</div>
+    </div>
+    <div id="trilha" class="abs"><i id="p1" class="pt"></i><i id="p2" class="pt"></i><i id="p3" class="pt"></i><i id="p4" class="pt"></i><i id="p5" class="pt"></i><i id="p6" class="pt"></i><i id="p7" class="pt"></i></div>
+
+    <div id="e1" class="abs tag" style="left:70px;top:860px">Cal + água</div>
+    <div id="e2" class="abs tag r" style="left:70px;top:860px">Chuva lava a cal</div>
+    <div id="e3" class="abs tag" style="left:70px;top:860px">Látex PVA</div>
+    <div id="e4" class="abs tag r" style="left:70px;top:860px">Feita para dentro de casa</div>
+    <div id="e5" class="abs tag g" style="left:70px;top:860px">Película acrílica</div>
+    <div id="e6" class="abs tag r" style="left:70px;top:860px">Descasca em meses</div>
+    <div id="e7" class="abs tag" style="left:70px;top:860px">Lixa + escova</div>
+    <div id="e8" class="abs tag g" style="left:70px;top:860px">Selador acrílico</div>
+    <div id="e9" class="abs tag r" style="left:70px;top:860px">Trincas finas</div>
+    <div id="e10" class="abs tag g" style="left:70px;top:860px">Selante flexível</div>
+    <div id="e11" class="abs tag r" style="left:70px;top:860px">Fissuras novas</div>
+    <div id="e12" class="abs tag g" style="left:70px;top:860px">Elastomérica</div>
+    <div id="e13" class="abs tag" style="left:70px;top:940px">Demãos cruzadas</div>
+    <div id="e14" class="abs tag g" style="left:70px;top:860px">Fachada vedada ✓</div>
+    <div id="e15" class="abs tag b" style="left:70px;top:1010px">Com pintor profissional</div>
+
+    <div id="rx" class="abs">
+      <div class="lbl">RAIO-X</div>
+      <svg viewBox="0 0 430 430">
+        <defs><clipPath id="rxc"><circle cx="215" cy="215" r="207" /></clipPath></defs>
+        <g clip-path="url(#rxc)">
+          <rect x="0" y="250" width="430" height="180" fill="#b9b0a1" />
+          <g fill="#a39a8a"><circle cx="40" cy="262" r="7" /><circle cx="95" cy="258" r="6" /><circle cx="150" cy="264" r="8" /><circle cx="210" cy="259" r="6" /><circle cx="265" cy="263" r="7" /><circle cx="320" cy="258" r="6" /><circle cx="380" cy="262" r="8" /></g>
+          <text x="215" y="375" text-anchor="middle" font-family="Barlow Condensed" font-weight="800" font-size="34" fill="#5b5346">REBOCO</text>
+          <!-- PVA: camada porosa que encharca -->
+          <g id="rx-pva" opacity="0">
+            <rect x="0" y="232" width="430" height="18" fill="#ecdcb6" />
+            <g fill="#12203f"><rect x="30" y="232" width="8" height="18" /><rect x="110" y="232" width="8" height="18" /><rect x="190" y="232" width="8" height="18" /><rect x="270" y="232" width="8" height="18" /><rect x="350" y="232" width="8" height="18" /></g>
+            <rect id="rx-mol" x="0" y="250" width="430" height="0" fill="rgba(40,70,120,.45)" />
+            <text x="215" y="205" text-anchor="middle" font-family="Barlow Condensed" font-weight="800" font-size="34" fill="#f39c9c">ABSORVE ÁGUA</text>
+          </g>
+          <!-- acrílica: película contínua, a gota escorre -->
+          <g id="rx-acr" opacity="0">
+            <rect x="0" y="236" width="430" height="14" rx="4" fill="#f1e4c4" />
+            <text x="215" y="205" text-anchor="middle" font-family="Barlow Condensed" font-weight="800" font-size="34" fill="#9fe0b5">A ÁGUA ESCORRE</text>
+          </g>
+          <!-- selador: entra nos poros -->
+          <g id="rx-sel" opacity="0">
+            <rect x="0" y="240" width="430" height="10" fill="rgba(160,220,180,.75)" />
+            <g id="rx-poros" fill="#7fd39b" opacity="0"><circle cx="40" cy="262" r="7" /><circle cx="95" cy="258" r="6" /><circle cx="150" cy="264" r="8" /><circle cx="210" cy="259" r="6" /><circle cx="265" cy="263" r="7" /><circle cx="320" cy="258" r="6" /><circle cx="380" cy="262" r="8" /></g>
+            <text x="215" y="205" text-anchor="middle" font-family="Barlow Condensed" font-weight="800" font-size="34" fill="#9fe0b5">SELA OS POROS</text>
+          </g>
+          <!-- elastomérica: camada grossa estica sobre a fissura -->
+          <g id="rx-ela" opacity="0">
+            <rect id="rx-fend" x="213" y="250" width="4" height="180" fill="#12203f" />
+            <path id="rx-borr" d="M0 222 L430 222 L430 250 L0 250 Z" fill="#f1e4c4" />
+            <text x="215" y="190" text-anchor="middle" font-family="Barlow Condensed" font-weight="800" font-size="34" fill="#9fe0b5">ESTICA SEM RACHAR</text>
+          </g>
+          <g id="gotas" fill="#7fb6ff">
+            <ellipse id="g1" cx="120" cy="-20" rx="9" ry="13" /><ellipse id="g2" cx="215" cy="-60" rx="9" ry="13" /><ellipse id="g3" cx="310" cy="-100" rx="9" ry="13" />
+          </g>
+        </g>
+      </svg>
+    </div>
+
+    <div id="barras" class="abs">
+      <div class="bar"><span>☀ Sol</span><div class="tr"><div id="b1" class="fi" style="background:#f2a91f"></div></div><span class="v">80%</span></div>
+      <div class="bar"><span>☂ Chuva</span><div class="tr"><div id="b2" class="fi" style="background:#5a8de8"></div></div><span class="v">65%</span></div>
+      <div class="bar"><span>🛡 Proteção</span><div class="tr"><div id="b3" class="fi" style="background:#1a9e4b"></div></div><span id="b3v" class="v">100%</span></div>
+    </div>
+
+    <div id="recap" class="abs"><span>Balde de cal ➜ fachada protegida</span></div>
+
+    <div id="cta" class="abs">
+      <img src="assets/brand-house/logo-house.jpg" alt="House Pinturas" />
+      <div><div class="t1">O que construir<br />do zero?</div><div class="t2">Comente aqui embaixo · @house_pintura10</div></div>
+    </div>
+  </div>
+  <script>
+    const C = { d1: 4.32, d2: 14.56, d3: 28.48, d4: 45.12, d5: 59.76, d6: 74.87, d7: 90.55, faca7: 103.11, recap: 110.39, cta: 116.15, end: 122.84 };
+    const tl = gsap.timeline({ paused: true });
+    const show = (sel, a, b, from = { y: 16 }) => {
+      tl.fromTo(sel, { opacity: 0, ...from }, { opacity: 1, y: 0, x: 0, scale: 1, duration: 0.3, ease: "back.out(1.6)" }, a);
+      tl.to(sel, { opacity: 0, duration: 0.2, ease: "power2.in" }, b - 0.2);
+    };
+    // abertura
+    tl.fromTo("#gancho", { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(1.7)" }, 0.1);
+    tl.to("#gancho", { opacity: 0, duration: 0.25 }, C.d1 - 0.3);
+    // selos e trilha
+    const D = [C.d1, C.d2, C.d3, C.d4, C.d5, C.d6, C.d7, C.recap];
+    tl.set("#selo", { opacity: 1 }, 0);
+    tl.fromTo("#trilha", { opacity: 0 }, { opacity: 1, duration: 0.3 }, C.d1);
+    tl.to("#trilha", { opacity: 0, duration: 0.3 }, C.recap);
+    for (let i = 0; i < 7; i++) {
+      show(`#s${i + 1}`, D[i], D[i + 1], { y: -30, scale: 0.85 });
+      tl.set(`#p${i + 1}`, { className: "pt on" }, D[i]);
+    }
+    // etiquetas
+    const E = [[1, 5.6, 10.9], [2, 12.2, 14.5], [3, 15.6, 21.4], [4, 22.0, 28.4], [5, 30.0, 36.2], [6, 38.9, 44.9], [7, 45.6, 50.2], [8, 50.6, 54.7],
+      [9, 55.4, 59.7], [10, 61.0, 67.8], [11, 70.0, 74.8], [12, 76.0, 85.7], [13, 78.4, 85.7], [14, 86.2, 90.4], [15, C.faca7 + 0.2, C.recap]];
+    for (const [n, a, b] of E) show(`#e${n}`, a, b, { x: -40 });
+    // raio-x
+    const RX = [["#rx-pva", 24.4, 28.4], ["#rx-acr", 31.2, 36.2], ["#rx-sel", 50.6, 54.7], ["#rx-ela", 79.6, 85.7]];
+    for (const [g, a, b] of RX) {
+      tl.fromTo("#rx", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(1.6)" }, a);
+      tl.set(g, { opacity: 1 }, a); tl.set(g, { opacity: 0 }, b);
+      tl.to("#rx", { opacity: 0, scale: 0.8, duration: 0.25, ease: "power2.in" }, b - 0.25);
+    }
+    // gotas: PVA entram e molham; acrílica escorrem para o lado
+    for (const [i, id] of ["#g1", "#g2", "#g3"].entries()) {
+      for (let r = 0; r < 3; r++) {
+        const a = 24.6 + i * 0.35 + r * 1.2;
+        tl.fromTo(id, { attr: { cy: -20 }, opacity: 1 }, { attr: { cy: 240 }, duration: 0.5, ease: "power1.in" }, a);
+        tl.to(id, { opacity: 0, duration: 0.15 }, a + 0.5);
+        const b = 31.4 + i * 0.35 + r * 1.4;
+        tl.fromTo(id, { attr: { cy: -20, cx: 120 + i * 95 }, opacity: 1 }, { attr: { cy: 224 }, duration: 0.5, ease: "power1.in" }, b);
+        tl.to(id, { attr: { cx: 430 }, duration: 0.6, ease: "power1.in" }, b + 0.5);
+        tl.set(id, { opacity: 0, attr: { cx: 120 + i * 95 } }, b + 1.15);
+      }
+    }
+    tl.to("#rx-mol", { attr: { height: 120 }, duration: 3, ease: "none" }, 25.0);
+    tl.to("#rx-poros", { opacity: 1, duration: 1.6 }, 51.4);
+    tl.fromTo("#rx-fend", { attr: { width: 4, x: 213 } }, { attr: { width: 26, x: 202 }, duration: 1.2, yoyo: true, repeat: 3, ease: "sine.inOut" }, 80.4);
+    tl.fromTo("#rx-borr", { attr: { d: "M0 222 L430 222 L430 250 L0 250 Z" } }, { attr: { d: "M0 224 L430 224 L430 250 L232 250 Q215 266 198 250 L0 250 Z" }, duration: 1.2, yoyo: true, repeat: 3, ease: "sine.inOut" }, 80.4);
+    // barras
+    tl.fromTo("#barras", { opacity: 0, y: -20 }, { opacity: 1, y: 0, duration: 0.35, ease: "back.out(1.5)" }, 94.0);
+    tl.to("#b1", { scaleX: 0.8, duration: 0.9, ease: "power2.out" }, 96.7);
+    tl.to("#b2", { scaleX: 0.65, duration: 0.9, ease: "power2.out" }, 97.6);
+    tl.to("#b3", { scaleX: 1, duration: 1.4, ease: "power2.out" }, C.faca7 - 0.6);
+    tl.to("#barras", { opacity: 0, duration: 0.25 }, C.recap - 0.25);
+    // recap e CTA
+    show("#recap", C.recap + 0.2, C.cta);
+    tl.fromTo("#cta", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.4, ease: "back.out(1.5)" }, C.cta + 0.3);
+    tl.set({}, {}, C.end);
+    window.__timelines["hud"] = tl;
+  </script>
+</template>

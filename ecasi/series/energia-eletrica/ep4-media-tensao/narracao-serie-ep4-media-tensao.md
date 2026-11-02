@@ -10,6 +10,8 @@
 
 ---
 
+> **Correção de 02/11/2026 (observação do eletricista):** 13.800 V é **média tensão** (NBR 14039, de 1 a 36,2 kV). A fala antiga ("pela NR dez, alta tensão é tudo acima de mil") contradizia o fecho ("cabine de média tensão"). O texto abaixo já está corrigido e entra no **EP4 v2**. O EP4 publicado ficou como estava.
+
 ## 1. Texto para colar na IA de voz (ElevenLabs)
 
 Os números estão escritos por extenso. As reticências criam pausas. "SEP" está como "ésse-é-pê" para a voz soletrar.
@@ -17,7 +19,7 @@ Os números estão escritos por extenso. As reticências criam pausas. "SEP" est
 ```
 Abriu a seccionadora da cabine. Já pode encostar no barramento? Não. Chave aberta não é cabine segura. São três camadas antes de encostar.
 
-Primeiro, o problema. Aqui são treze mil e oitocentos volts. Pela NR dez, alta tensão é tudo acima de mil. E nessa tensão nem precisa encostar: chegar perto demais já pode abrir um arco. Por isso a NR dez define zonas: a trinta e oito centímetros do barramento, zona de risco. A um metro e trinta e oito, zona controlada.
+Primeiro, o problema. Aqui são treze mil e oitocentos volts: média tensão. E pra NR dez, tudo acima de mil volts já exige os cuidados de alta tensão. Nessa tensão nem precisa encostar: chegar perto demais já pode abrir um arco. Por isso a NR dez define zonas: a trinta e oito centímetros do barramento, zona de risco. A um metro e trinta e oito, zona controlada.
 
 Camada um: autorizar. Ordem de serviço, equipe de no mínimo duas pessoas com curso ésse-é-pê... e plano de resgate.
 
@@ -48,7 +50,7 @@ Abriu a seccionadora? Confira as três camadas... antes de encostar.
 |---|---|---|
 | Gancho | "Abriu a seccionadora da cabine. Já pode encostar no barramento? Não." | Título: "Abriu a seccionadora. **Já pode encostar?**" · o eletricista ECASI puxa a alavanca da seccionadora e as facas abrem · o barramento continua com brilho · selo "Série Energia Elétrica · EP 4/4" · "Não." gigante |
 | Promessa | "Chave aberta não é cabine segura. São três camadas antes de encostar." | Card "chave aberta ≠ cabine segura" · barra no topo: **1 AUTORIZAR · 2 BLOQUEAR · 3 ATERRAR** |
-| Problema | "Aqui são 13.800 V. Pela NR-10, alta tensão é tudo acima de mil." | Contador até `13.800 V` · régua da NR-10 com `BT até 1.000 V` e `AT acima de 1.000 V`, com o marcador saindo da régua |
+| Problema | "Aqui são 13.800 V: média tensão. E pra NR-10, tudo acima de mil volts já exige os cuidados de alta tensão." | Contador até `13.800 V` · selo `média tensão · NBR 14039 (1 a 36,2 kV)` · régua da NR-10 com `até 1.000 V` e `acima de 1.000 V: cuidados de AT`, com o marcador saindo da régua |
 | Problema | "Nem precisa encostar: chegar perto demais já pode abrir um arco." | Uma ferramenta se aproxima do barramento (sem pessoa) e um arco pula no ar antes do contato · callout `arco sem contato` · vinheta vermelha |
 | Problema | "Zonas: a 38 cm do barramento, zona de risco. A 1,38 m, zona controlada." | No chão acendem dois anéis: vermelho `zona de risco · 0,38 m` e laranja `zona controlada · 1,38 m` |
 | Camada 1 | "Autorizar. Ordem de serviço, equipe de no mínimo duas pessoas com curso SEP e plano de resgate." | "1" gigante + AUTORIZAR · o segundo eletricista entra · 3 itens com ✓: `ordem de serviço` · `equipe de 2 · curso SEP` · `plano de resgate` |
@@ -66,7 +68,11 @@ Abriu a seccionadora? Confira as três camadas... antes de encostar.
 
 ## 3. Fontes técnicas (para conferir antes de gravar)
 
-- **Faixas de tensão (NR-10, glossário):** alta tensão (AT) é acima de 1.000 V em corrente alternada ou 1.500 V em corrente contínua. Uma cabine primária típica recebe 13,8 kV da concessionária.
+- **Faixas de tensão:**
+  - A NR-10 (glossário) chama de alta tensão (AT) tudo acima de 1.000 V em corrente alternada ou 1.500 V em corrente contínua, e exige os cuidados de AT, como o curso SEP e as zonas, a partir daí.
+  - No mercado e nas normas de instalação, 13,8 kV é **média tensão**: a NBR 14039 cobre de 1,0 a 36,2 kV.
+  - A fala corrigida usa os dois: "média tensão" e "cuidados de alta tensão pela NR-10".
+  - Uma cabine primária típica recebe 13,8 kV da concessionária.
 - **Zonas de risco e controlada (NR-10, Anexo I, tabela de raios de delimitação):** na faixa de 10 a menos de 15 kV, o raio da zona de risco é de **0,38 m** e o da zona controlada é de **1,38 m**, medidos a partir do ponto energizado.
 - **Arco sem contato:** em alta tensão, a aproximação além das distâncias de segurança pode romper a isolação do ar e abrir um arco sem contato direto. É o motivo de existirem as zonas.
 - **Trabalho em AT (NR-10, item 10.7):** trabalhadores que atuam nas zonas controlada e de risco de AT precisam do treinamento específico em SEP e em suas proximidades (item 10.7.2 e Anexo II). Serviços em AT energizada e no SEP não podem ser feitos individualmente (item 10.7.3), e o trabalho exige ordem de serviço específica para data e local (item 10.7.4).

@@ -1,7 +1,7 @@
-# Legenda Instagram (SEO) — Série Energia Elétrica · EP2/4 "Terminou o quadro. Pode entregar?"
+# Legenda Instagram (SEO) — Série Energia Elétrica · EP2/4 v2 "Terminou o quadro. Pode entregar?"
 
-- **Vídeo:** `renders/EP2-residencial-quadro-entregar.mp4`
-- **Capa:** `renders/capa-ep2.jpg` (1080x1920)
+- **Vídeo:** `renders/EP2-v2-residencial-quadro-entregar.mp4`
+- **Capa:** `renders/capa-ep2-v2.jpg` (1080x1920)
 - **Palavra-chave principal:** quadro de distribuição + entregar com segurança
 - **Palavras de apoio:** disjuntor, dimensionamento do disjuntor, cabo 2,5 mm², DR 30 mA, botão de teste do DR, fio terra, DPS, NBR 5410, NR-10, eletricista residencial
 
@@ -38,7 +38,7 @@ Fontes: ABNT NBR 5410 (instalações elétricas de baixa tensão) e NR-10 (segur
 **Texto alternativo** (Configurações avançadas > Acessibilidade > Texto alternativo):
 
 ```
-Animação 3D de um eletricista do Grupo ECASI, de colete laranja com o logo nas costas, capacete e óculos, fechando a tampa de um quadro de distribuição residencial. Texto na tela: "Terminou o quadro. Pode entregar? Ainda não. 3 camadas antes de entregar: 1 proteção, 2 DR, 3 terra." O vídeo mostra o cabo esquentando, o teste do botão do DR, o fio terra e um disjuntor de 40 A num cabo de 24 A.
+Animação 3D de um eletricista do Grupo ECASI, de uniforme antichama azul-marinho com faixas refletivas e o logo nas costas, capacete com jugular, óculos e luvas isolantes, fechando a tampa de um quadro de distribuição residencial. Texto na tela: "Terminou o quadro. Pode entregar? Ainda não. 3 camadas antes de entregar: 1 proteção, 2 DR, 3 terra." O vídeo mostra a energia correndo pelos fios, o cabo esquentando, a carcaça da máquina energizada, o teste do botão do DR, o surto desviado pelo DPS para o terra e um disjuntor de 40 A que faz o cabo virar fusível dentro da parede.
 ```
 
 **Título da capa** (se o app pedir um texto curto): `Terminou o quadro. Pode entregar?`
@@ -53,7 +53,7 @@ Na entrega, você aperta o botão de teste do DR na frente do cliente? Conta aqu
 
 ## 3. Checklist de publicação
 
-- [ ] Subir a capa `renders/capa-ep2.jpg` em "Editar capa > Adicionar da galeria".
+- [ ] Subir a capa `renders/capa-ep2-v2.jpg` em "Editar capa > Adicionar da galeria".
 - [ ] Marcar a **localização** da unidade da ECASI.
 - [ ] Usar até 5 hashtags. Hoje a busca pesa mais a legenda, o texto na tela e a fala do que as hashtags.
 - [ ] Um técnico de segurança da ECASI revisou os números (PVC 70 °C, cabo 2,5 mm² ≈ 24 A, disjuntor de 20 A, DR de 30 mA, 40 A ÷ 24 A ≈ 1,7×, curso de 40 h) e os itens da NBR 5410 e da NR-10.

@@ -16,7 +16,7 @@ EP2/4 da "Série Energia Elétrica" do Grupo ECASI (plano em `../plano-serie-ene
 residenciais. Mesmo molde viral do EP1: gancho com resposta seca ("Ainda não."), barra 1-2-3 (proteção, DR, terra),
 problema com números (PVC a 70 °C, fuga de mA, carcaça sem terra), camadas com número gigante, mito com comparação
 de escala (disjuntor de 40 A em cabo de 24 A = 1,7×), norma (NBR 5410 + NR-10), CTA do Treinamento NR-10 e loop.
-O protagonista é o eletricista do Grupo ECASI (colete com logo nas costas, capacete e óculos). Ele nunca mexe dentro
+O protagonista é o eletricista do Grupo ECASI (v2: uniforme antichama azul-marinho com faixas refletivas e logo grande nas costas, capacete com jugular, óculos e luvas isolantes; rig do reboco-novo com IK de 2 ossos). Ele nunca mexe dentro
 do quadro energizado: aperta o botão T pela frente e desliga o geral antes de testar com o detector. A troca do
 disjuntor por um de 40 A (prática errada) acontece sozinha, sem o personagem da marca.
 
@@ -38,5 +38,6 @@ disjuntor por um de 40 A (prática errada) acontece sozinha, sem o personagem da
 2. `npx hyperframes transcribe assets/narracao-norm.mp3 --language pt` e copie `assets/transcript.json` para `assets/transcript-raw.json`
 3. `python -I tools/fix_transcript.py` (grafia: disjuntor, ampères, NR-10, ECASI…)
 4. `python -I tools/sync_cues.py` (tempos de todas as cenas, a partir das âncoras de `tools/cues_spec.json`)
-5. `python -I tools/build_captions.py`, `python -I tools/build_sfx.py` e `python -I tools/measure_mix.py`
-6. `npx hyperframes check`, snapshot e render
+5. `python -I tools/build_captions.py`, `python -I tools/synth_sfx.py` (efeitos de energia), `python -I tools/build_sfx.py` e `python -I tools/measure_mix.py`
+6. `npx hyperframes check`, snapshot e render (`--quality delivery`)
+7. `python -I tools/master.py renders/<bruto>.mp4 renders/<final>.mp4` (master a -14 LUFS / -1 dBTP)

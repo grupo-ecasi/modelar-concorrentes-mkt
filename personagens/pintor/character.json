@@ -1,0 +1,38 @@
+{
+  "slug": "pintor",
+  "cliente": "House Pinturas",
+  "descricao": "pintor jovem, pele morena, cabelo preto crespo curto com degradê nas laterais, camiseta azul-clara, jardineira azul com respingos de tinta branca, barra dobrada azul-marinho, botas azul-marinho com sola branca",
+  "estilo": "3D vinil / toy art, sem contorno",
+  "paleta": {
+    "principal": "#2457D6",
+    "secundaria": "#1B2F8A",
+    "clara": "#6FA6EE"
+  },
+  "origem_imagem": "imagem enviada pelo usuário em 01/11/2026 (ref/frente-usuario.jpg e ref/turnaround-usuario.jpg)",
+  "logo_no_modelo_base": "sim, por decisão do usuário em 01/11/2026: o logo da House fica na jardineira (exceção à regra de base sem marca)",
+  "origem_3d": "TRELLIS (Space trellis-community/TRELLIS), modo multi-imagem (frente + lado + costas recortados do turnaround), mesh_simplify 0.8, textura 2048; seed 0",
+  "licenca": "TRELLIS: código e pesos sob licença MIT (conferir antes de uso comercial em escala); Mixamo: uso comercial livre com Adobe ID",
+  "altura_cena": 1.0,
+  "animacoes": [
+    "idle",
+    "andar",
+    "apontar",
+    "acenar",
+    "explicar",
+    "pensar",
+    "joinha",
+    "comemorar",
+    "olhar_em_volta",
+    "pegar",
+    "sentado"
+  ],
+  "ossos": {
+    "mao_direita": "mixamorigRightHand",
+    "mao_esquerda": "mixamorigLeftHand",
+    "costas": "mixamorigSpine2",
+    "cabeca": "mixamorigHead"
+  },
+  "pecas_opcionais": [],
+  "textura": "modelo/pintor_tex_v6.glb: textura do TRELLIS com a frente (rosto, boca, logo) e a nuca reprojetadas a partir do desenho do usuário (tools/reprojetar_textura.py)",
+  "modelo_mixamo": "modelo/base_mixamo.zip (OBJ + textura, 120 cm, pés em Y=0, de frente para +Z)"
+}

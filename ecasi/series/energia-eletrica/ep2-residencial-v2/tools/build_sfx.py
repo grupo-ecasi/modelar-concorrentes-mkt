@@ -25,80 +25,120 @@ MASTER_DB = 0.0
 SOUND_GAIN = {
     "pop": -5,
     "whoosh-short": -6,
-    "click": -1,
     "click-soft": 4,
     "chime": -1,
     "ping": 2,
     "notification": 0,
     "error": -2,
-    "glitch-1": -4,
-    "glitch-3": -2,
     "impact-bass-1": 3,
+    "impact-boom": 0,
+    "zhhh": -4,
+    # Energia sintetizada (tools/synth_sfx.py)
+    "arc-crackle": -3,
+    "zap-short": -2,
+    "big-arc": 0,
+    "spark-burst": -4,
+    "spark-small": -6,
+    "hum-swell": -8,
+    "overload-hum": -6,
+    "sizzle": -8,
+    "breaker-on": 0,
+    "breaker-off": 0,
+    "dr-trip": 1,
+    "button": -2,
+    "rattle": -4,
+    "surge": -2,
+    "power-down": -6,
+    "power-up": -8,
+    "ground-flow": -7,
+    "leak": -7,
+    "lid-close": -1,
+    "lid-open": -4,
 }
 
-# (marca, deslocamento em s, som, ganho extra em dB)
+# (marca, deslocamento em s, som, ganho extra em dB) — cada som preso à animação que ele acompanha (world.html)
 EVENTS = [
-    # Gancho
-    ("hook", 0.75, "click", 3),
+    # Gancho: ele fecha a tampa, pergunta, "Ainda não", e abre o quadro
+    ("hook", 0.93, "lid-close", 0),
     ("pode", 0.2, "whoosh-short", -4),
     ("ainda", 0.0, "impact-bass-1", 0),
-    ("quadro2", 0.15, "whoosh-short", -2),
-    ("quadro2", 0.2, "glitch-3", -3),
+    ("quadro2", 0.02, "lid-open", 0),
+    ("quadro2", 0.35, "hum-swell", -2),
+    ("seguro", -0.2, "hum-swell", -6),
     ("camadas", 0.0, "pop", -1),
     ("camadas", 0.12, "pop", -1),
     ("camadas", 0.24, "pop", 0),
-    # Problema
-    ("esquenta", 0.0, "glitch-1", -3),
-    ("pvc", -0.2, "pop", -6),
-    ("g70", -0.2, "ping", -5),
-    ("fuga", 0.1, "glitch-3", 2),
+    # Problema: sobrecarga, fuga, fio terra some, carcaça energizada
+    ("cabo", -0.1, "hum-swell", 0),
+    ("esquenta", 0.0, "overload-hum", -4),
+    ("esquenta", 0.7, "sizzle", -9),
+    ("g70", -0.2, "ping", -9),
+    ("fuga", 0.1, "leak", 0),
     ("mili", -0.1, "pop", 0),
     ("semTerra", 0.0, "error", -2),
-    ("carcaca", 0.0, "glitch-1", -1),
+    ("carcaca", 0.1, "arc-crackle", -2),
+    ("carcaca", 0.15, "spark-small", 0),
+    ("energizada", 0.05, "zap-short", -3),
+    ("energizada", 0.05, "spark-small", 0),
+    ("energizada", 0.75, "spark-small", 3),
     # Camada 1
     ("c1", 0.0, "whoosh-short", 0),
     ("escolhido", -0.2, "pop", 4),
     ("cabo25", 0.0, "pop", -4),
     ("a24", -0.1, "click-soft", 0),
-    ("d20", -0.4, "click", 1),
+    ("d20", -0.3, "button", 2),
     ("d20", -0.1, "chime", -1),
-    # Camada 2
+    # Camada 2: botão T, o DR desarma e a máquina para; ele religa
     ("c2", 0.0, "whoosh-short", -2),
     ("ma30", -0.1, "pop", -3),
     ("banheiro", -0.05, "click-soft", -3),
     ("cozinha", -0.05, "click-soft", -9),
     ("lavanderia", -0.05, "click-soft", -3),
     ("externa", -0.05, "click-soft", -3),
-    ("teste", -0.15, "click", 4),
-    ("teste", 0.1, "impact-bass-1", -4),
-    ("teste", 0.3, "chime", -5),
-    # Camada 3
-    ("c3", 0.0, "whoosh-short", 0),
-    ("fioTerra", -0.2, "pop", 0),
+    ("teste", -0.15, "button", 3),
+    ("teste", 0.05, "dr-trip", 0),
+    ("teste", 0.12, "power-down", 0),
+    ("teste", 0.4, "chime", -5),
+    ("naoEntrega", 0.62, "breaker-on", 0),
+    ("naoEntrega", 0.7, "power-up", 0),
+    # Camada 3: fio terra cresce, surto no DPS vai para a terra, etiquetas
+    ("c3", 0.0, "whoosh-short", -2),
+    ("fioTerra", 0.0, "ground-flow", 0),
     ("fioTerra", 0.9, "chime", -2),
-    ("dps", -0.15, "pop", -3),
-    ("dps", 0.0, "glitch-3", -4),
+    ("dps", -0.15, "surge", 0),
+    ("dps", 0.32, "spark-small", -2),
+    ("dps", 0.3, "ground-flow", -3),
     ("etiqueta", -0.15, "pop", 0),
     ("etiqueta", 0.5, "ping", -1),
-    # Mito
+    # Mito: troca do disjuntor, sobrecarga, o cabo vira fusível e o arco dentro da parede
     ("mito", 0.0, "notification", -5),
     ("poe", -0.1, "pop", 0),
     ("naoMito", 0.0, "impact-bass-1", -2),
-    ("a40", -0.25, "click", 3),
+    ("a40", -0.68, "breaker-off", -2),
+    ("a40", 0.05, "breaker-on", 2),
     ("cabo24", -0.1, "click-soft", 0),
-    ("dobro", -0.1, "ping", 0),
-    ("fusivel", 0.0, "glitch-1", 0),
-    ("parede", 0.0, "impact-bass-1", -3),
-    # Norma
+    ("dobro", -0.2, "overload-hum", 3),
+    ("semDesarmar", -0.15, "rattle", 0),
+    ("fusivel", -0.1, "sizzle", -2),
+    ("fusivel", 0.1, "arc-crackle", 0),
+    ("fusivel", 0.15, "spark-burst", -2),
+    ("fusivel", 0.9, "spark-burst", -3),
+    ("parede", -0.08, "big-arc", -5),
+    ("parede", -0.05, "impact-boom", -8),
+    ("parede", 0.5, "spark-burst", -2),
+    # Norma: desliga o geral, testa com o detector e religa
     ("norma", 0.2, "pop", 3),
     ("nr10", -0.1, "pop", 0),
-    ("desenergizar", 0.45, "click", 2),
+    ("desenergizar", 0.2, "breaker-off", 1),
+    ("desenergizar", 0.3, "power-down", 3),
     ("antesNr", 0.3, "chime", -5),
     ("curso", -0.1, "pop", -9),
+    ("curso", 0.45, "breaker-on", -3),
+    ("curso", 0.55, "power-up", 4),
     # Chamada final e fecho
-    ("cta", 0.0, "whoosh-short", -5),
+    ("cta", -0.35, "zhhh", 2),
     ("treinamento", 0.0, "pop", 0),
-    ("ecasi", -0.2, "click", 0),
+    ("ecasi", -0.2, "pop", 0),
     ("proximo", -0.2, "pop", -3),
     ("loop", 0.1, "whoosh-short", -2),
     ("confira", 0.64, "pop", -2),
@@ -119,7 +159,8 @@ def decode(path):
 
 def load_sound(name):
     """Corta o silêncio inicial e nivela pela energia dos primeiros 250 ms (RMS em -18 dBFS)."""
-    a = decode(os.path.join(BASE, "assets", "sfx", name + ".mp3"))
+    synth = os.path.join(BASE, "assets", "sfx", "synth", name + ".wav")
+    a = decode(synth if os.path.exists(synth) else os.path.join(BASE, "assets", "sfx", name + ".mp3"))
     peak = np.abs(a).max() or 1.0
     first = int(np.argmax(np.abs(a) > peak * 0.05))
     a = a[max(0, first - 48) :]
