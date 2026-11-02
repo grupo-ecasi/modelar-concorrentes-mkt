@@ -1,0 +1,205 @@
+<template>
+  <style>
+    @font-face { font-family: "Barlow Condensed"; font-weight: 800; src: url("assets/fonts/BarlowCondensed-800.woff2") format("woff2"); }
+    @font-face { font-family: "Barlow Condensed"; font-weight: 900; src: url("assets/fonts/BarlowCondensed-900.woff2") format("woff2"); }
+    @font-face { font-family: "Bricolage Grotesque"; font-weight: 700; src: url("assets/fonts/BricolageGrotesque-700.woff2") format("woff2"); }
+    @font-face { font-family: "Bricolage Grotesque"; font-weight: 500; src: url("assets/fonts/BricolageGrotesque-500.woff2") format("woff2"); }
+    #root { position: absolute; inset: 0; pointer-events: none; font-family: "Bricolage Grotesque", sans-serif; color: #0b1d3f; }
+    .abs { position: absolute; opacity: 0; }
+    .card { border-radius: 26px; background: rgba(255,255,255,.96); box-shadow: 0 22px 46px -22px rgba(11,29,63,.6); }
+    .fonte { font-family: "Bricolage Grotesque"; font-weight: 500; font-size: 28px; color: #4b5563; }
+    /* gancho */
+    #gancho, #gancho2 { left: 60px; right: 60px; top: 190px; text-align: center; }
+    #gancho .k, #gancho2 .k { font-family: "Barlow Condensed"; font-weight: 900; font-size: 168px; line-height: .88; color: #0b1d3f; text-transform: uppercase; }
+    #gancho .k em, #gancho2 .k em { font-style: normal; color: #c2410c; }
+    #gancho .s, #gancho2 .s { display: inline-block; margin-top: 22px; padding: 12px 28px; border-radius: 16px; background: #0b1d3f; color: #fff; font-weight: 700; font-size: 46px; }
+    /* trilha dos 3 pilares */
+    #trilha { left: 0; right: 0; top: 120px; display: flex; justify-content: center; gap: 14px; }
+    .tr { display: inline-flex; align-items: center; gap: 12px; padding: 10px 22px 10px 10px; border-radius: 999px; background: rgba(255,255,255,.92);
+      font-family: "Barlow Condensed"; font-weight: 900; font-size: 40px; text-transform: uppercase; color: #64748b; box-shadow: 0 10px 24px -14px rgba(11,29,63,.6); }
+    .tr b { display: inline-flex; align-items: center; justify-content: center; width: 52px; height: 52px; border-radius: 50%; background: #64748b; color: #fff; font-size: 36px; }
+    .tr.on { color: #0b1d3f; } .tr.on b { background: #c2410c; }
+    .tr.ok b { background: #1a9e4b; }
+    /* número */
+    #num { left: 70px; right: 70px; top: 250px; padding: 34px 40px 30px; text-align: center; }
+    #num .n { font-family: "Barlow Condensed"; font-weight: 900; font-size: 210px; line-height: .9; color: #c2410c; }
+    #num .l { margin-top: 8px; font-weight: 700; font-size: 44px; line-height: 1.15; }
+    #num .p { display: inline-block; margin-top: 18px; padding: 8px 22px; border-radius: 12px; background: #fdecec; color: #b3261e; font-weight: 700; font-size: 42px; }
+    #num .fonte { margin-top: 16px; }
+    #psico { left: 70px; right: 70px; top: 300px; padding: 30px 36px; text-align: center; }
+    #psico .d { font-family: "Barlow Condensed"; font-weight: 900; font-size: 64px; color: #c2410c; text-transform: uppercase; }
+    #psico .t { margin-top: 6px; font-weight: 700; font-size: 50px; line-height: 1.12; }
+    /* selo do pilar */
+    .selo { left: 0; right: 0; margin: 0 auto; width: fit-content; top: 230px; white-space: nowrap; display: inline-flex; align-items: center; gap: 20px;
+      padding: 14px 38px 16px 16px; border-radius: 999px; background: #0b1d3f; color: #fff; box-shadow: 0 16px 36px -16px rgba(11,29,63,.6);
+      font-family: "Barlow Condensed"; font-weight: 900; font-size: 70px; letter-spacing: .01em; text-transform: uppercase; }
+    .selo b { display: inline-flex; align-items: center; justify-content: center; width: 86px; height: 86px; border-radius: 50%; background: #c2410c; color: #fff; font-size: 62px; }
+    /* chips de risco */
+    #chips { left: 60px; right: 60px; top: 380px; display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; opacity: 1; }
+    .chip { opacity: 0; padding: 12px 24px; border-radius: 14px; background: #fff; border: 3px solid #dbe3ee; font-weight: 700; font-size: 42px; white-space: nowrap; box-shadow: 0 12px 26px -14px rgba(11,29,63,.5); }
+    .chip.psi { background: #fdecec; border-color: rgba(211,47,47,.45); color: #b3261e; }
+    .tag { padding: 14px 28px; border-radius: 16px; background: #0b1d3f; color: #fff; font-weight: 700; font-size: 46px; white-space: nowrap; box-shadow: 0 12px 26px -14px rgba(11,29,63,.6); }
+    .tag.o { background: #c2410c; }
+    .tag.g { background: #1a9e4b; }
+    .centro { left: 0; right: 0; margin: 0 auto; width: fit-content; }
+    /* plano de ação */
+    #plano { left: 70px; right: 70px; top: 380px; padding: 26px 34px; }
+    .lin { display: grid; grid-template-columns: 70px 1fr; align-items: center; gap: 16px; margin: 10px 0; font-weight: 700; font-size: 48px; opacity: .25; }
+    .lin i { display: inline-flex; align-items: center; justify-content: center; width: 60px; height: 60px; border-radius: 14px; background: #e2e8f0; color: #475569; font-style: normal; font-size: 44px; }
+    #pgr { top: 380px; display: flex; align-items: center; gap: 14px; }
+    #pgr .op { font-family: "Barlow Condensed"; font-weight: 900; font-size: 64px; color: #0b1d3f; }
+    /* pessoas */
+    #pes { left: 60px; right: 60px; top: 390px; display: flex; justify-content: center; gap: 16px; opacity: 1; }
+    .pc { opacity: 0; padding: 18px 26px; border-radius: 20px; background: #fff; text-align: center; font-weight: 700; font-size: 40px; box-shadow: 0 14px 30px -16px rgba(11,29,63,.55); }
+    .pc .ic { font-family: "Barlow Condensed"; font-weight: 900; font-size: 64px; color: #c2410c; line-height: 1; }
+    /* mito */
+    #mito { left: 70px; right: 70px; top: 230px; padding: 30px 36px; text-align: center; }
+    #mito .q { font-weight: 700; font-size: 56px; line-height: 1.12; }
+    #mito .q span { color: #c2410c; }
+    #nao { left: 0; right: 0; top: 470px; text-align: center; }
+    #nao span { display: inline-block; padding: 6px 46px; border: 12px solid #b3261e; border-radius: 22px; color: #b3261e; font-family: "Barlow Condensed"; font-weight: 900; font-size: 170px; line-height: 1; transform: rotate(-6deg); background: rgba(255,255,255,.9); }
+    #stf { left: 70px; right: 70px; top: 470px; padding: 28px 34px; }
+    .ln2 { display: grid; grid-template-columns: 74px 1fr; gap: 18px; align-items: center; margin: 12px 0; font-weight: 700; font-size: 42px; line-height: 1.15; }
+    .ln2 i { display: inline-flex; align-items: center; justify-content: center; width: 66px; height: 66px; border-radius: 50%; font-style: normal; font-family: "Barlow Condensed"; font-weight: 900; font-size: 44px; color: #fff; }
+    .ln2 .x { background: #64748b; } .ln2 .v { background: #1a9e4b; }
+    /* revisão */
+    #rev { left: 0; right: 0; margin: 0 auto; width: 600px; top: 260px; padding: 26px 30px 30px; text-align: center; }
+    #rev .cal { margin: 0 auto; width: 300px; border-radius: 22px; overflow: hidden; box-shadow: 0 10px 24px -14px rgba(11,29,63,.5); }
+    #rev .cal .top { background: #c2410c; color: #fff; font-family: "Barlow Condensed"; font-weight: 900; font-size: 40px; padding: 6px 0; text-transform: uppercase; }
+    #rev .cal .big { background: #fff; font-family: "Barlow Condensed"; font-weight: 900; font-size: 150px; line-height: 1; padding: 8px 0 0; }
+    #rev .cal .big small { font-size: 60px; }
+    #rev .t { margin-top: 20px; font-weight: 700; font-size: 44px; }
+    #rev .t2 { margin-top: 10px; display: inline-block; padding: 8px 20px; border-radius: 12px; background: #fff1e6; color: #c2410c; font-weight: 700; font-size: 40px; }
+    #gaveta { top: 260px; }
+    /* CTA */
+    #cta { left: 60px; right: 60px; top: 210px; padding: 34px 36px 30px; text-align: center; }
+    #cta img { width: 520px; }
+    #cta .t1 { margin-top: 14px; font-family: "Barlow Condensed"; font-weight: 900; font-size: 74px; line-height: .98; text-transform: uppercase; }
+    #cta .t1 em { font-style: normal; color: #c2410c; }
+    #cta .bt { display: inline-block; margin-top: 20px; padding: 16px 34px; border-radius: 999px; background: #1a9e4b; color: #fff; font-weight: 700; font-size: 46px; }
+    #cta .ct { margin-top: 14px; font-weight: 700; font-size: 40px; color: #334155; }
+  </style>
+  <div id="root" data-composition-id="hud" data-width="1080" data-height="1920">
+    <div id="gancho" class="abs"><div class="k">NR-01:<br />os <em>3 pilares</em><br />da norma</div><div class="s">vale pra toda empresa com CLT</div></div>
+    <div id="gancho2" class="abs"><div class="k">NR-01:<br />os <em>3 pilares</em><br />da norma</div><div class="s">vale pra toda empresa com CLT</div></div>
+
+    <div id="trilha" class="abs">
+      <span id="t1" class="tr"><b>1</b>Conhecer</span><span id="t2" class="tr"><b>2</b>Planejar</span><span id="t3" class="tr"><b>3</b>Envolver</span>
+    </div>
+
+    <div id="num" class="abs card">
+      <div class="n"><span id="cont">0</span></div>
+      <div class="l">afastamentos por transtornos<br />mentais em 2025</div>
+      <div id="pct" class="p">+15,7% em relação a 2024</div>
+      <div class="fonte">Fonte: Ministério da Previdência Social (jan/2026)</div>
+    </div>
+    <div id="psico" class="abs card"><div class="d">Desde 26/05/2026</div><div class="t">riscos psicossociais entram<br />no gerenciamento de riscos</div><div class="fonte" style="margin-top:12px">Portaria MTE 1.419/2024 · Portaria MTE 765/2025</div></div>
+
+    <div id="s1" class="abs selo"><b>1</b>Conhecer os riscos</div>
+    <div id="s2" class="abs selo"><b>2</b>Plano de ação</div>
+    <div id="s3" class="abs selo"><b>3</b>Envolver as pessoas</div>
+
+    <div id="chips" class="abs">
+      <span id="k1" class="chip">Ruído</span><span id="k2" class="chip">Químico</span><span id="k3" class="chip">Altura</span><span id="k4" class="chip">Eletricidade</span>
+      <span id="k5" class="chip psi">Sobrecarga</span><span id="k6" class="chip psi">Falta de apoio</span><span id="k7" class="chip psi">Assédio</span>
+    </div>
+    <div id="inv" class="abs tag o centro" style="top:640px">➜ Inventário de riscos</div>
+
+    <div id="plano" class="abs card">
+      <div id="l1" class="lin"><i>✓</i>Risco</div>
+      <div id="l2" class="lin"><i>✓</i>Medida</div>
+      <div id="l3" class="lin"><i>✓</i>Responsável</div>
+      <div id="l4" class="lin"><i>✓</i>Prazo</div>
+    </div>
+    <div id="pgr" class="abs centro"><span class="tag">Inventário</span><span class="op">+</span><span class="tag">Plano de ação</span><span class="op">=</span><span class="tag o">PGR</span></div>
+
+    <div id="pes" class="abs">
+      <div id="p1" class="pc"><div class="ic">?</div>Consultar</div>
+      <div id="p2" class="pc"><div class="ic">!</div>Informar</div>
+      <div id="p3" class="pc"><div class="ic">✓</div>Treinar</div>
+    </div>
+
+    <div id="mito" class="abs card"><div class="q">O <span>STF</span> suspendeu<br />a NR-01?</div></div>
+    <div id="nao" class="abs"><span>NÃO</span></div>
+    <div id="stf" class="abs card">
+      <div class="ln2"><i class="x">⏸</i><div>Multas ligadas aos riscos psicossociais: suspensas por tempo determinado</div></div>
+      <div id="vale" class="ln2" style="opacity:0"><i class="v">✓</i><div>A NR-01 continua valendo</div></div>
+      <div class="fonte" style="margin-top:6px">Fonte: STF, ADPF 1316 (jun. e set./2026)</div>
+    </div>
+
+    <div id="gaveta" class="abs tag centro">PGR não é pra gaveta</div>
+    <div id="rev" class="abs card">
+      <div class="cal"><div class="top">Revisão</div><div class="big">2 <small>anos</small></div></div>
+      <div class="t">da avaliação de riscos</div><div class="fonte" style="margin-top:4px">NR-01, item 1.5.4.4.6</div>
+      <div id="rev2" class="t2" style="opacity:0">ou antes, se o trabalho mudar</div>
+    </div>
+
+    <div id="cta" class="abs card">
+      <img src="assets/brand/logo-fundo-claro.png" alt="Grupo ECASI" />
+      <div class="t1">Sua empresa está<br />em dia com a <em>NR-01</em>?</div>
+      <div id="bt" class="bt">Fale com o Grupo ECASI</div>
+      <div class="ct">WhatsApp (11) 95618-8608 · @grupoecasi</div>
+    </div>
+  </div>
+  <script>
+    const C = /*CUES*/{"promessa": 5.44, "problema": 7.68, "num": 12.48, "pct": 16.56, "psico": 19.6, "c1": 25.84, "c1psi": 32.32, "c1inv": 35.84, "c2": 38.32, "c2pgr": 45.44, "c3": 49.04, "c3cons": 51.92, "mito": 57.2, "nao": 60.55, "susp": 61.27, "vale": 65.75, "norma": 67.59, "rev": 69.67, "cta": 74.87, "fale": 77.83, "loop": 79.67, "ruido": 28.64, "quimico": 29.36, "altura": 30.48, "eletr": 31.2, "sobrecarga": 32.88, "apoio": 33.84, "assedio": 34.88, "medida": 42.24, "resp": 43.2, "prazo": 44.48, "consulta": 52.64, "informa": 54.24, "treina": 55.6, "multas": 62.71, "gaveta": 68.71, "doisanos": 72.07, "mudar": 73.51, "loop3": 81.99, "end": 85.67}/*FIM*/;
+    const tl = gsap.timeline({ paused: true });
+    const show = (sel, a, b, from = { y: 16 }) => {
+      tl.fromTo(sel, { opacity: 0, ...from }, { opacity: 1, y: 0, x: 0, scale: 1, rotation: 0, duration: 0.3, ease: "back.out(1.6)" }, a);
+      if (b) tl.to(sel, { opacity: 0, duration: 0.2, ease: "power2.in" }, b - 0.2);
+    };
+    // gancho (volta no loop)
+    show("#gancho", 0.1, C.promessa + 1.6, { scale: 0.9 });
+    // trilha: aparece na promessa; acende cada pilar; some no mito; volta no loop
+    tl.fromTo("#trilha", { opacity: 0, y: -20 }, { opacity: 1, y: 0, duration: 0.3, ease: "back.out(1.6)" }, C.promessa + 0.1);
+    for (const [i, id] of ["#t1", "#t2", "#t3"].entries()) tl.fromTo(id, { scale: 0.6 }, { scale: 1, duration: 0.3, ease: "back.out(2)" }, C.promessa + 0.35 + i * 0.25);
+    tl.to("#trilha", { opacity: 0, duration: 0.25 }, C.problema);
+    tl.to("#trilha", { opacity: 1, duration: 0.25 }, C.c1);
+    tl.set("#t1", { className: "tr on" }, C.c1); tl.set("#t1", { className: "tr ok" }, C.c2); tl.set("#t2", { className: "tr on" }, C.c2);
+    tl.set("#t2", { className: "tr ok" }, C.c3); tl.set("#t3", { className: "tr on" }, C.c3); tl.set("#t3", { className: "tr ok" }, C.mito - 0.3);
+    tl.to("#trilha", { opacity: 0, duration: 0.25 }, C.mito);
+    tl.to("#trilha", { opacity: 1, duration: 0.3 }, C.loop + 0.2);
+    for (const [i, id] of ["#t1", "#t2", "#t3"].entries()) tl.fromTo(id, { scale: 1 }, { scale: 1.15, duration: 0.18, yoyo: true, repeat: 1, ease: "power2.out", immediateRender: false }, C.loop3 + 0.5 + i * 0.22);
+    // problema: contador até 546.254
+    show("#num", C.problema + 2.4, C.psico, { scale: 0.85 });
+    const cont = { v: 0 };
+    tl.fromTo(cont, { v: 0 }, { v: 546254, duration: 1.6, ease: "power2.out", onUpdate: () => { document.getElementById("cont").textContent = Math.round(cont.v).toLocaleString("pt-BR"); } }, C.num - 0.1);
+    tl.fromTo("#pct", { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(2)" }, C.pct);
+    show("#psico", C.psico + 0.2, C.c1);
+    // pilar 1
+    show("#s1", C.c1, C.c2, { y: -30, scale: 0.85 });
+    const KS = [[1, C.ruido], [2, C.quimico], [3, C.altura], [4, C.eletr], [5, C.sobrecarga], [6, C.apoio], [7, C.assedio]];
+    for (const [n, a] of KS) tl.fromTo(`#k${n}`, { opacity: 0, y: 14, scale: 0.8 }, { opacity: 1, y: 0, scale: 1, duration: 0.28, ease: "back.out(2)" }, a);
+    tl.set("#chips", { opacity: 1 }, 0); tl.to("#chips", { opacity: 0, duration: 0.2 }, C.c2 - 0.2);
+    show("#inv", C.c1inv + 0.5, C.c2, { scale: 0.8 });
+    // pilar 2
+    show("#s2", C.c2, C.c3, { y: -30, scale: 0.85 });
+    show("#plano", C.c2 + 0.9, C.c2pgr, { y: 20 });
+    for (const [n, a] of [[1, C.c2 + 1.0], [2, C.medida], [3, C.resp], [4, C.prazo]]) {
+      tl.to(`#l${n}`, { opacity: 1, duration: 0.2 }, a);
+      tl.to(`#l${n} i`, { backgroundColor: "#1a9e4b", color: "#ffffff", scale: 1.15, duration: 0.15 }, a + 0.05); tl.to(`#l${n} i`, { scale: 1, duration: 0.15 }, a + 0.2);
+    }
+    show("#pgr", C.c2pgr + 0.1, C.c3, { scale: 0.8 });
+    // pilar 3
+    show("#s3", C.c3, C.mito, { y: -30, scale: 0.85 });
+    for (const [n, a] of [[1, C.consulta], [2, C.informa], [3, C.treina]]) tl.fromTo(`#p${n}`, { opacity: 0, y: 20, scale: 0.8 }, { opacity: 1, y: 0, scale: 1, duration: 0.3, ease: "back.out(2)" }, a);
+    tl.to("#pes", { opacity: 0, duration: 0.2 }, C.mito - 0.2);
+    // mito
+    show("#mito", C.mito, C.norma, { scale: 0.85 });
+    tl.fromTo("#nao", { opacity: 0, scale: 2.2 }, { opacity: 1, scale: 1, duration: 0.25, ease: "power3.in" }, C.nao);
+    tl.to("#nao", { opacity: 0, duration: 0.2 }, C.susp + 0.2);
+    show("#stf", C.susp + 0.3, C.norma, { y: 20 });
+    tl.fromTo("#vale", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.3, ease: "back.out(1.8)" }, C.vale);
+    // norma / revisão
+    show("#gaveta", C.norma + 0.2, C.rev, { scale: 0.8 });
+    show("#rev", C.rev + 0.1, C.cta, { scale: 0.85 });
+    tl.fromTo("#rev2", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.3, ease: "back.out(1.8)" }, C.mudar - 0.4);
+    // CTA
+    show("#cta", C.cta + 0.1, C.loop, { y: 40 });
+    tl.fromTo("#bt", { scale: 1 }, { scale: 1.08, duration: 0.25, yoyo: true, repeat: 3, ease: "power2.inOut" }, C.fale);
+    // loop: volta o título do começo
+    show("#gancho2", C.loop + 0.15, null, { scale: 0.9 });
+    tl.set({}, {}, C.end);
+    window.__timelines["hud"] = tl;
+  </script>
+</template>

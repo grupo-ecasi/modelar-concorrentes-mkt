@@ -1,0 +1,193 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #dfe6f0; }
+    #world-canvas { position: absolute; inset: 0; width: 1080px; height: 1920px; }
+  </style>
+  <div id="root" data-composition-id="world" data-width="1080" data-height="1920">
+    <canvas id="world-canvas" width="1080" height="1920"></canvas>
+  </div>
+  <script type="module">
+    import * as THREE from "three";
+    import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+    import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+    import * as N from "./assets/c3d/nucleo.js";
+    import * as SEG from "./assets/c3d/props-seguranca.js";
+    import * as PIN from "./assets/c3d/props-pintura.js";
+    import * as EFE from "./assets/c3d/efeitos.js";
+    import { colega } from "./assets/c3d/pessoas.js";
+    import { criarEcasio, POSES, misturar, logoCapacete, carregarImagem } from "./assets/c3d/personagens/ecasio-rig.js";
+
+    // Tempos ancorados na narração: gerados por tools/fix_transcript.py e copiados por tools/sync_cues.py.
+    const C = /*CUES*/{"promessa": 5.44, "problema": 7.68, "num": 12.48, "pct": 16.56, "psico": 19.6, "c1": 25.84, "c1psi": 32.32, "c1inv": 35.84, "c2": 38.32, "c2pgr": 45.44, "c3": 49.04, "c3cons": 51.92, "mito": 57.2, "nao": 60.55, "susp": 61.27, "vale": 65.75, "norma": 67.59, "rev": 69.67, "cta": 74.87, "fale": 77.83, "loop": 79.67, "ruido": 28.64, "quimico": 29.36, "altura": 30.48, "eletr": 31.2, "sobrecarga": 32.88, "apoio": 33.84, "assedio": 34.88, "medida": 42.24, "resp": 43.2, "prazo": 44.48, "consulta": 52.64, "informa": 54.24, "treina": 55.6, "multas": 62.71, "gaveta": 68.71, "doisanos": 72.07, "mudar": 73.51, "loop3": 81.99, "end": 85.67}/*FIM*/;
+    const { sm, lerp, aplicarPop } = N;
+    const mat = (c, r = 0.85, extra) => N.mat(THREE, c, r, extra);
+    const NAVY = "#0b1d3f", LARANJA = "#f97316", AZUL = "#1f6fd1";
+
+    const { renderer, scene, camera, sol, hemi } = N.palco(THREE, RoomEnvironment, document.getElementById("world-canvas"));
+    scene.background = new THREE.Color("#dfe6f0");
+    scene.fog = new THREE.Fog("#dfe6f0", 7, 16);
+    sol.position.set(2.2, 4.5, 3.2); sol.target.position.set(0, 0.5, 0); sol.intensity = 2.3;
+    hemi.intensity = 0.7;
+
+    // ---------- galpão/escritório limpo: piso, parede do fundo com faixa e logo ----------
+    const pisoTex = N.texturaCanvas(THREE, 256, 256, (g, w, h) => {
+      g.fillStyle = "#e4e9f0"; g.fillRect(0, 0, w, h);
+      g.strokeStyle = "rgba(11,29,63,0.10)"; g.lineWidth = 3; g.strokeRect(0, 0, w, h);
+    });
+    pisoTex.wrapS = pisoTex.wrapT = THREE.RepeatWrapping; pisoTex.repeat.set(24, 24);
+    const piso = new THREE.Mesh(new THREE.PlaneGeometry(30, 30), new THREE.MeshStandardMaterial({ map: pisoTex, roughness: 0.85 }));
+    piso.rotation.x = -Math.PI / 2; piso.receiveShadow = true; scene.add(piso);
+    // faixa de circulação amarela no piso
+    for (const x of [-2.3, 2.3]) { const f = new THREE.Mesh(new THREE.PlaneGeometry(0.07, 8), mat("#ffc928", 0.6)); f.rotation.x = -Math.PI / 2; f.position.set(x, 0.002, 1); scene.add(f); }
+
+    const parede = new THREE.Mesh(new THREE.BoxGeometry(9, 3.4, 0.2), mat("#f4f6fa", 0.9)); parede.position.set(0, 1.7, -1.9); parede.receiveShadow = true; scene.add(parede);
+    const rodape = new THREE.Mesh(new THREE.BoxGeometry(9, 0.55, 0.22), mat(NAVY, 0.7)); rodape.position.set(0, 0.275, -1.88); scene.add(rodape);
+    const filete = new THREE.Mesh(new THREE.BoxGeometry(9, 0.05, 0.23), mat(LARANJA, 0.6)); filete.position.set(0, 0.575, -1.88); scene.add(filete);
+    let logoOk; const logoPronto = new Promise((r) => (logoOk = r));
+    const logoTex = new THREE.TextureLoader().load("assets/brand/logo-fundo-claro.png", logoOk, undefined, logoOk); logoTex.colorSpace = THREE.SRGBColorSpace;
+    const logo = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 0.4), new THREE.MeshStandardMaterial({ map: logoTex, transparent: true, roughness: 0.6 }));
+    logo.position.set(2.75, 1.2, -1.79); scene.add(logo);
+    // janelas altas
+    for (const x of [-3.0, 3.0]) { const j = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.8, 0.05), mat("#a9cdf0", 0.25)); j.position.set(x, 2.2, -1.78); scene.add(j); }
+
+    // ---------- riscos que entram no pilar 1 (pop na palavra falada) ----------
+    const quadro = SEG.quadroEletrico(THREE); quadro.position.set(-1.25, 0.75, -1.77); scene.add(quadro);
+    const escada = PIN.escada(THREE, { altura: 1.25 }); escada.position.set(-1.75, 0, -1.15); escada.rotation.y = 0.5; scene.add(escada);
+    const tamb1 = SEG.tambor(THREE, { cor: AZUL }); tamb1.position.set(1.15, 0, -1.25); scene.add(tamb1);
+    const tamb2 = SEG.tambor(THREE, { cor: "#1a9e4b", altura: 0.4 }); tamb2.position.set(1.55, 0, -1.05); tamb2.rotation.y = -0.4; scene.add(tamb2);
+    const placaRuido = SEG.placa(THREE, { tipo: "aviso", simbolo: "!", texto: "RUÍDO", largura: 0.42, comPoste: true }); placaRuido.position.set(-0.95, 0, -0.95); placaRuido.rotation.y = 0.3; scene.add(placaRuido);
+    const cones = [[0.75, 0.55], [-0.75, 0.6]].map(([x, z]) => { const c = SEG.cone(THREE, { altura: 0.32 }); c.position.set(x, 0, z); scene.add(c); return c; });
+    const extintor = SEG.extintor(THREE, { altura: 0.42 }); extintor.position.set(2.05, 0, -1.6); scene.add(extintor);
+    // mesa com pilha de papéis (sobrecarga) e cadeira
+    const mesa = new THREE.Group(); mesa.position.set(1.45, 0, -0.15); mesa.rotation.y = -0.35; scene.add(mesa);
+    const tampo = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.04, 0.5), mat("#c8a27a", 0.7)); tampo.position.y = 0.52; mesa.add(tampo);
+    for (const [x, z] of [[-0.4, -0.2], [0.4, -0.2], [-0.4, 0.2], [0.4, 0.2]]) { const p = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.5, 0.04), mat("#3a4250", 0.5)); p.position.set(x, 0.25, z); mesa.add(p); }
+    const monitor = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.22, 0.02), mat("#1b2333", 0.4)); monitor.position.set(-0.15, 0.68, -0.12); mesa.add(monitor);
+    const tela = new THREE.Mesh(new THREE.PlaneGeometry(0.31, 0.19), mat("#4dabf7", 0.3, { emissive: "#1f6fd1", emissiveIntensity: 0.4 })); tela.position.set(-0.15, 0.68, -0.108); mesa.add(tela);
+    const papeis = [];
+    for (let i = 0; i < 14; i++) { const f = new THREE.Mesh(new THREE.BoxGeometry(0.21, 0.012, 0.29), mat(i % 3 ? "#ffffff" : "#f1f3f6", 0.9)); f.position.set(0.22 + (i % 2) * 0.01, 0.546 + i * 0.013, 0.02); f.rotation.y = ((i * 37) % 9 - 4) * 0.02; mesa.add(f); papeis.push(f); }
+    N.sombras(mesa);
+    // "raio" de pressão sobre a pilha: anel vermelho pulsando
+    const pressao = new THREE.Mesh(new THREE.TorusGeometry(0.2, 0.012, 8, 40), new THREE.MeshBasicMaterial({ color: "#ef4444", transparent: true, opacity: 0 }));
+    pressao.rotation.x = Math.PI / 2; pressao.position.set(0.22, 0.75, 0.02); mesa.add(pressao);
+
+    const RISCOS = [
+      [C.ruido, placaRuido], [C.quimico, tamb1], [C.quimico + 0.2, tamb2], [C.altura, escada], [C.eletr, quadro],
+      [C.c1 + 0.3, cones[0]], [C.c1 + 0.45, cones[1]], [C.c1 + 0.6, extintor],
+    ];
+
+    // ---------- equipe (pilar 3 e CTA) ----------
+    const EQUIPE = [
+      [colega(THREE, { camisa: AZUL, colete: "#3bd16f", capacete: "#ffffff", seed: 1, pele: "#8d5a3b" }), [-0.62, 0.3], 0.45, C.c3 + 0.5],
+      [colega(THREE, { camisa: "#7c3aed", capacete: null, seed: 2, pele: "#e0ac85", calca: "#3a4250" }), [0.62, 0.32], -0.45, C.consulta],
+      [colega(THREE, { camisa: NAVY, colete: LARANJA, capacete: "#ffc928", seed: 3, pele: "#c98b62" }), [-1.0, -0.35], 0.6, C.informa - 0.1],
+    ].map(([obj, [x, z], ry, t0]) => { obj.position.set(x, 0, z); obj.rotation.y = ry; scene.add(obj); return { obj, t0 }; });
+
+    // ---------- efeitos ----------
+    const brilho = EFE.brilhos(THREE, { n: 18, raio: 1.0 }); brilho.obj.position.set(0, 0.55, 0.2); scene.add(brilho.obj);
+    const conf = EFE.confete(THREE, { n: 260, area: [3.2, 3, 2] }); conf.obj.position.set(0, 0, 0.6); scene.add(conf.obj);
+
+    // ---------- câmera: planos por trecho, aproximação lenta dentro de cada plano ----------
+    // O HUD ocupa a faixa de cima (150 a 1000 px) e a legenda fica em ~1500 px: o Ecasio fica no meio-baixo do quadro.
+    const P = {
+      gancho: { pos: [0.0, 0.95, 2.35], alvo: [0, 0.82, 0] },
+      frente: { pos: [0.25, 1.0, 3.1], alvo: [0, 0.85, 0] },
+      aberta: { pos: [0.9, 1.7, 5.4], alvo: [0, 1.0, -0.4] },
+      riscosE: { pos: [-0.35, 1.15, 3.5], alvo: [-0.3, 0.8, -0.5] },
+      riscosD: { pos: [1.6, 1.15, 2.8], alvo: [0.6, 0.85, -0.5] },
+      mesa: { pos: [1.3, 1.35, 1.65], alvo: [1.3, 0.75, -0.2] },
+      close: { pos: [0.3, 0.98, 1.85], alvo: [0, 0.82, 0] },
+      equipe: { pos: [0.1, 1.55, 4.9], alvo: [-0.15, 0.75, -0.2] },
+      lado: { pos: [1.9, 1.05, 2.2], alvo: [0, 0.85, 0] },
+    };
+    const PLANOS = [
+      [0, "gancho"], [C.promessa, "frente"], [C.problema, "aberta"], [C.psico, "close"],
+      [C.c1, "frente"], [C.ruido - 0.2, "riscosE"], [C.altura + 0.4, "riscosD"], [C.sobrecarga - 0.1, "mesa"], [C.c1inv, "aberta"],
+      [C.c2, "frente"], [C.c2pgr, "lado"],
+      [C.c3, "equipe"],
+      [C.mito, "close"], [C.susp, "frente"],
+      [C.norma, "lado"], [C.rev, "close"],
+      [C.cta, "equipe"], [C.fale + 0.6, "aberta"], [C.loop, "gancho"],
+    ];
+    const vA = new THREE.Vector3(), vB = new THREE.Vector3(), alvo = new THREE.Vector3(), dir = new THREE.Vector3();
+    function cam(t) {
+      const i = PLANOS.findLastIndex((p) => p[0] <= t);
+      const [t0, nome] = PLANOS[i], ant = PLANOS[i - 1], t1 = PLANOS[i + 1] ? PLANOS[i + 1][0] : C.end;
+      const k = ant ? sm(t0, t0 + 0.8, t) : 1;
+      const a = ant ? P[ant[1]] : P[nome], b = P[nome];
+      vA.set(...a.pos); vB.set(...b.pos); camera.position.lerpVectors(vA, vB, k);
+      vA.set(...a.alvo); vB.set(...b.alvo); alvo.lerpVectors(vA, vB, k);
+      const prog = Math.min(1, Math.max(0, (t - t0) / Math.max(1, t1 - t0)));
+      dir.subVectors(alvo, camera.position).multiplyScalar(0.07 * prog); camera.position.add(dir);
+      camera.position.x += Math.sin(t * 0.25) * 0.04;
+      camera.lookAt(alvo);
+    }
+
+    // ---------- roteiro do Ecasio: [início, pose, prancheta na mão?, x, z, giro] ----------
+    const ATOS = [
+      [0, "acenar", false, 0, 0, 0], [C.promessa, "explicar", false, 0, 0, 0],
+      [C.problema, "pensar", false, 0, 0, 0], [C.num, "apontar", false, 0, 0, 0.2], [C.psico, "explicar", false, 0, 0, 0],
+      [C.c1, "olhar_em_volta", false, 0, 0, 0], [C.ruido, "apontar", false, 0, 0, 0.55], [C.altura + 0.4, "apontar", false, 0, 0, -0.75],
+      [C.sobrecarga, "pensar", false, 0, 0, -0.5], [C.c1inv, "explicar", false, 0, 0, 0],
+      [C.c2, "prancheta", true, 0, 0, 0], [C.c2pgr, "joinha", false, 0, 0, 0],
+      [C.c3, "explicar", false, 0, 0.25, 0], [C.treina, "comemorar", false, 0, 0.25, 0],
+      [C.mito, "pensar", false, 0, 0, 0], [C.nao, "explicar", false, 0, 0, 0], [C.vale, "joinha", false, 0, 0, 0],
+      [C.norma, "prancheta", true, 0, 0, 0], [C.rev, "explicar", false, 0, 0, 0],
+      [C.cta, "acenar", false, 0, 0.25, 0], [C.fale + 0.5, "comemorar", false, 0, 0.25, 0], [C.loop, "explicar", false, 0, 0, 0], [C.loop3, "joinha", false, 0, 0, 0],
+    ];
+    let eca = null, prancheta = null; const mao = new THREE.Vector3();
+    const FADE = 0.45;
+    function atuar(t) {
+      const i = ATOS.findLastIndex((a) => a[0] <= t), at = ATOS[i], ant = ATOS[i - 1];
+      const k = ant ? sm(at[0], at[0] + FADE, t) : 1;
+      const pose = misturar(ant ? POSES[ant[1]](t) : {}, POSES[at[1]](t), k);
+      pose.raiz = { ...(pose.raiz || {}), ry: lerp(ant ? ant[5] : 0, at[5], k) };
+      eca.pose(pose);
+      eca.root.position.set(lerp(ant ? ant[3] : 0, at[3], k), 0, lerp(ant ? ant[4] : 0, at[4], k));
+      if (at[2]) {
+        aplicarPop(prancheta, t, at[0] + 0.1, 0.4);
+        // a prancheta acompanha a ponta da asa, mas fica sempre de pé e virada para a frente (legível)
+        eca.root.updateMatrixWorld(true); eca.osso("maoD").getWorldPosition(mao);
+        prancheta.position.set(mao.x + 0.03, mao.y - 0.05, mao.z + 0.14);
+        prancheta.rotation.set(-0.22, eca.root.rotation.y, 0.1);
+      } else { prancheta.visible = false; }
+      // checklist: medida, responsável, prazo (pilar 2); tudo marcado quando volta na revisão
+      const n = t >= C.norma ? 4 : (t >= C.c2 + 1 ? 1 : 0) + (t >= C.medida ? 1 : 0) + (t >= C.resp ? 1 : 0) + (t >= C.prazo ? 1 : 0);
+      prancheta.userData.marcar(Math.min(4, n));
+    }
+
+    function render(t) {
+      for (const [t0, obj] of RISCOS) aplicarPop(obj, t, t0, 0.5);
+      // papéis empilham na sobrecarga
+      papeis.forEach((f, i) => { const tt = C.sobrecarga + i * 0.06; f.visible = t > C.c1 && (i < 4 || t > tt); });
+      const pz = sm(C.sobrecarga, C.sobrecarga + 0.3, t) * (1 - sm(C.c1inv, C.c1inv + 0.4, t));
+      pressao.material.opacity = pz * (0.55 + 0.45 * Math.sin(t * 9));
+      pressao.scale.setScalar(1 + 0.15 * Math.sin(t * 9));
+      for (const { obj, t0 } of EQUIPE) {
+        aplicarPop(obj, t, t0, 0.5);
+        const fora = t > C.mito && t < C.cta; if (fora) obj.visible = false;
+        obj.userData.atualizar(t, Math.max(sm(C.treina, C.treina + 0.3, t) * (1 - sm(C.mito - 0.4, C.mito, t)), sm(C.fale, C.fale + 0.3, t) * (1 - sm(C.loop, C.loop + 0.4, t))));
+      }
+      brilho.atualizar(t, Math.max(sm(C.c2pgr + 1.6, C.c2pgr + 2, t) * (1 - sm(C.c3 - 0.3, C.c3, t)), sm(C.vale, C.vale + 0.3, t) * (1 - sm(C.norma - 0.3, C.norma, t))));
+      conf.atualizar(t, sm(C.fale + 0.4, C.fale + 0.7, t) * (1 - sm(C.loop - 0.2, C.loop + 0.4, t)));
+      if (eca) atuar(t);
+      cam(t);
+      renderer.render(scene, camera);
+    }
+
+    new GLTFLoader().loadAsync("assets/c3d/personagens/ecasio.glb").then((gltf) => {
+      eca = criarEcasio(THREE, gltf.scene);
+      scene.add(eca.root);
+      prancheta = SEG.prancheta(THREE, { titulo: "PGR", itens: ["Risco", "Medida", "Responsável", "Prazo"] });
+      prancheta.scale.setScalar(1.25); scene.add(prancheta);
+      const logoCap = carregarImagem("assets/brand/logo-fundo-claro.png").then((img) => logoCapacete(THREE, eca, img));
+      return Promise.all([document.fonts.ready, logoPronto, logoCap]);
+    }).then(() => {
+      const st = { t: 0 };
+      const tl = gsap.timeline({ paused: true });
+      tl.to(st, { t: C.end, duration: C.end, ease: "none", onUpdate: () => render(st.t) }, 0);
+      render(0);
+      window.__timelines["world"] = tl;
+    });
+  </script>
+</template>

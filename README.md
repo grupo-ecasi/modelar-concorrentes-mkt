@@ -5,19 +5,25 @@
 ## Estrutura
 
 ```
+.claude/skills/              Skills do projeto: bonequinho-3d e roteiro-escada-do-zero
+componentes-3d/              Biblioteca 3D reaproveitável (cenário, pintura, segurança ECASI, efeitos, rig do pintor) + catálogo
+personagens/                 Bonequinhos 3D reutilizáveis (um <slug>/ por personagem, .glb final em final/)
 app/                         Agente de captura de criativos virais (plano e tarefas)
 ecasi/                       Grupo ECASI
   series/
     energia-eletrica/        Série Energia Elétrica (4 Reels, entregue em 31/10/2026)
       plano-serie-energia-eletrica.md
+      plano-refacao-ep2-ep4-v2.md   Plano da refação v2 (EP2 a EP4)
       ep1-morador/           "Vai trocar a resistência do chuveiro?"
       ep2-residencial/       "Terminou o quadro. Pode entregar?"
+      ep2-residencial-v2/    EP2 refeito (rig do reboco-novo, uniforme antichama, bloom e energia animada)
       ep3-industrial/        "Desligou o inversor. Já pode abrir?"
       ep4-media-tensao/      "Abriu a seccionadora. Já pode encostar?"
   videos/
     nr10-chuveiro/           Reel NR-10 (base viral da série, decupagem do @raiox.tec)
     nr35-altura/             Reel NR-35 trabalho em altura
     nr01-gestora/            Roteiro do talking head de NR-01 (a gestora grava)
+    nr01-ecasio/             NR-01 "3 coisas" com o mascote Ecasio em 3D (86 s, voz provisória)
   pesquisa/                  Relatórios de virais (segurança do trabalho, NR-01)
 house/                       House Pinturas (@house_pintura10)
   series/
@@ -27,6 +33,7 @@ house/                       House Pinturas (@house_pintura10)
   videos/
     sacada-madeira/          Antes e depois da sacada de madeira
     mofo-bonequinho/         Mofo na parede (low-poly)
+    fachada-do-zero/         1º vídeo Escada do Zero com o pintor 3D (personagens/pintor), 2:03
   pesquisa/                  Relatório de virais de pintura
 ```
 

@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="pt-BR" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/"}}</script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1080px; height: 1920px; overflow: hidden; background: #eef2f8; font-family: sans-serif; }
+      #root { position: relative; width: 100%; height: 100%; }
+      #cv { position: absolute; inset: 0; width: 1080px; height: 1920px; }
+      #titulo { position: absolute; top: 60px; left: 0; right: 0; text-align: center; font: 800 64px sans-serif; color: #0b1220; }
+      .rot { position: absolute; transform: translate(-50%, 0); padding: 6px 14px; border-radius: 10px; background: #0b1220; color: #fff; font: 700 26px sans-serif; white-space: nowrap; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="5" data-width="1080" data-height="1920">
+      <canvas id="cv" width="1080" height="1920"></canvas>
+      <div id="titulo"></div>
+      <div id="rotulos"></div>
+    </div>
+    <script type="module">
+      import * as THREE from "three";
+      import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+      import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+      import { palco } from "./assets/c3d/nucleo.js";
+      import * as CEN from "./assets/c3d/cenario.js";
+      import * as PIN from "./assets/c3d/props-pintura.js";
+      import * as SEG from "./assets/c3d/props-seguranca.js";
+      import * as EFE from "./assets/c3d/efeitos.js";
+      import { criarPintor, POSES } from "./assets/c3d/personagens/pintor-rig.js";
+      window.__timelines = window.__timelines || {};
+      const { renderer, scene, camera, sol } = palco(THREE, RoomEnvironment, document.getElementById("cv"));
+      scene.background = new THREE.Color("#eef2f8");
+      sol.position.set(3, 6, 6);
+      const chao = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), new THREE.MeshStandardMaterial({ color: "#dfe6f1" })); chao.rotation.x = -Math.PI / 2; chao.receiveShadow = true; scene.add(chao);
+
+      // páginas: [título, [nome, objeto, escala]]
+      const PAG = [
+        ["Cenário", [["arvore", CEN.arvore(THREE, { altura: 1.4 }), 1], ["arbusto", CEN.arbusto(THREE), 1], ["canteiro", CEN.canteiro(THREE, { largura: 0.9 }), 1], ["cerca", CEN.cerca(THREE, { comprimento: 0.9 }), 1],
+          ["casaVizinha", CEN.casaVizinha(THREE, { largura: 1, altura: 0.8 }), 0.8], ["nuvem", CEN.nuvem(THREE), 0.5], ["poste", CEN.poste(THREE, { altura: 1.4 }), 1], ["caixaCorreio", CEN.caixaCorreio(THREE), 1], ["vaso", CEN.vaso(THREE), 1.6]]],
+        ["Pintura (House)", [["lata", PIN.lata(THREE, { texto: "PVA" }), 3], ["balde", PIN.balde(THREE), 3], ["broxa", PIN.broxa(THREE), 4], ["rolo", PIN.rolo(THREE), 4], ["bandeja", PIN.bandeja(THREE), 3],
+          ["lixa", PIN.lixa(THREE), 5], ["espatula", PIN.espatula(THREE), 5], ["bisnaga", PIN.bisnaga(THREE), 3], ["escada", PIN.escada(THREE), 1], ["lona", PIN.lona(THREE, { largura: 0.6, profundidade: 0.4 }), 1], ["fitaCrepe", PIN.fitaCrepe(THREE), 5]]],
+        ["Segurança (ECASI)", [["capacete", SEG.capacete(THREE), 3], ["colete", SEG.colete(THREE), 2], ["cone", SEG.cone(THREE), 2], ["extintor", SEG.extintor(THREE), 2], ["placa aviso", SEG.placa(THREE, { tipo: "aviso", simbolo: "⚡" }), 2],
+          ["placa proibido", SEG.placa(THREE, { tipo: "proibido", simbolo: "🔥" }), 2], ["placa obrigatório", SEG.placa(THREE, { tipo: "obrigatorio", simbolo: "⛑" }), 2], ["placa saída", SEG.placa(THREE, { tipo: "saida" }), 2],
+          ["maleta 1º socorros", SEG.maletaPrimeirosSocorros(THREE), 2.5], ["quadroEletrico", SEG.quadroEletrico(THREE, { abertura: 0.5 }), 1.6], ["luvas", SEG.luvas(THREE), 3], ["oculos", SEG.oculosProtecao(THREE), 4]]],
+      ];
+      const grupos = PAG.map(([tit, itens], p) => {
+        const g = new THREE.Group(); g.visible = false; scene.add(g);
+        itens.forEach(([nome, obj, esc], i) => { obj.scale.multiplyScalar(esc); obj.position.set(((i % 3) - 1) * 1.25, 0, Math.floor(i / 3) * 1.15 - 2.6); obj.userData.nome = nome; g.add(obj); });
+        return [tit, g];
+      });
+      // efeitos (página 4) + pintor
+      const efe = new THREE.Group(); efe.visible = false; scene.add(efe);
+      const fx = { chuva: EFE.chuva(THREE, { n: 300, area: [1, 1.4, 0.6], centro: [-1.15, 0, -1.8] }), poeira: EFE.poeira(THREE), respingos: EFE.respingos(THREE), confete: EFE.confete(THREE, { area: [1, 1.4, 0.6] }), brilhos: EFE.brilhos(THREE, { raio: 0.4 }) };
+      fx.poeira.obj.position.set(0, 0.2, -1.8); fx.respingos.obj.position.set(1.15, 0.3, -1.8); fx.confete.obj.position.set(-1.15, 0, -0.6); fx.brilhos.obj.position.set(0, 0.3, -0.6);
+      Object.values(fx).forEach((f) => efe.add(f.obj));
+      const rotEfe = [["chuva", -1.15, -1.8], ["poeira", 0, -1.8], ["respingos", 1.15, -1.8], ["confete", -1.15, -0.6], ["brilhos", 0, -0.6], ["pintor (rig)", 1.15, -0.6]];
+      let pintor = null;
+      new GLTFLoader().loadAsync("./assets/c3d/personagens/pintor.glb").then((gl) => {
+        pintor = criarPintor(THREE, gl.scene); pintor.root.scale.setScalar(0.9); pintor.root.position.set(1.15, 0, -0.6); efe.add(pintor.root);
+        const rots = document.getElementById("rotulos"), tit = document.getElementById("titulo");
+        const v = new THREE.Vector3();
+        const render = (t) => {
+          const p = Math.min(3, Math.max(0, Math.floor(t) - 1));
+          grupos.forEach(([, g], i) => (g.visible = i === p)); efe.visible = p === 3;
+          tit.textContent = p < 3 ? grupos[p][0] : "Efeitos + personagem";
+          camera.fov = 30; camera.updateProjectionMatrix(); camera.position.set(0, 8.5, 6.5); camera.lookAt(0, 0, -1.0);
+          Object.values(fx).forEach((f) => f.atualizar(t, 1, "#2457d6"));
+          pintor.pose(POSES.pintar_rolo(t));
+          const lista = p < 3 ? grupos[p][1].children.map((o) => [o.userData.nome, o.position.x, o.position.z]) : rotEfe;
+          rots.innerHTML = lista.map(([n, x, z]) => { v.set(x, 0, z + 0.42).project(camera); return `<div class="rot" style="left:${(v.x + 1) * 540}px;top:${(1 - v.y) * 960}px">${n}</div>`; }).join("");
+          renderer.render(scene, camera);
+        };
+        const st = { t: 0 }; const tl = gsap.timeline({ paused: true });
+        tl.to(st, { t: 5, duration: 5, ease: "none", onUpdate: () => render(st.t) }, 0);
+        render(0); window.__timelines["main"] = tl;
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "slug": "ecasio",
+  "cliente": "Grupo ECASI",
+  "descricao": "coruja operária mascote do Grupo ECASI: penas marrom-avermelhadas com rosto e peito creme, olhos verdes com cílios, bico amarelo, capacete azul, uniforme azul royal, colete verde com faixas refletivas, botinas pretas com laranja; asas com 5 penas-dedos",
+  "estilo": "3D vinil / toy art, sem contorno",
+  "paleta": { "capacete": "#1F5FD6", "uniforme": "#1E4FC8", "colete": "#3DBE3A", "detalhe": "#F07A1A", "penas": "#A0522D", "creme": "#F3D9B8" },
+  "origem_imagem": "ChatGPT, gerada pelo usuário em 02/11/2026 a partir do mascote oficial (ref/ecasio-original.jpeg); conceito/frente.png e conceito/turnaround.png",
+  "logo_no_modelo_base": "não: o modelo base fica sem logo; a ECASI entra no cenário e no CTA",
+  "origem_3d": "TRELLIS (Space trellis-community/TRELLIS), modo multi-imagem com frente, lado e costas recortados do turnaround (conceito/vista-*.png), mesh_simplify 0.8, textura 2048, seed 0; tools/gerar_3d.py",
+  "licenca": "TRELLIS: código e pesos sob licença MIT (conferir antes de uso comercial em escala)",
+  "altura_cena": 1.0,
+  "rig": "componentes-3d/personagens/ecasio-rig.js (esqueleto em código, mesmos ossos e POSES do pintor; articulações medidas em fatias da malha)",
+  "animacoes": ["idle", "andar", "apontar", "acenar", "explicar", "pensar", "joinha", "comemorar", "olhar_em_volta", "pegar", "prancheta"],
+  "ossos": { "mao_direita": "maoD", "mao_esquerda": "maoE", "costas": "peito", "cabeca": "cabeca" },
+  "pecas_opcionais": ["prancheta (componentes-3d/props-seguranca.js), posicionada pela mão direita a cada quadro"],
+  "textura": "final/ecasio.glb = modelo/bruto_multi.glb sem reprojeção (o rosto do TRELLIS saiu bom)"
+}

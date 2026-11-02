@@ -1,0 +1,982 @@
+[
+ {
+  "text": "Sua",
+  "start": 0.16,
+  "end": 0.56
+ },
+ {
+  "text": "empresa",
+  "start": 0.56,
+  "end": 0.88
+ },
+ {
+  "text": "tem",
+  "start": 0.88,
+  "end": 1.2
+ },
+ {
+  "text": "funcionário",
+  "start": 1.2,
+  "end": 1.68
+ },
+ {
+  "text": "de",
+  "start": 1.68,
+  "end": 1.84
+ },
+ {
+  "text": "carteira",
+  "start": 1.84,
+  "end": 2.24
+ },
+ {
+  "text": "assinada?",
+  "start": 2.24,
+  "end": 3.12
+ },
+ {
+  "text": "Então",
+  "start": 3.12,
+  "end": 3.36
+ },
+ {
+  "text": "a",
+  "start": 3.52,
+  "end": 3.76
+ },
+ {
+  "text": "NR-01",
+  "start": 3.76,
+  "end": 4.56
+ },
+ {
+  "text": "vale",
+  "start": 4.56,
+  "end": 4.88
+ },
+ {
+  "text": "pra",
+  "start": 4.88,
+  "end": 5.04
+ },
+ {
+  "text": "você.",
+  "start": 5.04,
+  "end": 5.44
+ },
+ {
+  "text": "E",
+  "start": 5.44,
+  "end": 5.6
+ },
+ {
+  "text": "ela",
+  "start": 5.6,
+  "end": 5.84
+ },
+ {
+  "text": "se",
+  "start": 5.84,
+  "end": 5.92
+ },
+ {
+  "text": "apoia",
+  "start": 5.92,
+  "end": 6.4
+ },
+ {
+  "text": "em",
+  "start": 6.4,
+  "end": 6.56
+ },
+ {
+  "text": "3 pilares.",
+  "start": 6.56,
+  "end": 7.36
+ },
+ {
+  "text": "Antes,",
+  "start": 7.68,
+  "end": 8.0
+ },
+ {
+  "text": "o",
+  "start": 8.16,
+  "end": 8.32
+ },
+ {
+  "text": "tamanho",
+  "start": 8.32,
+  "end": 8.72
+ },
+ {
+  "text": "do",
+  "start": 8.72,
+  "end": 8.88
+ },
+ {
+  "text": "problema.",
+  "start": 8.88,
+  "end": 9.6
+ },
+ {
+  "text": "Em",
+  "start": 9.6,
+  "end": 9.76
+ },
+ {
+  "text": "2025,",
+  "start": 9.76,
+  "end": 10.8
+ },
+ {
+  "text": "a",
+  "start": 10.8,
+  "end": 10.96
+ },
+ {
+  "text": "Previdência",
+  "start": 10.96,
+  "end": 11.6
+ },
+ {
+  "text": "concedeu",
+  "start": 11.6,
+  "end": 12.16
+ },
+ {
+  "text": "mais",
+  "start": 12.16,
+  "end": 12.32
+ },
+ {
+  "text": "de",
+  "start": 12.32,
+  "end": 12.48
+ },
+ {
+  "text": "546 mil",
+  "start": 12.48,
+  "end": 14.0
+ },
+ {
+  "text": "afastamentos",
+  "start": 14.0,
+  "end": 14.8
+ },
+ {
+  "text": "por",
+  "start": 14.8,
+  "end": 14.96
+ },
+ {
+  "text": "transtornos",
+  "start": 14.96,
+  "end": 15.68
+ },
+ {
+  "text": "mentais.",
+  "start": 15.68,
+  "end": 16.56
+ },
+ {
+  "text": "Quase",
+  "start": 16.56,
+  "end": 16.96
+ },
+ {
+  "text": "16%",
+  "start": 16.96,
+  "end": 17.76
+ },
+ {
+  "text": "a",
+  "start": 17.92,
+  "end": 18.08
+ },
+ {
+  "text": "mais",
+  "start": 18.08,
+  "end": 18.32
+ },
+ {
+  "text": "que",
+  "start": 18.32,
+  "end": 18.48
+ },
+ {
+  "text": "no",
+  "start": 18.48,
+  "end": 18.64
+ },
+ {
+  "text": "ano",
+  "start": 18.64,
+  "end": 18.88
+ },
+ {
+  "text": "anterior.",
+  "start": 18.88,
+  "end": 19.6
+ },
+ {
+  "text": "Por",
+  "start": 19.6,
+  "end": 19.84
+ },
+ {
+  "text": "isso,",
+  "start": 19.84,
+  "end": 20.24
+ },
+ {
+  "text": "desde",
+  "start": 20.24,
+  "end": 20.56
+ },
+ {
+  "text": "maio",
+  "start": 20.56,
+  "end": 20.88
+ },
+ {
+  "text": "de",
+  "start": 20.88,
+  "end": 21.04
+ },
+ {
+  "text": "2026,",
+  "start": 21.04,
+  "end": 22.08
+ },
+ {
+  "text": "a",
+  "start": 22.08,
+  "end": 22.32
+ },
+ {
+  "text": "NR-01",
+  "start": 22.32,
+  "end": 23.04
+ },
+ {
+  "text": "também",
+  "start": 23.04,
+  "end": 23.36
+ },
+ {
+  "text": "cobra",
+  "start": 23.36,
+  "end": 23.84
+ },
+ {
+  "text": "os",
+  "start": 23.84,
+  "end": 23.92
+ },
+ {
+  "text": "riscos",
+  "start": 23.92,
+  "end": 24.32
+ },
+ {
+  "text": "psicossociais.",
+  "start": 24.32,
+  "end": 25.84
+ },
+ {
+  "text": "Primeiro",
+  "start": 25.84,
+  "end": 26.32
+ },
+ {
+  "text": "pilar:",
+  "start": 26.32,
+  "end": 26.64
+ },
+ {
+  "text": "conhecer",
+  "start": 27.04,
+  "end": 27.68
+ },
+ {
+  "text": "os",
+  "start": 27.68,
+  "end": 27.84
+ },
+ {
+  "text": "riscos.",
+  "start": 27.84,
+  "end": 28.64
+ },
+ {
+  "text": "Ruído,",
+  "start": 28.64,
+  "end": 29.36
+ },
+ {
+  "text": "produto",
+  "start": 29.36,
+  "end": 29.76
+ },
+ {
+  "text": "químico,",
+  "start": 29.76,
+  "end": 30.48
+ },
+ {
+  "text": "altura,",
+  "start": 30.48,
+  "end": 31.2
+ },
+ {
+  "text": "eletricidade...",
+  "start": 31.2,
+  "end": 32.08
+ },
+ {
+  "text": "e",
+  "start": 32.32,
+  "end": 32.56
+ },
+ {
+  "text": "também",
+  "start": 32.56,
+  "end": 32.88
+ },
+ {
+  "text": "sobrecarga,",
+  "start": 32.88,
+  "end": 33.84
+ },
+ {
+  "text": "falta",
+  "start": 33.84,
+  "end": 34.08
+ },
+ {
+  "text": "de",
+  "start": 34.08,
+  "end": 34.24
+ },
+ {
+  "text": "apoio",
+  "start": 34.24,
+  "end": 34.56
+ },
+ {
+  "text": "e",
+  "start": 34.64,
+  "end": 34.88
+ },
+ {
+  "text": "assédio.",
+  "start": 34.88,
+  "end": 35.84
+ },
+ {
+  "text": "Tudo",
+  "start": 35.84,
+  "end": 36.16
+ },
+ {
+  "text": "entra",
+  "start": 36.16,
+  "end": 36.56
+ },
+ {
+  "text": "no",
+  "start": 36.56,
+  "end": 36.8
+ },
+ {
+  "text": "inventário",
+  "start": 36.8,
+  "end": 37.36
+ },
+ {
+  "text": "de",
+  "start": 37.36,
+  "end": 37.52
+ },
+ {
+  "text": "riscos.",
+  "start": 37.52,
+  "end": 38.32
+ },
+ {
+  "text": "Segundo",
+  "start": 38.32,
+  "end": 38.72
+ },
+ {
+  "text": "pilar:",
+  "start": 38.8,
+  "end": 39.28
+ },
+ {
+  "text": "ter",
+  "start": 39.52,
+  "end": 39.76
+ },
+ {
+  "text": "um",
+  "start": 39.76,
+  "end": 39.92
+ },
+ {
+  "text": "plano",
+  "start": 39.92,
+  "end": 40.24
+ },
+ {
+  "text": "de",
+  "start": 40.24,
+  "end": 40.4
+ },
+ {
+  "text": "ação.",
+  "start": 40.4,
+  "end": 40.88
+ },
+ {
+  "text": "Pra",
+  "start": 41.12,
+  "end": 41.28
+ },
+ {
+  "text": "cada",
+  "start": 41.36,
+  "end": 41.68
+ },
+ {
+  "text": "risco,",
+  "start": 41.68,
+  "end": 42.24
+ },
+ {
+  "text": "uma",
+  "start": 42.24,
+  "end": 42.48
+ },
+ {
+  "text": "medida,",
+  "start": 42.48,
+  "end": 43.2
+ },
+ {
+  "text": "um",
+  "start": 43.2,
+  "end": 43.44
+ },
+ {
+  "text": "responsável",
+  "start": 43.44,
+  "end": 44.16
+ },
+ {
+  "text": "e",
+  "start": 44.24,
+  "end": 44.48
+ },
+ {
+  "text": "um",
+  "start": 44.48,
+  "end": 44.64
+ },
+ {
+  "text": "prazo.",
+  "start": 44.64,
+  "end": 45.44
+ },
+ {
+  "text": "Inventário",
+  "start": 45.44,
+  "end": 46.16
+ },
+ {
+  "text": "e",
+  "start": 46.16,
+  "end": 46.32
+ },
+ {
+  "text": "plano",
+  "start": 46.32,
+  "end": 46.64
+ },
+ {
+  "text": "de",
+  "start": 46.64,
+  "end": 46.72
+ },
+ {
+  "text": "ação",
+  "start": 46.72,
+  "end": 47.2
+ },
+ {
+  "text": "formam",
+  "start": 47.2,
+  "end": 47.68
+ },
+ {
+  "text": "o",
+  "start": 47.68,
+  "end": 47.84
+ },
+ {
+  "text": "PGR.",
+  "start": 47.84,
+  "end": 48.72
+ },
+ {
+  "text": "Terceiro",
+  "start": 49.04,
+  "end": 49.52
+ },
+ {
+  "text": "pilar:",
+  "start": 49.52,
+  "end": 49.84
+ },
+ {
+  "text": "envolver",
+  "start": 50.24,
+  "end": 50.96
+ },
+ {
+  "text": "as",
+  "start": 50.96,
+  "end": 51.2
+ },
+ {
+  "text": "pessoas.",
+  "start": 51.2,
+  "end": 51.92
+ },
+ {
+  "text": "A",
+  "start": 51.92,
+  "end": 52.16
+ },
+ {
+  "text": "empresa",
+  "start": 52.16,
+  "end": 52.64
+ },
+ {
+  "text": "consulta",
+  "start": 52.64,
+  "end": 53.2
+ },
+ {
+  "text": "os",
+  "start": 53.2,
+  "end": 53.28
+ },
+ {
+  "text": "trabalhadores,",
+  "start": 53.36,
+  "end": 54.24
+ },
+ {
+  "text": "informa",
+  "start": 54.24,
+  "end": 54.56
+ },
+ {
+  "text": "os",
+  "start": 54.8,
+  "end": 54.96
+ },
+ {
+  "text": "riscos",
+  "start": 54.96,
+  "end": 55.44
+ },
+ {
+  "text": "e",
+  "start": 55.44,
+  "end": 55.6
+ },
+ {
+  "text": "treina",
+  "start": 55.6,
+  "end": 56.08
+ },
+ {
+  "text": "a",
+  "start": 56.08,
+  "end": 56.24
+ },
+ {
+  "text": "equipe.",
+  "start": 56.24,
+  "end": 57.2
+ },
+ {
+  "text": "Mas",
+  "start": 57.2,
+  "end": 57.52
+ },
+ {
+  "text": "o",
+  "start": 57.76,
+  "end": 58.0
+ },
+ {
+  "text": "STF",
+  "start": 58.0,
+  "end": 58.64
+ },
+ {
+  "text": "não",
+  "start": 58.64,
+  "end": 58.8
+ },
+ {
+  "text": "suspendeu",
+  "start": 58.8,
+  "end": 59.36
+ },
+ {
+  "text": "a",
+  "start": 59.36,
+  "end": 59.44
+ },
+ {
+  "text": "NR-01?",
+  "start": 59.44,
+  "end": 60.0
+ },
+ {
+  "text": "Não.",
+  "start": 60.55,
+  "end": 61.03
+ },
+ {
+  "text": "Suspendeu,",
+  "start": 61.27,
+  "end": 61.99
+ },
+ {
+  "text": "por",
+  "start": 62.07,
+  "end": 62.23
+ },
+ {
+  "text": "um",
+  "start": 62.23,
+  "end": 62.31
+ },
+ {
+  "text": "tempo,",
+  "start": 62.31,
+  "end": 62.55
+ },
+ {
+  "text": "as",
+  "start": 62.71,
+  "end": 62.95
+ },
+ {
+  "text": "multas",
+  "start": 62.95,
+  "end": 63.51
+ },
+ {
+  "text": "ligadas",
+  "start": 63.51,
+  "end": 63.91
+ },
+ {
+  "text": "aos",
+  "start": 63.91,
+  "end": 64.15
+ },
+ {
+  "text": "riscos",
+  "start": 64.15,
+  "end": 64.55
+ },
+ {
+  "text": "psicossociais.",
+  "start": 64.55,
+  "end": 65.75
+ },
+ {
+  "text": "A",
+  "start": 65.75,
+  "end": 65.91
+ },
+ {
+  "text": "norma",
+  "start": 65.91,
+  "end": 66.31
+ },
+ {
+  "text": "continua",
+  "start": 66.31,
+  "end": 66.87
+ },
+ {
+  "text": "valendo.",
+  "start": 66.87,
+  "end": 67.59
+ },
+ {
+  "text": "E",
+  "start": 67.59,
+  "end": 67.75
+ },
+ {
+  "text": "o",
+  "start": 67.75,
+  "end": 67.91
+ },
+ {
+  "text": "PGR",
+  "start": 67.91,
+  "end": 68.39
+ },
+ {
+  "text": "não",
+  "start": 68.47,
+  "end": 68.63
+ },
+ {
+  "text": "é",
+  "start": 68.63,
+  "end": 68.71
+ },
+ {
+  "text": "pra",
+  "start": 68.71,
+  "end": 68.87
+ },
+ {
+  "text": "gaveta.",
+  "start": 68.95,
+  "end": 69.67
+ },
+ {
+  "text": "A",
+  "start": 69.67,
+  "end": 69.83
+ },
+ {
+  "text": "avaliação",
+  "start": 69.83,
+  "end": 70.47
+ },
+ {
+  "text": "de",
+  "start": 70.47,
+  "end": 70.55
+ },
+ {
+  "text": "riscos",
+  "start": 70.55,
+  "end": 70.95
+ },
+ {
+  "text": "é",
+  "start": 70.95,
+  "end": 71.11
+ },
+ {
+  "text": "revisada",
+  "start": 71.11,
+  "end": 71.67
+ },
+ {
+  "text": "a",
+  "start": 71.67,
+  "end": 71.75
+ },
+ {
+  "text": "cada",
+  "start": 71.75,
+  "end": 72.07
+ },
+ {
+  "text": "2 anos...",
+  "start": 72.07,
+  "end": 72.63
+ },
+ {
+  "text": "ou",
+  "start": 72.87,
+  "end": 73.11
+ },
+ {
+  "text": "antes,",
+  "start": 73.11,
+  "end": 73.51
+ },
+ {
+  "text": "se",
+  "start": 73.51,
+  "end": 73.67
+ },
+ {
+  "text": "o",
+  "start": 73.67,
+  "end": 73.83
+ },
+ {
+  "text": "trabalho",
+  "start": 73.83,
+  "end": 74.23
+ },
+ {
+  "text": "mudar.",
+  "start": 74.23,
+  "end": 74.63
+ },
+ {
+  "text": "Quer",
+  "start": 74.87,
+  "end": 75.19
+ },
+ {
+  "text": "saber",
+  "start": 75.19,
+  "end": 75.51
+ },
+ {
+  "text": "se",
+  "start": 75.51,
+  "end": 75.67
+ },
+ {
+  "text": "a",
+  "start": 75.67,
+  "end": 75.75
+ },
+ {
+  "text": "sua",
+  "start": 75.75,
+  "end": 75.91
+ },
+ {
+  "text": "empresa",
+  "start": 75.91,
+  "end": 76.15
+ },
+ {
+  "text": "está",
+  "start": 76.15,
+  "end": 76.31
+ },
+ {
+  "text": "em",
+  "start": 76.31,
+  "end": 76.47
+ },
+ {
+  "text": "dia",
+  "start": 76.47,
+  "end": 76.63
+ },
+ {
+  "text": "com",
+  "start": 76.71,
+  "end": 76.79
+ },
+ {
+  "text": "a",
+  "start": 76.79,
+  "end": 76.95
+ },
+ {
+  "text": "NR-01?",
+  "start": 76.95,
+  "end": 77.83
+ },
+ {
+  "text": "Fale",
+  "start": 77.83,
+  "end": 78.15
+ },
+ {
+  "text": "com",
+  "start": 78.15,
+  "end": 78.31
+ },
+ {
+  "text": "o",
+  "start": 78.31,
+  "end": 78.39
+ },
+ {
+  "text": "Grupo",
+  "start": 78.39,
+  "end": 78.71
+ },
+ {
+  "text": "ECASI.",
+  "start": 78.71,
+  "end": 79.67
+ },
+ {
+  "text": "Tem",
+  "start": 79.67,
+  "end": 79.91
+ },
+ {
+  "text": "gente",
+  "start": 79.91,
+  "end": 80.23
+ },
+ {
+  "text": "de",
+  "start": 80.23,
+  "end": 80.39
+ },
+ {
+  "text": "carteira",
+  "start": 80.39,
+  "end": 80.79
+ },
+ {
+  "text": "assinada",
+  "start": 80.79,
+  "end": 81.27
+ },
+ {
+  "text": "aí?",
+  "start": 81.27,
+  "end": 81.67
+ },
+ {
+  "text": "Então",
+  "start": 81.67,
+  "end": 81.99
+ },
+ {
+  "text": "confira",
+  "start": 81.99,
+  "end": 82.63
+ },
+ {
+  "text": "os",
+  "start": 82.63,
+  "end": 82.79
+ },
+ {
+  "text": "3 pilares",
+  "start": 82.79,
+  "end": 83.43
+ },
+ {
+  "text": "da",
+  "start": 83.43,
+  "end": 83.67
+ },
+ {
+  "text": "NR-01.",
+  "start": 83.67,
+  "end": 84.47
+ }
+]
